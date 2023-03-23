@@ -6,11 +6,16 @@ SANDAG's activity based model (ABM) which operates at an individual level, where
 
 The required inputs to population synthesis are a population sample and marginal distributions (or control totals). The population sample is commonly referred to as the seed or reference sample and the marginal distributions are commonly referred to as controls or targets. The process of expanding the seed sample to match the marginal distribution is termed population synthesis. The software tool which implements this population synthesis process is termed as a Population Synthesizer.
 
-### Methodology for SANDAG
-![method](https://user-images.githubusercontent.com/97697460/227370137-2004cb37-2a32-47b2-8ba1-b7dcfd29cd9b.PNG)
 
 ## How does it work?
 ![image](https://user-images.githubusercontent.com/97697460/227371687-59ac1922-b15c-4efa-9dfd-edcb8ffbae9e.png)
+
+
+### Methodology for SANDAG
+![method](https://user-images.githubusercontent.com/97697460/227370137-2004cb37-2a32-47b2-8ba1-b7dcfd29cd9b.PNG)
+
+### Control variables
+
 
 
 
