@@ -1,15 +1,22 @@
-PopulationSim
-=============
+# Population-Sim
+PopulationSim is an open platform for gnerating synthetic person and households. It emerged from Oregon DOT’s desire to build a shared, open, platform that could be easily adapted for statewide, regional, and urban transportation planning needs and for the Series 15 forecasting, SANDAG has used population sim platform and made it custom ready for San Diego region. 
 
-[![Build Status](https://travis-ci.org/activitysim/populationsim.svg?branch=master)](https://travis-ci.org/ActivitySim/populationsim) [![Coverage Status](https://coveralls.io/repos/ActivitySim/populationsim/badge.png?branch=master)](https://coveralls.io/r/ActivitySim/populationsim?branch=master)<a href="https://medium.com/zephyrfoundation/populationsim-the-synthetic-commons-670e17383048"><img src="https://github.com/ZephyrTransport/zephyr-website/blob/gh-pages/img/badging/project_pages/populationsim/PopulationSim.png" width="72.6" height="19.8"></a>
+# What is population synthesis?
+SANDAG's activity based model (ABM) which operates at an individual level, wherein the travel choices of person and household decision-making agents are predicted by applying Monte Carlo methods to behavioral models, requires a data set of households and persons representing the entire population in the modeling region. Population synthesis refers to the process used to create this data.
+
+The required inputs to population synthesis are a population sample and marginal distributions (or control totals). The population sample is commonly referred to as the seed or reference sample and the marginal distributions are commonly referred to as controls or targets. The process of expanding the seed sample to match the marginal distribution is termed population synthesis. The software tool which implements this population synthesis process is termed as a Population Synthesizer.
 
 
-PopulationSim is an open platform for population synthesis.  It emerged
-from Oregon DOT's desire to build a shared, open, platform that could be
-easily adapted for statewide, regional, and urban transportation planning
-needs.  PopulationSim is implemented in the
-[ActivitySim](https://github.com/activitysim/activitysim) framework.
+## How does it work?
+![image](https://user-images.githubusercontent.com/97697460/227371687-59ac1922-b15c-4efa-9dfd-edcb8ffbae9e.png)
 
-## Documentation
 
-https://activitysim.github.io/populationsim/
+### Methodology for SANDAG
+![method](https://user-images.githubusercontent.com/97697460/227370137-2004cb37-2a32-47b2-8ba1-b7dcfd29cd9b.PNG)
+
+### Control variables
+![image](https://user-images.githubusercontent.com/97697460/227373450-dcf4bbef-35fd-4ec6-b1f6-cd26bc4b8c89.png)
+
+
+
+
