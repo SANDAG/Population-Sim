@@ -1,6 +1,9 @@
 # Population-Sim
 PopulationSim is an open platform for gnerating synthetic person and households. It emerged from Oregon DOT’s desire to build a shared, open, platform that could be easily adapted for statewide, regional, and urban transportation planning needs and for the Series 15 forecasting, SANDAG has used population sim platform and made it custom ready for San Diego region. 
 
+More details about population sim an be found here, https://activitysim.github.io/populationsim/
+
+
 # What is population synthesis?
 SANDAG's activity based model (ABM) which operates at an individual level, wherein the travel choices of person and household decision-making agents are predicted by applying Monte Carlo methods to behavioral models, requires a data set of households and persons representing the entire population in the modeling region. Population synthesis refers to the process used to create this data.
 
