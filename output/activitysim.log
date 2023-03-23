@@ -1,0 +1,211 @@
+02/06/2022 15:07:50 - INFO - activitysim - Read logging configuration from: configs\logging.yaml
+02/06/2022 15:07:50 - INFO - activitysim.cli.run - SETTING configs_dir: configs
+02/06/2022 15:07:50 - INFO - activitysim.cli.run - SETTING settings_file_name: settings.yaml
+02/06/2022 15:07:50 - INFO - activitysim.cli.run - SETTING data_dir: data
+02/06/2022 15:07:50 - INFO - activitysim.cli.run - SETTING output_dir: output
+02/06/2022 15:07:50 - INFO - activitysim.cli.run - SETTING multiprocess: None
+02/06/2022 15:07:50 - INFO - activitysim.cli.run - SETTING num_processes: None
+02/06/2022 15:07:50 - INFO - activitysim.cli.run - SETTING resume_after: None
+02/06/2022 15:07:50 - INFO - activitysim.cli.run - SETTING GROUP_BY_INCIDENCE_SIGNATURE: True
+02/06/2022 15:07:50 - INFO - activitysim.cli.run - SETTING INTEGERIZE_WITH_BACKSTOPPED_CONTROLS: True
+02/06/2022 15:07:50 - INFO - activitysim.cli.run - SETTING SUB_BALANCE_WITH_FLOAT_SEED_WEIGHTS: False
+02/06/2022 15:07:50 - INFO - activitysim.cli.run - SETTING meta_control_data: None
+02/06/2022 15:07:50 - INFO - activitysim.cli.run - SETTING control_file_name: controls.csv
+02/06/2022 15:07:50 - INFO - activitysim.cli.run - SETTING USE_CVXPY: False
+02/06/2022 15:07:50 - INFO - activitysim.cli.run - SETTING USE_SIMUL_INTEGERIZER: True
+02/06/2022 15:07:50 - INFO - activitysim.cli.run - ENV MKL_NUM_THREADS: None
+02/06/2022 15:07:50 - INFO - activitysim.cli.run - ENV OMP_NUM_THREADS: None
+02/06/2022 15:07:50 - INFO - activitysim.cli.run - ENV OPENBLAS_NUM_THREADS: None
+02/06/2022 15:07:50 - INFO - activitysim.cli.run - NUMPY blas_opt_info libraries: ['openblas_info']
+02/06/2022 15:07:50 - INFO - activitysim.cli.run - NUMPY lapack_opt_info libraries: ['openblas_lapack_info']
+02/06/2022 15:07:50 - INFO - activitysim.cli.run - run single process simulation
+02/06/2022 15:07:50 - DEBUG - activitysim.core.random - Set random seed base to 0
+02/06/2022 15:07:50 - DEBUG - activitysim.core.pipeline - open_pipeline - new, empty pipeline
+02/06/2022 15:07:50 - DEBUG - activitysim.core.pipeline - opened pipeline_store output\pipeline.h5
+02/06/2022 15:07:50 - DEBUG - activitysim.core.pipeline - add_checkpoint init timestamp 2022-06-02 15:07:50.669597
+02/06/2022 15:07:50 - DEBUG - activitysim.core.pipeline - open_pipeline complete
+02/06/2022 15:07:50 - INFO - activitysim.core.tracing - Time to execute open_pipeline : 0.016 seconds (0.0 minutes)
+02/06/2022 15:07:50 - INFO - activitysim.core.tracing - Time to execute preload_injectables : 0.035 seconds (0.0 minutes)
+02/06/2022 15:07:50 - INFO - activitysim.core.pipeline - #run_model running step input_pre_processor
+02/06/2022 15:07:50 - INFO - populationsim.steps.input_pre_processor - Using table list: [{'tablename': 'households', 'filename': 'seed_households.csv', 'index_col': 'HHID'}, {'tablename': 'persons', 'filename': 'seed_persons.csv'}, {'tablename': 'geo_cross_walk', 'filename': 'geo_cross_walk.csv'}, {'tablename': 'TAZ_control_data', 'filename': 'taz_controls.csv'}]
+02/06/2022 15:07:50 - INFO - activitysim.core.input - Reading CSV file data\seed_households.csv
+02/06/2022 15:07:50 - DEBUG - activitysim.core.input - raw households table size: (12908, 6) 619.7 KB
+02/06/2022 15:07:50 - DEBUG - activitysim.core.input - households table columns: ['PUMA' 'NP' 'HHADJINC' 'WGTP' 'HHT']
+02/06/2022 15:07:50 - DEBUG - activitysim.core.input - households table size: (12908, 5) 619.6 KB
+02/06/2022 15:07:50 - DEBUG - activitysim.core.input - households index name: HHID
+02/06/2022 15:07:50 - INFO - populationsim.steps.input_pre_processor - registering table households
+02/06/2022 15:07:50 - INFO - activitysim.core.input - Reading CSV file data\seed_persons.csv
+02/06/2022 15:07:50 - DEBUG - activitysim.core.input - raw persons table size: (29883, 10) 2.4 MB
+02/06/2022 15:07:50 - DEBUG - activitysim.core.input - persons table columns: ['HHID' 'SPORDER' 'PUMA' 'AGEP' 'SCHG' 'COW' 'SEX' 'ESR' 'MIL' 'WKHP']
+02/06/2022 15:07:50 - DEBUG - activitysim.core.input - persons table size: (29883, 10) 2.4 MB
+02/06/2022 15:07:50 - DEBUG - activitysim.core.input - persons index name: None
+02/06/2022 15:07:50 - INFO - populationsim.steps.input_pre_processor - registering table persons
+02/06/2022 15:07:50 - INFO - activitysim.core.input - Reading CSV file data\geo_cross_walk.csv
+02/06/2022 15:07:50 - DEBUG - activitysim.core.input - raw geo_cross_walk table size: (4984, 3) 119.7 KB
+02/06/2022 15:07:50 - DEBUG - activitysim.core.input - geo_cross_walk table columns: ['TAZ' 'PUMA' 'REGION']
+02/06/2022 15:07:50 - DEBUG - activitysim.core.input - geo_cross_walk table size: (4984, 3) 119.7 KB
+02/06/2022 15:07:50 - DEBUG - activitysim.core.input - geo_cross_walk index name: None
+02/06/2022 15:07:50 - INFO - populationsim.steps.input_pre_processor - registering table geo_cross_walk
+02/06/2022 15:07:50 - INFO - activitysim.core.input - Reading CSV file data\taz_controls.csv
+02/06/2022 15:07:50 - DEBUG - activitysim.core.input - raw TAZ_control_data table size: (4984, 54) 2.2 MB
+02/06/2022 15:07:50 - DEBUG - activitysim.core.input - TAZ_control_data table columns: ['TAZ' 'Female' 'Male' 'Age_10to14' 'Age_15to17' 'Age_18to19' 'Age_20to24'
+ 'Age_25to29' 'Age_30to34' 'Age_35to39' 'Age_40to44' 'Age_45to49'
+ 'Age_50to54' 'Age_55to59' 'Age_5to9' 'Age_60to61' 'Age_62to64'
+ 'Age_65to69' 'Age_70to74' 'Age_75to79' 'Age_80to84' 'Age_85Plus'
+ 'Age_LT5' 'AmericanIndian' 'Asian' 'Black' 'Hispanic' 'Other'
+ 'PacificIslander' 'TwoorMore' 'White' 'HHSize_1' 'HHSize_2' 'HHSize_3'
+ 'HHSize_4' 'HHSize_5' 'HHSize_6' 'HHSize_7' 'Total_HH' 'HHInc_0to14999'
+ 'HHInc_100000to124999' 'HHInc_125000to149999' 'HHInc_150000to199999'
+ 'HHInc_15000to29999' 'HHInc_200000Plus' 'HHInc_30000to44999'
+ 'HHInc_45000to59999' 'HHInc_60000to74999' 'HHInc_75000to99999'
+ 'gq_college_pop' 'gq_mil_pop' 'gq_other_pop' 'hh_pop' 'HHSize_4Plus']
+02/06/2022 15:07:50 - DEBUG - activitysim.core.input - TAZ_control_data table size: (4984, 54) 2.2 MB
+02/06/2022 15:07:50 - DEBUG - activitysim.core.input - TAZ_control_data index name: None
+02/06/2022 15:07:50 - INFO - populationsim.steps.input_pre_processor - registering table TAZ_control_data
+02/06/2022 15:07:50 - DEBUG - activitysim.core.tracing - Time to execute #run_model completed step 'input_pre_processor' : 0.084 seconds (0.0 minutes)
+02/06/2022 15:07:50 - DEBUG - activitysim.core.pipeline - add_checkpoint input_pre_processor timestamp 2022-06-02 15:07:50.885488
+02/06/2022 15:07:50 - DEBUG - activitysim.core.pipeline - add_checkpoint 'input_pre_processor' table 'households' (12908, 5) 619.6 KB
+02/06/2022 15:07:50 - DEBUG - activitysim.core.pipeline - add_checkpoint 'input_pre_processor' table 'persons' (29883, 10) 2.4 MB
+02/06/2022 15:07:50 - DEBUG - activitysim.core.pipeline - add_checkpoint 'input_pre_processor' table 'geo_cross_walk' (4984, 3) 119.7 KB
+02/06/2022 15:07:50 - DEBUG - activitysim.core.pipeline - add_checkpoint 'input_pre_processor' table 'TAZ_control_data' (4984, 54) 2.2 MB
+02/06/2022 15:07:50 - INFO - activitysim.core.pipeline - #run_model running step setup_data_structures
+02/06/2022 15:07:50 - INFO - populationsim.steps.setup_data_structures - Reading control file configs\controls.csv
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - dropping 859 TAZ control rows with empty total_hh_control
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - dropped 0 households not in seed zones
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - kept 11464 households in seed zones
+02/06/2022 15:07:51 - DEBUG - activitysim.core.pipeline - rewrap table households inplace=False
+02/06/2022 15:07:51 - DEBUG - activitysim.core.pipeline - rewrap table persons inplace=False
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target Total_HH
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.WGTP > 0) & (households.WGTP < np.inf)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target HHSize_1
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression households.NP == 1
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target HHSize_2
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression households.NP == 2
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target HHSize_3
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression households.NP == 3
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target HHInc_0to14999
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.HHADJINC >= 0) & (households.HHADJINC <= 14999)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target HHInc_15000to29999
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.HHADJINC >= 15000) & (households.HHADJINC <= 29999)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target HHInc_30000to44999
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.HHADJINC >= 30000) & (households.HHADJINC <= 44999)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target HHInc_45000to59999
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.HHADJINC >= 45000) & (households.HHADJINC <= 59999)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target HHInc_60000to74999
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.HHADJINC >= 60000) & (households.HHADJINC <= 74999)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target HHInc_75000to99999
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.HHADJINC >= 75000) & (households.HHADJINC <= 99999)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target HHInc_100000to124999
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.HHADJINC >= 100000) & (households.HHADJINC <= 124999)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target HHInc_125000to149999
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.HHADJINC >= 125000) & (households.HHADJINC <= 149999)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target HHInc_150000to199999
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.HHADJINC >= 150000) & (households.HHADJINC <= 199999)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target Male
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.SEX == 1)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target Female
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.SEX == 2)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target Age_5to9
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 5) & (persons.AGEP <= 9)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target Age_10to14
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 10) & (persons.AGEP <= 14)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target Age_15to17
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 15) & (persons.AGEP <= 17)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target Age_18to19
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 18) & (persons.AGEP <= 19)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target Age_20to24
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 20) & (persons.AGEP <= 24)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target Age_25to29
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 25) & (persons.AGEP <= 29)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target Age_30to34
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 30) & (persons.AGEP <= 34)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target Age_35to39
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 35) & (persons.AGEP <= 39)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target Age_40to44
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 40) & (persons.AGEP <= 44)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target Age_45to49
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 45) & (persons.AGEP <= 49)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target Age_50to54
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 50) & (persons.AGEP <= 54)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target Age_55to59
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 55) & (persons.AGEP <= 59)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target Age_60to61
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 60) & (persons.AGEP <= 61)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target Age_62to64
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 62) & (persons.AGEP <= 64)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target Age_65to69
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 65) & (persons.AGEP <= 69)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target Age_70to74
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 70) & (persons.AGEP <= 74)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target Age_75to79
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 75) & (persons.AGEP <= 79)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - control target Age_80to84
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+02/06/2022 15:07:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 80) & (persons.AGEP <= 84)
+02/06/2022 15:07:51 - INFO - populationsim.steps.setup_data_structures - grouped incidence table has 9367 entries, ungrouped has 11464
+02/06/2022 15:07:51 - INFO - activitysim.core.tracing - Time to execute all models until this error : 0.548 seconds (0.0 minutes)
+02/06/2022 15:07:51 - ERROR - activitysim.cli.run - activitysim run encountered an unrecoverable error
+Traceback (most recent call last):
+  File "C:\Users\nmad\AppData\Local\Continuum\anaconda3\envs\popsim\lib\site-packages\activitysim\cli\run.py", line 261, in run
+    pipeline.run(models=config.setting('models'), resume_after=resume_after)
+  File "C:\Users\nmad\AppData\Local\Continuum\anaconda3\envs\popsim\lib\site-packages\activitysim\core\pipeline.py", line 617, in run
+    run_model(model)
+  File "C:\Users\nmad\AppData\Local\Continuum\anaconda3\envs\popsim\lib\site-packages\activitysim\core\pipeline.py", line 476, in run_model
+    orca.run([step_name])
+  File "C:\Users\nmad\AppData\Local\Continuum\anaconda3\envs\popsim\lib\site-packages\orca\orca.py", line 2168, in run
+    step()
+  File "C:\Users\nmad\AppData\Local\Continuum\anaconda3\envs\popsim\lib\site-packages\orca\orca.py", line 973, in __call__
+    return self._func(**kwargs)
+  File "C:\Users\nmad\AppData\Local\Continuum\anaconda3\envs\popsim\lib\site-packages\populationsim\steps\setup_data_structures.py", line 352, in setup_data_structures
+    = build_grouped_incidence_table(incidence_table, control_spec, seed_geography)
+  File "C:\Users\nmad\AppData\Local\Continuum\anaconda3\envs\popsim\lib\site-packages\populationsim\steps\setup_data_structures.py", line 228, in build_grouped_incidence_table
+    hh_incidence_table['group_id'] = hh_incidence_table[hh_groupby_cols].merge(
+  File "C:\Users\nmad\AppData\Local\Continuum\anaconda3\envs\popsim\lib\site-packages\pandas\core\generic.py", line 5912, in astype
+    new_data = self._mgr.astype(dtype=dtype, copy=copy, errors=errors)
+  File "C:\Users\nmad\AppData\Local\Continuum\anaconda3\envs\popsim\lib\site-packages\pandas\core\internals\managers.py", line 419, in astype
+    return self.apply("astype", dtype=dtype, copy=copy, errors=errors)
+  File "C:\Users\nmad\AppData\Local\Continuum\anaconda3\envs\popsim\lib\site-packages\pandas\core\internals\managers.py", line 304, in apply
+    applied = getattr(b, f)(**kwargs)
+  File "C:\Users\nmad\AppData\Local\Continuum\anaconda3\envs\popsim\lib\site-packages\pandas\core\internals\blocks.py", line 580, in astype
+    new_values = astype_array_safe(values, dtype, copy=copy, errors=errors)
+  File "C:\Users\nmad\AppData\Local\Continuum\anaconda3\envs\popsim\lib\site-packages\pandas\core\dtypes\cast.py", line 1292, in astype_array_safe
+    new_values = astype_array(values, dtype, copy=copy)
+  File "C:\Users\nmad\AppData\Local\Continuum\anaconda3\envs\popsim\lib\site-packages\pandas\core\dtypes\cast.py", line 1237, in astype_array
+    values = astype_nansafe(values, dtype, copy=copy)
+  File "C:\Users\nmad\AppData\Local\Continuum\anaconda3\envs\popsim\lib\site-packages\pandas\core\dtypes\cast.py", line 1148, in astype_nansafe
+    return astype_float_to_int_nansafe(arr, dtype, copy)
+  File "C:\Users\nmad\AppData\Local\Continuum\anaconda3\envs\popsim\lib\site-packages\pandas\core\dtypes\cast.py", line 1193, in astype_float_to_int_nansafe
+    raise IntCastingNaNError(
+pandas.errors.IntCastingNaNError: Cannot convert non-finite values (NA or inf) to integer

@@ -1,0 +1,7 @@
+process,pid,rss,full_rss,uss,event,children,time
+MainProcess,33992,95_014_912,95_014_912,67_764_224,pipeline.run before preload_injectables,0,2022/06/02 15:07:50.704294
+MainProcess,33992,95_232_000,95_232_000,67_768_320,pipeline.run after preload_injectables,0,2022/06/02 15:07:50.735506
+MainProcess,33992,95_260_672,95_260_672,67_768_320,pipeline.run_model input_pre_processor start,0,2022/06/02 15:07:50.769861
+MainProcess,33992,101_699_584,101_699_584,74_080_256,pipeline.run_model input_pre_processor finished,0,2022/06/02 15:07:50.869897
+MainProcess,33992,103_350_272,103_350_272,75_345_920,pipeline.run after input_pre_processor,0,2022/06/02 15:07:50.954548
+MainProcess,33992,103_370_752,103_370_752,75_366_400,pipeline.run_model setup_data_structures start,0,2022/06/02 15:07:50.970806

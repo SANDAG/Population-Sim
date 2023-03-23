@@ -1,0 +1,112 @@
+####################################################################
+# PopulationSim Properties
+####################################################################
+
+
+# Algorithm/Software Configuration
+# ------------------------------------------------------------------
+INTEGERIZE_WITH_BACKSTOPPED_CONTROLS: True
+SUB_BALANCE_WITH_FLOAT_SEED_WEIGHTS: False
+GROUP_BY_INCIDENCE_SIGNATURE: True
+USE_SIMUL_INTEGERIZER: True
+USE_CVXPY: False
+max_expansion_factor: 30
+
+
+# Geographic Settings
+# ------------------------------------------------------------------
+geographies: [REGION, PUMA, TAZ]
+seed_geography: PUMA
+
+
+# Tracing
+# ------------------------------------------------------------------
+trace_geography:
+  TAZ: 100
+
+  
+# Data Directory
+# ------------------------------------------------------------------
+data_dir: data
+
+
+# Input Data Tables
+# ------------------------------------------------------------------
+# input_pre_processor input_table_list
+input_table_list:
+  - tablename: households
+    filename : seed_households.csv
+    index_col: HHID
+  - tablename: persons
+    # expression_filename: seed_persons_expressions.csv
+    filename : seed_persons.csv
+  - tablename: geo_cross_walk
+    filename : geo_cross_walk.csv
+  - tablename: TAZ_control_data
+    filename : taz_controls.csv
+
+
+
+# Reserved Column Names
+# ------------------------------------------------------------------
+household_weight_col: WGTP
+household_id_col: HHID
+total_hh_control: Total_HH
+
+
+# Control Specification File Name
+# ------------------------------------------------------------------
+control_file_name: controls.csv
+
+
+# Output Tables
+# ------------------------------------------------------------------
+# output_tables can specify either a list of output tables to include or to skip
+# if neither is specified, then no tables will be written
+
+output_tables:
+  action: include
+  tables:
+    - summary_TAZ
+    - expanded_household_ids
+
+
+# Synthetic Population Output Specification
+# ------------------------------------------------------------------
+#
+
+output_synthetic_population:
+  household_id: household_id
+  households:
+    filename: synthetic_households.csv
+    columns:
+      - NP
+      - HHADJINC
+      - HHT
+  persons:
+    filename: synthetic_persons.csv
+    columns:
+      - AGEP
+      - SEX
+      - ESR
+      - WKHP
+      - SCHG
+
+
+# Model steps for base mode
+# ------------------------------------------------------------------
+models:
+    - input_pre_processor
+    - setup_data_structures
+    - initial_seed_balancing
+    - meta_control_factoring
+    - final_seed_balancing
+    - integerize_final_seed_weights
+    - sub_balancing.geography=TAZ
+    - expand_households
+    - write_data_dictionary
+    - summarize
+    - write_tables
+    - write_synthetic_population
+
+#resume_after:
