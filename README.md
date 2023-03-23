@@ -9,3 +9,8 @@ The required inputs to population synthesis are a population sample and marginal
 ### Methodology for SANDAG
 ![method](https://user-images.githubusercontent.com/97697460/227370137-2004cb37-2a32-47b2-8ba1-b7dcfd29cd9b.PNG)
 
+## How does it work?
+![image](https://user-images.githubusercontent.com/97697460/227371687-59ac1922-b15c-4efa-9dfd-edcb8ffbae9e.png)
+
+
+
