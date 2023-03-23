@@ -15,6 +15,7 @@ The required inputs to population synthesis are a population sample and marginal
 ![method](https://user-images.githubusercontent.com/97697460/227370137-2004cb37-2a32-47b2-8ba1-b7dcfd29cd9b.PNG)
 
 ### Control variables
+![image](https://user-images.githubusercontent.com/97697460/227373450-dcf4bbef-35fd-4ec6-b1f6-cd26bc4b8c89.png)
 
 
 
