@@ -1,1 +1,50 @@
+Person level Variable definitions:
+ESR - Employment status recode
+1 .Civilian employed, at work 2 .Civilian employed, with a job but not at work 3 .Unemployed 4 .Armed forces, at work 5 .Armed forces, with a job but not at work 6 .Not in labor force; 0 (less than 16 years old) 
+AGEP = age
+
+SEX
+Sex 1 .Male 2 .Female
+
+COW
+Class of worker 0 .Not in universe (less than 16 years old/NILF who last worked .more than 5 years ago or never worked) 1 .Employee of a private for-profit company or business, or of an .individual, for wages, salary, or commissions 2 .Employee of a private not-for-profit, tax-exempt, or .charitable organization 3 .Local government employee (city, county, etc.) 4 .State government employee 5 .Federal government employee 6 .Self-employed in own not incorporated business, professional .practice, or farm 7 .Self-employed in own incorporated business, professional .practice or farm 8 .Working without pay in family business or farm 9 .Unemployed and last worked 5 years ago or earlier or never .worked
+
+WKHP - Usual hours worked per week past 12 months
+0 -- N/A (less than 16 years old/did not work during the past .12 months) 
+1..98 -- .1 to 98 usual hours 
+99 -- .99 or more usual hours
+
+
+SCHG- Grade level attending
+0 .N/A (not attending school) 01 .Nursery school/preschool 02 .Kindergarten 03 .Grade 1 04 .Grade 2 05 .Grade 3 06 .Grade 4 07 .Grade 5 08 .Grade 6 09 .Grade 7 10 .Grade 8 11 .Grade 9 12 .Grade 10 13 .Grade 11 14 .Grade 12 15 .College undergraduate years (freshman to senior) 16 .Graduate or professional school beyond a bachelor's degree
+
+RAC1P Character 1 Recoded detailed race code 1 .White alone 2 .Black or African American alone 3 .American Indian alone 4 .Alaska Native alone 5 .American Indian and Alaska Native tribes specified; or .American Indian or Alaska Native, not specified and no other .races 6 .Asian alone 7 .Native Hawaiian and Other Pacific Islander alone 8 .Some Other Race alone 9 .Two or More Races
+
+    
+ Hispanic = HISP !=1
+White = 'RAC1P' in [1,8]  
+Black =   'RAC1P' in [2]:
+ Asian = 'RAC1P' in [6]:
+Other' = 'RAC1P' in [3,4,5,7]:
+ Two or More = RAC1P' in [9]:
+            
+HISP
+
+MIL
+
+SCHL
+Educational attainment bb .N/A (less than 3 years old) 01 .No schooling completed 02 .Nursery school, preschool 03 .Kindergarten 04 .Grade 1 05 .Grade 2 06 .Grade 3 07 .Grade 4 08 .Grade 5 09 .Grade 6 10 .Grade 7 11 .Grade 8 12 .Grade 9 13 .Grade 10 14 .Grade 11 15 .12th grade - no diploma 16 .Regular high school diploma 17 .GED or alternative credential 18 .Some college, but less than 1 year 19 .1 or more years of college credit, no degree 20 .Associate's degree 44 21 .Bachelor's degree 22 .Master's degree 23 .Professional degree beyond a bachelor's degree 24 .Doctorate degree
+
+
+OCCP 
+Occupation recode
+
+WKW - Weeks worked during past 12 months
+b .N/A (less than 16 years old/did not work during the past 12 .months) 1 .50 to 52 weeks worked during past 12 months 2 .48 to 49 weeks worked during past 12 months 3 .40 to 47 weeks worked during past 12 months 4 .27 to 39 weeks worked during past 12 month 5 .14 to 26 weeks worked during past 12 months 6 .13 weeks or less worked during past 12 months
+
+NAICS2 
+North American Industry Classification System (NAICS) recode for 2018 and later based on 2017 NAICS codes
+
+SOC2 
+Standard Occupational Classification (SOC) codes
 
