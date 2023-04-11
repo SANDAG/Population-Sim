@@ -1,4 +1,4 @@
-# Person level Variable definitions:
+** Person level Variable definitions:**
 ESR - Employment status recode
 1 .Civilian employed, at work 2 .Civilian employed, with a job but not at work 3 .Unemployed 4 .Armed forces, at work 5 .Armed forces, with a job but not at work 6 .Not in labor force; 0 (less than 16 years old) 
 AGEP = age
