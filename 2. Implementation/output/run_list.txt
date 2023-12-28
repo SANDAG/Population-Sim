@@ -1,0 +1,54 @@
+resume_after: None
+multiprocess: True
+models:
+  -  input_pre_processor
+  -  setup_data_structures
+  -  initial_seed_balancing
+  -  meta_control_factoring
+  -  final_seed_balancing
+  -  integerize_final_seed_weights
+  -  sub_balancing.geography=mgra
+  -  expand_households
+  -  summarize
+  -  write_synthetic_population
+  -  write_data_dictionary
+  -  write_tables
+
+multiprocess_steps:
+  step: mp_seed_balancing
+    name: mp_seed_balancing
+    begin: input_pre_processor
+    step_num: 0
+    num_processes: 1
+    chunk_size: 0
+    last_checkpoint_in_previous_multiprocess_step: None
+    models:
+       - input_pre_processor
+       - setup_data_structures
+       - initial_seed_balancing
+       - meta_control_factoring
+       - final_seed_balancing
+       - integerize_final_seed_weights
+  step: mp_sub_balancing_mgra
+    name: mp_sub_balancing_mgra
+    begin: sub_balancing.geography=mgra
+    num_processes: 8
+    slice: {'tables': ['slice_crosswalk', 'crosswalk'], 'except': True, 'coalesce': ['mgra_weights', 'mgra_weights_sparse', 'trace_mgra_weights']}
+    step_num: 1
+    chunk_size: 0
+    last_checkpoint_in_previous_multiprocess_step: mp_seed_balancing
+    models:
+       - sub_balancing.geography=mgra
+  step: mp_summarize
+    name: mp_summarize
+    begin: expand_households
+    step_num: 2
+    num_processes: 1
+    chunk_size: 0
+    last_checkpoint_in_previous_multiprocess_step: mp_sub_balancing_mgra
+    models:
+       - expand_households
+       - summarize
+       - write_synthetic_population
+       - write_data_dictionary
+       - write_tables

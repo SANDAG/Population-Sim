@@ -1,0 +1,15 @@
+process,pid,rss,full_rss,uss,event,children,time
+MainProcess,17772,91_729_920,91_729_920,64_430_080,run_multiprocess.start,0,2023/12/27 18:06:49.557455
+MainProcess,17772,92_205_056,92_205_056,64_696_320,allocate_shared_skim_buffer.before,0,2023/12/27 18:06:49.575444
+MainProcess,17772,92_467_200,92_467_200,64_696_320,allocate_shared_skim_buffer.completed,0,2023/12/27 18:06:49.589437
+MainProcess,17772,92_467_200,92_467_200,64_696_320,allocate_shared_shadow_pricing_buffers.completed,0,2023/12/27 18:06:49.601430
+MainProcess,17772,92_577_792,171_192_320,64_712_704,mp_seed_balancing.start,1,2023/12/27 18:06:50.637977
+MainProcess,17772,92_614_656,281_800_704,64_712_704,mp_seed_balancing.input_pre_processor.completed,1,2023/12/27 18:06:52.670497
+MainProcess,17772,92_614_656,269_979_648,64_712_704,mp_seed_balancing.setup_data_structures.completed,1,2023/12/27 18:06:53.691516
+MainProcess,17772,92_614_656,271_597_568,64_712_704,run_sub_simulations.idle,1,2023/12/27 18:07:08.841882
+MainProcess,17772,92_659_712,272_547_840,64_753_664,run_sub_simulations.idle,1,2023/12/27 18:07:23.968923
+MainProcess,17772,92_659_712,272_584_704,64_753_664,run_sub_simulations.idle,1,2023/12/27 18:07:39.090002
+MainProcess,17772,92_598_272,272_490_496,64_692_224,run_sub_simulations.idle,1,2023/12/27 18:07:54.275114
+MainProcess,17772,92_598_272,272_879_616,64_692_224,run_sub_simulations.idle,1,2023/12/27 18:08:09.409857
+MainProcess,17772,92_598_272,273_031_168,64_692_224,run_sub_simulations.idle,1,2023/12/27 18:08:24.581813
+MainProcess,17772,92_598_272,273_043_456,64_692_224,run_sub_simulations.idle,1,2023/12/27 18:08:39.724190

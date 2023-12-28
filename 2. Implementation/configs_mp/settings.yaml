@@ -1,7 +1,7 @@
 inherit_settings: True
 
 multiprocess: True
-num_processes: 4
+num_processes: 8 #This used to be 4
 cleanup_pipeline_after_run: True
 
 slice_geography: PUMA
@@ -33,7 +33,7 @@ multiprocess_steps:
     begin: input_pre_processor
   - name: mp_sub_balancing_mgra
     begin: sub_balancing.geography=mgra
-    num_processes: 4
+    num_processes: 8 # This used to be 4
     slice:
       tables:
         - slice_crosswalk
@@ -59,7 +59,7 @@ multiprocess_steps:
 #     begin: input_pre_processor
 #   - name: mp_sub_balancing_TAZ
 #     begin: sub_balancing.geography=TAZ
-#     num_processes: 2
+#     num_processes: 8 # This used to be 2 
 #     slice:
 #       tables:
 #         - slice_crosswalk

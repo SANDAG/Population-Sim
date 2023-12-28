@@ -1,0 +1,6 @@
+process,pid,rss,full_rss,uss,event,children,time
+mp_seed_balancing,17044,90_681_344,90_681_344,62_418_944,pipeline.run_model input_pre_processor start,0,2023/12/27 18:06:51.069287
+mp_seed_balancing,17044,129_671_168,129_671_168,100_892_672,pipeline.run_model input_pre_processor finished,0,2023/12/27 18:06:51.526575
+mp_seed_balancing,17044,134_303_744,134_303_744,106_229_760,pipeline.run_model setup_data_structures start,0,2023/12/27 18:06:51.696496
+mp_seed_balancing,17044,159_080_448,159_080_448,130_580_480,pipeline.run_model setup_data_structures finished,0,2023/12/27 18:06:53.155775
+mp_seed_balancing,17044,164_892_672,164_892_672,135_696_384,pipeline.run_model initial_seed_balancing start,0,2023/12/27 18:06:53.424161

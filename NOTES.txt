@@ -1,0 +1,11 @@
+
+Documenatation lives here: https://activitysim.github.io/populationsim/
+
+Step 1: Ensure Anaconda has been downladed 
+Step 2: Open the Anaconda Prompt 
+Step 3: In Anaconda Prompt: conda create -n popsim python=3.8
+Step 4: Run the command: activate popsim
+Step 5: conda install pytables
+Step 6: pip install populationsim
+Step 7: Go to the location of this folder 
+Step 8: Run the command: python run_master_simulation

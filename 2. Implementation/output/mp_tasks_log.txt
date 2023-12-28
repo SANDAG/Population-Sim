@@ -1,0 +1,8 @@
+mp_tasks - MainProcess - run_multiprocess fail_fast: None
+mp_tasks - MainProcess - allocate_shared_skim_buffer
+mp_tasks - MainProcess - allocate_shared_shadow_pricing_buffers
+mp_tasks - MainProcess - run_sub_simulations step mp_seed_balancing models resume_after None
+mp_tasks - MainProcess - start process mp_seed_balancing
+mp_tasks - mp_seed_balancing - mp_run_simulation mp_seed_balancing locutor=True 
+mp_tasks - MainProcess - mp_seed_balancing input_pre_processor : 0.625 seconds (0.0 minutes)
+mp_tasks - MainProcess - mp_seed_balancing setup_data_structures : 1.726 seconds (0.0 minutes)
