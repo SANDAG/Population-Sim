@@ -1,0 +1,189 @@
+####################################################################
+# PopulationSim Properties
+####################################################################
+
+
+# Algorithm/Software Configuration
+# ------------------------------------------------------------------
+INTEGERIZE_WITH_BACKSTOPPED_CONTROLS: True
+SUB_BALANCE_WITH_FLOAT_SEED_WEIGHTS: False
+GROUP_BY_INCIDENCE_SIGNATURE: True
+USE_SIMUL_INTEGERIZER: True
+USE_CVXPY: False
+max_expansion_factor: 30
+
+
+# Geographic Settings
+# ------------------------------------------------------------------
+geographies: [REGION, PUMA, TAZ]
+seed_geography: PUMA
+
+
+# Tracing
+# ------------------------------------------------------------------
+trace_geography:
+  TAZ: 100
+
+  
+# Data Directory
+# ------------------------------------------------------------------
+data_dir: data
+
+
+# Input Data Tables
+# ------------------------------------------------------------------
+# input_pre_processor input_table_list
+input_table_list:
+  - tablename: households
+    filename : seed_households.csv
+    index_col: HHID
+  - tablename: persons
+    # expression_filename: seed_persons_expressions.csv
+    filename : seed_persons.csv
+  - tablename: geo_cross_walk
+    filename : geo_cross_walk.csv
+  - tablename: TAZ_control_data
+    #filename : taz_controls.csv
+    filename : taz_controls_adjusted.csv
+
+
+
+# Reserved Column Names
+# ------------------------------------------------------------------
+household_weight_col: WGTP
+household_id_col: HHID
+total_hh_control: Total_HH
+
+
+# Control Specification File Name
+# ------------------------------------------------------------------
+control_file_name: controls.csv
+
+
+# Output Tables
+# ------------------------------------------------------------------
+# output_tables can specify either a list of output tables to include or to skip
+# if neither is specified, then no tables will be written
+
+output_tables:
+  action: include
+  tables:
+    - summary_TAZ
+    - expanded_household_ids
+
+
+# Synthetic Population Output Specification
+# ------------------------------------------------------------------
+#
+
+output_synthetic_population:
+  household_id: household_id
+  households:
+    filename: synthetic_households.csv
+    columns:
+      - NP
+      - HHADJINC
+      - HHT
+  persons:
+    filename: synthetic_persons.csv
+    columns:
+      - AGEP
+      - SEX
+      - ESR
+      - WKHP
+      - SCHG
+
+
+# Model steps for base mode
+# ------------------------------------------------------------------
+models:
+    - input_pre_processor
+    - setup_data_structures
+    - initial_seed_balancing
+    - meta_control_factoring
+    - final_seed_balancing
+    - integerize_final_seed_weights
+    - sub_balancing.geography=TAZ
+    - expand_households
+    - write_data_dictionary
+    - summarize
+    - write_tables
+    - write_synthetic_population
+
+#resume_after:
+
+
+#--------------------------------------------------------------------
+
+gq_options:
+
+  input_table_list:
+    - tablename: households
+      filename : seed_households_gq.csv
+    - tablename: persons
+      # expression_filename: seed_persons_expressions.csv
+      filename : seed_persons_gq.csv
+    - tablename: geo_cross_walk
+      filename : geo_cross_walk.csv
+    - tablename: TAZ_control_data
+      filename : taz_controls.csv
+      
+  output_control_file: 'data/taz_controls_adjusted.csv'
+  
+  GQ_type_column: GQ_type
+  GQ_control_map:
+    - code: 1
+      control_column: gq_mil_pop
+    - code: 2
+      control_column: gq_college_pop
+    - code: 3
+      control_column: gq_other_pop
+  
+  household_weight_col: WGTP
+  household_id_col: HHID
+
+  adjust_columns:
+    - Male: (persons.SEX == 1)
+    - Female: (persons.SEX == 2)
+    - Age_LT5: (persons.AGEP >= 0) & (persons.AGEP <= 4)
+    - Age_5to9: (persons.AGEP >= 5) & (persons.AGEP <= 9)
+    - Age_10to14: (persons.AGEP >= 10) & (persons.AGEP <= 14)
+    - Age_15to17: (persons.AGEP >= 15) & (persons.AGEP <= 17)
+    - Age_18to19: (persons.AGEP >= 18) & (persons.AGEP <= 19)
+    - Age_20to24: (persons.AGEP >= 20) & (persons.AGEP <= 24)
+    - Age_25to29: (persons.AGEP >= 25) & (persons.AGEP <= 29)
+    - Age_30to34: (persons.AGEP >= 30) & (persons.AGEP <= 34)
+    - Age_35to39: (persons.AGEP >= 35) & (persons.AGEP <= 39)
+    - Age_40to44: (persons.AGEP >= 40) & (persons.AGEP <= 44)
+    - Age_45to49: (persons.AGEP >= 45) & (persons.AGEP <= 49)
+    - Age_50to54: (persons.AGEP >= 50) & (persons.AGEP <= 54)
+    - Age_55to59: (persons.AGEP >= 55) & (persons.AGEP <= 59)
+    - Age_60to61: (persons.AGEP >= 60) & (persons.AGEP <= 61)
+    - Age_62to64: (persons.AGEP >= 62) & (persons.AGEP <= 64)
+    - Age_65to69: (persons.AGEP >= 65) & (persons.AGEP <= 69)
+    - Age_70to74: (persons.AGEP >= 70) & (persons.AGEP <= 74)
+    - Age_75to79: (persons.AGEP >= 75) & (persons.AGEP <= 79)
+    - Age_80to84: (persons.AGEP >= 80) & (persons.AGEP <= 84)
+    - Age_85Plus: (persons.AGEP >= 85)
+
+
+  output_gq_population:
+    household_id: household_id
+    households:
+      filename: output/synthetic_households_gq.csv
+      columns:
+        - NP
+        - HHADJINC
+        - HHT
+        - GQ_type
+    persons:
+      filename: output/synthetic_persons_gq.csv
+      columns:
+        - AGEP
+        - SEX
+        - ESR
+        - WKHP
+        - SCHG
+
+
+  random_seed: 1729

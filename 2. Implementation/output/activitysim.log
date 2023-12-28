@@ -1,0 +1,171 @@
+27/10/2023 11:17:52 - INFO - activitysim - Read logging configuration from: configs\logging.yaml
+27/10/2023 11:17:52 - INFO - activitysim.cli.run - SETTING configs_dir: ['configs_mp', 'configs']
+27/10/2023 11:17:52 - INFO - activitysim.cli.run - SETTING settings_file_name: settings.yaml
+27/10/2023 11:17:52 - INFO - activitysim.cli.run - SETTING data_dir: data
+27/10/2023 11:17:52 - INFO - activitysim.cli.run - SETTING output_dir: output
+27/10/2023 11:17:52 - INFO - activitysim.cli.run - SETTING multiprocess: True
+27/10/2023 11:17:52 - INFO - activitysim.cli.run - SETTING num_processes: 4
+27/10/2023 11:17:52 - INFO - activitysim.cli.run - SETTING resume_after: None
+27/10/2023 11:17:52 - INFO - activitysim.cli.run - SETTING GROUP_BY_INCIDENCE_SIGNATURE: True
+27/10/2023 11:17:52 - INFO - activitysim.cli.run - SETTING INTEGERIZE_WITH_BACKSTOPPED_CONTROLS: True
+27/10/2023 11:17:52 - INFO - activitysim.cli.run - SETTING SUB_BALANCE_WITH_FLOAT_SEED_WEIGHTS: False
+27/10/2023 11:17:52 - INFO - activitysim.cli.run - SETTING meta_control_data: None
+27/10/2023 11:17:52 - INFO - activitysim.cli.run - SETTING control_file_name: controls.csv
+27/10/2023 11:17:52 - INFO - activitysim.cli.run - SETTING USE_CVXPY: False
+27/10/2023 11:17:52 - INFO - activitysim.cli.run - SETTING USE_SIMUL_INTEGERIZER: True
+27/10/2023 11:17:52 - INFO - activitysim.cli.run - ENV MKL_NUM_THREADS: None
+27/10/2023 11:17:52 - INFO - activitysim.cli.run - ENV OMP_NUM_THREADS: None
+27/10/2023 11:17:52 - INFO - activitysim.cli.run - ENV OPENBLAS_NUM_THREADS: None
+27/10/2023 11:17:52 - INFO - activitysim.cli.run - NUMPY blas_opt_info libraries: ['openblas_info']
+27/10/2023 11:17:52 - INFO - activitysim.cli.run - NUMPY lapack_opt_info libraries: ['openblas_lapack_info']
+27/10/2023 11:17:52 - INFO - activitysim.cli.run - run multiprocess simulation
+27/10/2023 11:17:52 - INFO - activitysim.core.mp_tasks - run_multiprocess fail_fast: None
+27/10/2023 11:17:52 - INFO - activitysim.core.mp_tasks - allocate_shared_skim_buffer
+27/10/2023 11:17:52 - INFO - activitysim.core.tracing - Time to execute allocate shared skim buffer : 0.001 seconds (0.0 minutes)
+27/10/2023 11:17:52 - INFO - activitysim.core.mp_tasks - allocate_shared_shadow_pricing_buffers
+27/10/2023 11:17:52 - INFO - activitysim.core.tracing - Time to execute allocate shared shadow_pricing buffer : 0.001 seconds (0.0 minutes)
+27/10/2023 11:17:53 - INFO - activitysim.core.mp_tasks - run_sub_simulations step mp_seed_balancing models resume_after None
+27/10/2023 11:17:53 - INFO - activitysim.core.mp_tasks - start process mp_seed_balancing
+27/10/2023 11:17:56 - INFO - activitysim.core.mp_tasks - mp_seed_balancing input_pre_processor : 0.532 seconds (0.0 minutes)
+27/10/2023 11:17:58 - INFO - activitysim.core.mp_tasks - mp_seed_balancing setup_data_structures : 1.5 seconds (0.0 minutes)
+27/10/2023 11:19:50 - INFO - activitysim.core.mp_tasks - mp_seed_balancing initial_seed_balancing : 112.367 seconds (1.9 minutes)
+27/10/2023 11:19:50 - INFO - activitysim.core.mp_tasks - mp_seed_balancing meta_control_factoring : 0.135 seconds (0.0 minutes)
+27/10/2023 11:22:42 - INFO - activitysim.core.mp_tasks - mp_seed_balancing final_seed_balancing : 172.622 seconds (2.9 minutes)
+27/10/2023 11:22:50 - INFO - activitysim.core.mp_tasks - mp_seed_balancing integerize_final_seed_weights : 7.378 seconds (0.1 minutes)
+27/10/2023 11:22:50 - INFO - activitysim.core.mp_tasks - process mp_seed_balancing completed
+27/10/2023 11:22:50 - INFO - activitysim.core.mp_tasks - Process mp_seed_balancing completed with exitcode 0
+27/10/2023 11:22:50 - INFO - activitysim.core.tracing - Time to execute run_sub_simulations step mp_seed_balancing : 297.821 seconds (5.0 minutes)
+27/10/2023 11:22:50 - INFO - activitysim.core.mp_tasks - #run_model running sub_process mp_sub_balancing_mgra_apportion
+27/10/2023 11:22:55 - INFO - activitysim.core.tracing - Time to execute #run_model sub_process mp_sub_balancing_mgra_apportion : 5.018 seconds (0.1 minutes)
+27/10/2023 11:22:55 - INFO - activitysim.core.mp_tasks - run_sub_simulations step mp_sub_balancing_mgra models resume_after None
+27/10/2023 11:22:55 - INFO - activitysim.core.mp_tasks - start process mp_sub_balancing_mgra_0
+27/10/2023 11:22:56 - INFO - activitysim.core.mp_tasks - start process mp_sub_balancing_mgra_1
+27/10/2023 11:22:57 - INFO - activitysim.core.mp_tasks - start process mp_sub_balancing_mgra_2
+27/10/2023 11:22:59 - INFO - activitysim.core.mp_tasks - start process mp_sub_balancing_mgra_3
+27/10/2023 12:55:19 - INFO - activitysim.core.mp_tasks - mp_sub_balancing_mgra_3 sub_balancing.geography=mgra : 5535.969 seconds (92.3 minutes)
+27/10/2023 12:55:19 - INFO - activitysim.core.mp_tasks - process mp_sub_balancing_mgra_3 completed
+27/10/2023 13:19:22 - INFO - activitysim.core.mp_tasks - mp_sub_balancing_mgra_2 sub_balancing.geography=mgra : 6980.7 seconds (116.3 minutes)
+27/10/2023 13:19:22 - INFO - activitysim.core.mp_tasks - process mp_sub_balancing_mgra_2 completed
+27/10/2023 14:51:25 - INFO - activitysim.core.mp_tasks - mp_sub_balancing_mgra_1 sub_balancing.geography=mgra : 12503.838 seconds (208.4 minutes)
+27/10/2023 14:51:25 - INFO - activitysim.core.mp_tasks - process mp_sub_balancing_mgra_1 completed
+27/10/2023 15:03:41 - INFO - activitysim.core.mp_tasks - mp_sub_balancing_mgra_0 sub_balancing.geography=mgra : 13242.02 seconds (220.7 minutes)
+27/10/2023 15:03:41 - INFO - activitysim.core.mp_tasks - process mp_sub_balancing_mgra_0 completed
+27/10/2023 15:03:42 - INFO - activitysim.core.mp_tasks - Process mp_sub_balancing_mgra_0 completed with exitcode 0
+27/10/2023 15:03:42 - INFO - activitysim.core.mp_tasks - Process mp_sub_balancing_mgra_1 completed with exitcode 0
+27/10/2023 15:03:42 - INFO - activitysim.core.mp_tasks - Process mp_sub_balancing_mgra_2 completed with exitcode 0
+27/10/2023 15:03:42 - INFO - activitysim.core.mp_tasks - Process mp_sub_balancing_mgra_3 completed with exitcode 0
+27/10/2023 15:03:42 - INFO - activitysim.core.tracing - Time to execute run_sub_simulations step mp_sub_balancing_mgra : 13247.024 seconds (220.8 minutes)
+27/10/2023 15:03:42 - INFO - activitysim.core.mp_tasks - #run_model running sub_process mp_sub_balancing_mgra_coalesce
+27/10/2023 15:03:58 - INFO - activitysim.core.tracing - Time to execute #run_model sub_process mp_sub_balancing_mgra_coalesce : 16.038 seconds (0.3 minutes)
+27/10/2023 15:03:59 - INFO - activitysim.core.mp_tasks - run_sub_simulations step mp_summarize models resume_after None
+27/10/2023 15:03:59 - INFO - activitysim.core.mp_tasks - start process mp_summarize
+27/10/2023 15:04:42 - INFO - activitysim.core.mp_tasks - mp_summarize expand_households : 35.994 seconds (0.6 minutes)
+27/10/2023 15:24:11 - INFO - activitysim.core.mp_tasks - mp_summarize summarize : 1168.375 seconds (19.5 minutes)
+27/10/2023 15:24:34 - INFO - activitysim.core.mp_tasks - mp_summarize write_synthetic_population : 23.343 seconds (0.4 minutes)
+27/10/2023 15:24:37 - INFO - activitysim.core.mp_tasks - mp_summarize write_data_dictionary : 3.188 seconds (0.1 minutes)
+27/10/2023 15:24:39 - INFO - activitysim.core.mp_tasks - mp_summarize write_tables : 2.132 seconds (0.0 minutes)
+27/10/2023 15:24:39 - INFO - activitysim.core.mp_tasks - process mp_summarize completed
+27/10/2023 15:24:39 - INFO - activitysim.core.mp_tasks - Process mp_summarize completed with exitcode 0
+27/10/2023 15:24:39 - INFO - activitysim.core.tracing - Time to execute run_sub_simulations step mp_summarize : 1240.32 seconds (20.7 minutes)
+27/10/2023 15:24:39 - INFO - activitysim.core.mem - MainProcess high water mark rss: 10_437_726_208 (10.4 GB) timestamp: 27/10/2023 12:26:21 label:run_sub_simulations.idle
+27/10/2023 15:24:39 - INFO - activitysim.core.mem - MainProcess high water mark uss: 69_509_120 (69.5 MB) timestamp: 27/10/2023 15:03:57 label:run_sub_simulations.idle
+27/10/2023 15:24:39 - DEBUG - activitysim.core.random - Set random seed base to 0
+27/10/2023 15:24:39 - DEBUG - activitysim.core.pipeline - open_pipeline - open existing pipeline
+27/10/2023 15:24:39 - DEBUG - activitysim.core.pipeline - opened pipeline_store output\pipeline.h5
+27/10/2023 15:24:39 - INFO - activitysim.core.pipeline - load_checkpoint _
+27/10/2023 15:24:39 - INFO - activitysim.core.pipeline - loading checkpoint 'mp_summarize'
+27/10/2023 15:24:39 - INFO - activitysim.core.pipeline - load_checkpoint mp_summarize timestamp 2023-10-27 15:24:39.043885
+27/10/2023 15:24:39 - INFO - activitysim.core.pipeline - load_checkpoint table households (52105, 12)
+27/10/2023 15:24:39 - DEBUG - activitysim.core.pipeline - rewrap table households inplace=False
+27/10/2023 15:24:39 - INFO - activitysim.core.pipeline - load_checkpoint table persons (135995, 21)
+27/10/2023 15:24:39 - DEBUG - activitysim.core.pipeline - rewrap table persons inplace=False
+27/10/2023 15:24:39 - INFO - activitysim.core.pipeline - load_checkpoint table geo_cross_walk (24321, 3)
+27/10/2023 15:24:39 - DEBUG - activitysim.core.pipeline - rewrap table geo_cross_walk inplace=False
+27/10/2023 15:24:40 - INFO - activitysim.core.pipeline - load_checkpoint table mgra_control_data (24321, 43)
+27/10/2023 15:24:40 - DEBUG - activitysim.core.pipeline - rewrap table mgra_control_data inplace=False
+27/10/2023 15:24:40 - INFO - activitysim.core.pipeline - load_checkpoint table region_control_data (1, 19)
+27/10/2023 15:24:40 - DEBUG - activitysim.core.pipeline - rewrap table region_control_data inplace=False
+27/10/2023 15:24:40 - INFO - activitysim.core.pipeline - load_checkpoint table crosswalk (24321, 3)
+27/10/2023 15:24:40 - DEBUG - activitysim.core.pipeline - rewrap table crosswalk inplace=False
+27/10/2023 15:24:40 - INFO - activitysim.core.pipeline - load_checkpoint table slice_crosswalk (22, 2)
+27/10/2023 15:24:40 - DEBUG - activitysim.core.pipeline - rewrap table slice_crosswalk inplace=False
+27/10/2023 15:24:40 - INFO - activitysim.core.pipeline - load_checkpoint table control_spec (56, 6)
+27/10/2023 15:24:40 - DEBUG - activitysim.core.pipeline - rewrap table control_spec inplace=False
+27/10/2023 15:24:40 - INFO - activitysim.core.pipeline - load_checkpoint table region_controls (1, 56)
+27/10/2023 15:24:40 - DEBUG - activitysim.core.pipeline - rewrap table region_controls inplace=False
+27/10/2023 15:24:40 - INFO - activitysim.core.pipeline - load_checkpoint table PUMA_controls (22, 56)
+27/10/2023 15:24:40 - DEBUG - activitysim.core.pipeline - rewrap table PUMA_controls inplace=False
+27/10/2023 15:24:40 - INFO - activitysim.core.pipeline - load_checkpoint table mgra_controls (18949, 38)
+27/10/2023 15:24:40 - DEBUG - activitysim.core.pipeline - rewrap table mgra_controls inplace=False
+27/10/2023 15:24:40 - INFO - activitysim.core.pipeline - load_checkpoint table household_groups (52105, 3)
+27/10/2023 15:24:40 - DEBUG - activitysim.core.pipeline - rewrap table household_groups inplace=False
+27/10/2023 15:24:40 - INFO - activitysim.core.pipeline - load_checkpoint table incidence_table (45971, 61)
+27/10/2023 15:24:40 - DEBUG - activitysim.core.pipeline - rewrap table incidence_table inplace=False
+27/10/2023 15:24:40 - INFO - activitysim.core.pipeline - load_checkpoint table PUMA_weights (45971, 6)
+27/10/2023 15:24:40 - DEBUG - activitysim.core.pipeline - rewrap table PUMA_weights inplace=False
+27/10/2023 15:24:43 - INFO - activitysim.core.pipeline - load_checkpoint table mgra_weights (41326793, 6)
+27/10/2023 15:24:43 - DEBUG - activitysim.core.pipeline - rewrap table mgra_weights inplace=False
+27/10/2023 15:24:43 - INFO - activitysim.core.pipeline - load_checkpoint table mgra_weights_sparse (528177, 6)
+27/10/2023 15:24:43 - DEBUG - activitysim.core.pipeline - rewrap table mgra_weights_sparse inplace=False
+27/10/2023 15:24:43 - INFO - activitysim.core.pipeline - load_checkpoint table trace_mgra_weights (2786, 6)
+27/10/2023 15:24:43 - DEBUG - activitysim.core.pipeline - rewrap table trace_mgra_weights inplace=False
+27/10/2023 15:24:43 - INFO - activitysim.core.pipeline - load_checkpoint table expanded_household_ids (1276612, 3)
+27/10/2023 15:24:43 - DEBUG - activitysim.core.pipeline - rewrap table expanded_household_ids inplace=False
+27/10/2023 15:24:43 - INFO - activitysim.core.pipeline - load_checkpoint table summary_region_1 (56, 6)
+27/10/2023 15:24:43 - DEBUG - activitysim.core.pipeline - rewrap table summary_region_1 inplace=False
+27/10/2023 15:24:43 - INFO - activitysim.core.pipeline - load_checkpoint table summary_mgra_aggregate (45971, 7)
+27/10/2023 15:24:43 - DEBUG - activitysim.core.pipeline - rewrap table summary_mgra_aggregate inplace=False
+27/10/2023 15:24:43 - INFO - activitysim.core.pipeline - load_checkpoint table summary_mgra_PUMA (22, 170)
+27/10/2023 15:24:43 - DEBUG - activitysim.core.pipeline - rewrap table summary_mgra_PUMA inplace=False
+27/10/2023 15:24:43 - INFO - activitysim.core.pipeline - load_checkpoint table summary_mgra (18949, 116)
+27/10/2023 15:24:43 - DEBUG - activitysim.core.pipeline - rewrap table summary_mgra inplace=False
+27/10/2023 15:24:43 - INFO - activitysim.core.pipeline - load_checkpoint table summary_hh_weights (45971, 4)
+27/10/2023 15:24:43 - DEBUG - activitysim.core.pipeline - rewrap table summary_hh_weights inplace=False
+27/10/2023 15:24:43 - DEBUG - activitysim.core.pipeline - open_pipeline complete
+27/10/2023 15:24:43 - DEBUG - activitysim.core.pipeline - cleanup_pipeline - adding table households (52105, 12)
+27/10/2023 15:24:43 - DEBUG - activitysim.core.pipeline - cleanup_pipeline - adding table persons (135995, 21)
+27/10/2023 15:24:43 - DEBUG - activitysim.core.pipeline - cleanup_pipeline - adding table geo_cross_walk (24321, 3)
+27/10/2023 15:24:43 - DEBUG - activitysim.core.pipeline - cleanup_pipeline - adding table mgra_control_data (24321, 43)
+27/10/2023 15:24:43 - DEBUG - activitysim.core.pipeline - cleanup_pipeline - adding table region_control_data (1, 19)
+27/10/2023 15:24:43 - DEBUG - activitysim.core.pipeline - cleanup_pipeline - adding table crosswalk (24321, 3)
+27/10/2023 15:24:43 - DEBUG - activitysim.core.pipeline - cleanup_pipeline - adding table slice_crosswalk (22, 2)
+27/10/2023 15:24:43 - DEBUG - activitysim.core.pipeline - cleanup_pipeline - adding table control_spec (56, 6)
+27/10/2023 15:24:43 - DEBUG - activitysim.core.pipeline - cleanup_pipeline - adding table region_controls (1, 56)
+27/10/2023 15:24:43 - DEBUG - activitysim.core.pipeline - cleanup_pipeline - adding table PUMA_controls (22, 56)
+27/10/2023 15:24:43 - DEBUG - activitysim.core.pipeline - cleanup_pipeline - adding table mgra_controls (18949, 38)
+27/10/2023 15:24:43 - DEBUG - activitysim.core.pipeline - cleanup_pipeline - adding table household_groups (52105, 3)
+27/10/2023 15:24:43 - DEBUG - activitysim.core.pipeline - cleanup_pipeline - adding table incidence_table (45971, 61)
+27/10/2023 15:24:43 - DEBUG - activitysim.core.pipeline - cleanup_pipeline - adding table PUMA_weights (45971, 6)
+27/10/2023 15:24:44 - DEBUG - activitysim.core.pipeline - cleanup_pipeline - adding table mgra_weights (41326793, 6)
+27/10/2023 15:24:48 - DEBUG - activitysim.core.pipeline - cleanup_pipeline - adding table mgra_weights_sparse (528177, 6)
+27/10/2023 15:24:48 - DEBUG - activitysim.core.pipeline - cleanup_pipeline - adding table trace_mgra_weights (2786, 6)
+27/10/2023 15:24:48 - DEBUG - activitysim.core.pipeline - cleanup_pipeline - adding table expanded_household_ids (1276612, 3)
+27/10/2023 15:24:48 - DEBUG - activitysim.core.pipeline - cleanup_pipeline - adding table summary_region_1 (56, 6)
+27/10/2023 15:24:48 - DEBUG - activitysim.core.pipeline - cleanup_pipeline - adding table summary_mgra_aggregate (45971, 7)
+27/10/2023 15:24:48 - DEBUG - activitysim.core.pipeline - cleanup_pipeline - adding table summary_mgra_PUMA (22, 170)
+27/10/2023 15:24:48 - DEBUG - activitysim.core.pipeline - cleanup_pipeline - adding table summary_mgra (18949, 116)
+27/10/2023 15:24:48 - DEBUG - activitysim.core.pipeline - cleanup_pipeline - adding table summary_hh_weights (45971, 4)
+27/10/2023 15:24:48 - DEBUG - activitysim.core.pipeline - close_pipeline
+27/10/2023 15:24:48 - DEBUG - activitysim.core.pipeline - deleting all pipeline files except output\final_pipeline.h5
+27/10/2023 15:24:48 - DEBUG - activitysim.core.tracing - delete_output_files deleting output\mp_sub_balancing_mgra_0-pipeline.h5
+27/10/2023 15:24:48 - DEBUG - activitysim.core.tracing - delete_output_files deleting output\mp_sub_balancing_mgra_1-pipeline.h5
+27/10/2023 15:24:48 - DEBUG - activitysim.core.tracing - delete_output_files deleting output\mp_sub_balancing_mgra_2-pipeline.h5
+27/10/2023 15:24:48 - DEBUG - activitysim.core.tracing - delete_output_files deleting output\mp_sub_balancing_mgra_3-pipeline.h5
+27/10/2023 15:24:48 - DEBUG - activitysim.core.tracing - delete_output_files deleting output\pipeline.h5
+27/10/2023 15:24:49 - DEBUG - activitysim.core.mem - mem.consolidate_logs for step mp_seed_balancing
+27/10/2023 15:24:49 - DEBUG - activitysim.core.mem - mem.consolidate_logs consolidating 1 logs for mp_seed_balancing
+27/10/2023 15:24:49 - DEBUG - activitysim.core.util - mem.consolidate_logs.mp_seed_balancing deleting output\mp_seed_balancing-mem.csv
+27/10/2023 15:24:49 - DEBUG - activitysim.core.mem - chunk.consolidate_logs writing step summary log for step mp_seed_balancing to output\mem_mp_seed_balancing.csv
+27/10/2023 15:24:49 - DEBUG - activitysim.core.mem - mem.consolidate_logs for step mp_sub_balancing_mgra
+27/10/2023 15:24:49 - DEBUG - activitysim.core.mem - mem.consolidate_logs consolidating 4 logs for mp_sub_balancing_mgra
+27/10/2023 15:24:49 - DEBUG - activitysim.core.util - mem.consolidate_logs.mp_sub_balancing_mgra deleting output\mp_sub_balancing_mgra_0-mem.csv
+27/10/2023 15:24:49 - DEBUG - activitysim.core.util - mem.consolidate_logs.mp_sub_balancing_mgra deleting output\mp_sub_balancing_mgra_1-mem.csv
+27/10/2023 15:24:49 - DEBUG - activitysim.core.util - mem.consolidate_logs.mp_sub_balancing_mgra deleting output\mp_sub_balancing_mgra_2-mem.csv
+27/10/2023 15:24:49 - DEBUG - activitysim.core.util - mem.consolidate_logs.mp_sub_balancing_mgra deleting output\mp_sub_balancing_mgra_3-mem.csv
+27/10/2023 15:24:49 - DEBUG - activitysim.core.mem - chunk.consolidate_logs writing step summary log for step mp_sub_balancing_mgra to output\mem_mp_sub_balancing_mgra.csv
+27/10/2023 15:24:49 - DEBUG - activitysim.core.mem - mem.consolidate_logs for step mp_summarize
+27/10/2023 15:24:49 - DEBUG - activitysim.core.mem - mem.consolidate_logs consolidating 1 logs for mp_summarize
+27/10/2023 15:24:49 - DEBUG - activitysim.core.util - mem.consolidate_logs.mp_summarize deleting output\mp_summarize-mem.csv
+27/10/2023 15:24:49 - DEBUG - activitysim.core.mem - chunk.consolidate_logs writing step summary log for step mp_summarize to output\mem_mp_summarize.csv
+27/10/2023 15:24:49 - DEBUG - activitysim.core.mem - chunk.consolidate_logs writing omnibus log to output\omnibus_mem.csv
+27/10/2023 15:24:49 - INFO - activitysim.core.tracing - Time to execute all models : 14816.389 seconds (246.9 minutes)

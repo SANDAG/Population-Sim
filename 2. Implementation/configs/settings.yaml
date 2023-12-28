@@ -1,0 +1,199 @@
+####################################################################
+# PopulationSim Properties
+####################################################################
+
+
+# Algorithm/Software Configuration
+# ------------------------------------------------------------------
+INTEGERIZE_WITH_BACKSTOPPED_CONTROLS: True
+SUB_BALANCE_WITH_FLOAT_SEED_WEIGHTS: False
+GROUP_BY_INCIDENCE_SIGNATURE: True
+USE_SIMUL_INTEGERIZER: True
+USE_CVXPY: False
+max_expansion_factor: 30
+
+
+# Geographic Settings
+# ------------------------------------------------------------------
+geographies: [region, PUMA, mgra]
+seed_geography: PUMA
+
+
+# Tracing
+# ------------------------------------------------------------------
+trace_geography:
+  mgra: 6163
+
+  
+# Data Directory
+# ------------------------------------------------------------------
+data_dir: data
+
+
+# Input Data Tables
+# ------------------------------------------------------------------
+# input_pre_processor input_table_list
+input_table_list:
+  - tablename: households
+    filename : seed_households_woGQ.csv
+    index_col: HHID
+  - tablename: persons
+    # expression_filename: seed_persons_expressions.csv
+    filename : seed_persons_woGQ.csv
+  - tablename: geo_cross_walk
+    filename : geo_cross_walk.csv
+    # column_map:
+    #   TRACTCE: tract
+    #filename : taz_controls_adjusted.csv
+
+  - tablename: mgra_control_data
+    filename : mgra_controls.csv
+  - tablename: region_control_data
+    filename : region_controls.csv
+
+
+# Reserved Column Names
+# ------------------------------------------------------------------
+household_weight_col: WGTP
+household_id_col: HHID
+total_hh_control: Total_HH
+
+
+# Control Specification File Name
+# ------------------------------------------------------------------
+control_file_name: controls.csv
+
+
+# Output Tables
+# ------------------------------------------------------------------
+# output_tables can specify either a list of output tables to include or to skip
+# if neither is specified, then no tables will be written
+
+output_tables:
+  action: include
+  tables:
+    - summary_mgra
+    - summary_region
+    - expanded_household_ids
+
+
+# Synthetic Population Output Specification
+# ------------------------------------------------------------------
+#
+
+output_synthetic_population:
+  household_id: household_id
+  households:
+    filename: synthetic_households.csv
+    columns:
+      - NP
+      - HHADJINC
+      - HHT
+      - WIF 
+      - HUPAC # number of children present
+      - VEH
+      #- numWorkers
+      - BLD
+  persons:
+    filename: synthetic_persons.csv
+    columns:
+      - SPORDER
+      - AGEP
+      - SEX
+      - ESR
+      - COW
+      - WKHP
+      - SCHG
+      - RAC1P
+      - HISP
+      - MIL
+      - SCHL
+      - OCCP
+      - WKW # Weeks worked during past 12 months
+      - NAICS2 
+      - SOC2
+
+
+# Model steps for base mode
+# ------------------------------------------------------------------
+models:
+    - input_pre_processor
+    - setup_data_structures
+    - initial_seed_balancing
+    - meta_control_factoring
+    - final_seed_balancing
+    - integerize_final_seed_weights
+    - sub_balancing.geography=mgra
+    - expand_households
+    - write_data_dictionary
+    - summarize
+    - write_tables
+    - write_synthetic_population
+
+#resume_after:
+
+
+#--------------------------------------------------------------------
+
+gq_options:
+
+  input_table_list:
+    - tablename: households
+      filename : seed_households_GQ.csv
+    - tablename: persons
+      # expression_filename: seed_persons_expressions.csv
+      filename : seed_persons_GQ.csv
+    - tablename: geo_cross_walk
+      filename : geo_cross_walk.csv
+    - tablename: mgra_control_data
+      filename : mgra_controls.csv
+      
+  # output_control_file: 'data/taz_controls_adjusted.csv'
+  
+  GQ_type_column: GQ_type
+  GQ_control_map:
+    - code: 1
+      control_column: gq_mil_pop
+    - code: 2
+      control_column: gq_college_pop
+    - code: 3
+      control_column: gq_other_pop
+  
+  household_weight_col: WGTP
+  household_id_col: HHID
+
+  output_gq_population:
+    household_id: household_id
+    households:
+      filename: output_gq/synthetic_households_gq.csv
+      columns:
+        - NP
+        - HHADJINC
+        - HHT
+        - WIF # number of workers 
+        - HUPAC # number of children present
+        - VEH
+        #- numWorkers
+        - GQ_type
+        - BLD
+    persons:
+      filename: output_gq/synthetic_persons_gq.csv
+      columns:
+      - SPORDER
+      - AGEP
+      - SEX
+      - ESR
+      - COW
+      - WKHP
+      - SCHG
+      - RAC1P
+      - HISP
+      - MIL
+      - SCHL
+      - OCCP
+      - WKW
+      - NAICS2 
+      - SOC2
+
+
+  random_seed: 1729

@@ -1,0 +1,36 @@
+target,geography,seed_table,importance,control_field,expression
+Total_HH,mgra,households,1000000000,Total_HH,(households.WGTP > 0) & (households.WGTP < np.inf)
+HHSize_1,mgra,households,100000,HHSize_1,households.NP == 1
+HHSize_2,mgra,households,100000,HHSize_2,households.NP == 2
+HHSize_3,mgra,households,100000,HHSize_3,households.NP == 3
+HHSize_4Plus,mgra,households,100000,HHSize_4Plus,households.NP >= 4
+HHInc_0to14999,mgra,households,100000,HHInc_0to14999,(households.HHADJINC >= 0) & (households.HHADJINC <= 14999)
+HHInc_15000to29999,mgra,households,100000,HHInc_15000to29999,(households.HHADJINC >= 15000) & (households.HHADJINC <= 29999)
+HHInc_30000to44999,mgra,households,100000,HHInc_30000to44999,(households.HHADJINC >= 30000) & (households.HHADJINC <= 44999)
+HHInc_45000to59999,mgra,households,100000,HHInc_45000to59999,(households.HHADJINC >= 45000) & (households.HHADJINC <= 59999)
+HHInc_60000to74999,mgra,households,100000,HHInc_60000to74999,(households.HHADJINC >= 60000) & (households.HHADJINC <= 74999)
+HHInc_75000to99999,mgra,households,100000,HHInc_75000to99999,(households.HHADJINC >= 75000) & (households.HHADJINC <= 99999)
+HHInc_100000to124999,mgra,households,100000,HHInc_100000to124999,(households.HHADJINC >= 100000) & (households.HHADJINC <= 124999)
+HHInc_125000to149999,mgra,households,100000,HHInc_125000to149999,(households.HHADJINC >= 125000) & (households.HHADJINC <= 149999)
+HHInc_150000to199999,mgra,households,100000,HHInc_150000to199999,(households.HHADJINC >= 150000) & (households.HHADJINC <= 199999)
+HHInc_200000Plus,mgra,households,100000,HHInc_200000Plus,(households.HHADJINC >= 200000) & (households.HHADJINC <= np.inf)
+HHWork_0,tract,households,100000,HHWork_0,households.numWorkers == 0
+HHWork_1,tract,households,100000,HHWork_1,households.numWorkers == 1
+HHWork_2,tract,households,100000,HHWork_2,households.numWorkers == 2
+HHWork_3Plus,tract,households,100000,HHWork_3Plus,households.numWorkers >= 3
+HHChild_0,tract,households,1000000,HHChild_0,households.child_present == 0
+HHChild_1Plus,tract,households,1000000,HHChild_1Plus,households.child_present == 1
+Male,mgra,persons,5000,Male,(persons.SEX == 1)
+Female,mgra,persons,5000,Female,(persons.SEX == 2)
+Age_LT5,mgra,persons,5000,Age_LT5,(persons.AGEP >= 0) & (persons.AGEP <= 4)
+Age_5to9,mgra,persons,5000,Age_5to9,(persons.AGEP >= 5) & (persons.AGEP <= 9)
+Age_10to14,mgra,persons,5000,Age_10to14,(persons.AGEP >= 10) & (persons.AGEP <= 14)
+Age_15to17,mgra,persons,5000,Age_15to17,(persons.AGEP >= 15) & (persons.AGEP <= 17)
+Age_18to24,mgra,persons,5000,Age_18to24,(persons.AGEP >= 18) & (persons.AGEP <= 24)
+Age_25to34,mgra,persons,5000,Age_25to34,(persons.AGEP >= 25) & (persons.AGEP <= 34)
+Age_35to44,mgra,persons,5000,Age_35to44,(persons.AGEP >= 35) & (persons.AGEP <= 44)
+Age_45to54,mgra,persons,5000,Age_45to54,(persons.AGEP >= 45) & (persons.AGEP <= 54)
+Age_55to64,mgra,persons,5000,Age_55to64,(persons.AGEP >= 55) & (persons.AGEP <= 64)
+Age_65to74,mgra,persons,5000,Age_65to74,(persons.AGEP >= 65) & (persons.AGEP <= 74)
+Age_75to84,mgra,persons,5000,Age_75to84,(persons.AGEP >= 75) & (persons.AGEP <= 84)
+Age_85Plus,mgra,persons,5000,Age_85Plus,(persons.AGEP >= 85)
