@@ -1,0 +1,46 @@
+28/12/2023 16:53:42 - INFO - activitysim - Read logging configuration from: configs\logging.yaml
+28/12/2023 16:53:42 - DEBUG - activitysim.core.mp_tasks - mp_run_simulation mp_sub_balancing_mgra locutor=False 
+28/12/2023 16:53:42 - DEBUG - activitysim.core.mp_tasks - injecting pipeline_file_prefix 'mp_sub_balancing_mgra_5'
+28/12/2023 16:53:42 - INFO - activitysim.core.mp_tasks - resume_after _
+28/12/2023 16:53:42 - DEBUG - activitysim.core.random - Set random seed base to 0
+28/12/2023 16:53:42 - DEBUG - activitysim.core.pipeline - open_pipeline - open existing pipeline
+28/12/2023 16:53:42 - DEBUG - activitysim.core.pipeline - opened pipeline_store output\mp_sub_balancing_mgra_5-pipeline.h5
+28/12/2023 16:53:42 - INFO - activitysim.core.pipeline - load_checkpoint _
+28/12/2023 16:53:42 - INFO - activitysim.core.pipeline - loading checkpoint 'mp_seed_balancing'
+28/12/2023 16:53:42 - INFO - activitysim.core.pipeline - load_checkpoint mp_seed_balancing timestamp 2023-12-28 16:53:28.856785
+28/12/2023 16:53:42 - INFO - activitysim.core.pipeline - load_checkpoint table households (52105, 12)
+28/12/2023 16:53:42 - DEBUG - activitysim.core.pipeline - rewrap table households inplace=False
+28/12/2023 16:53:43 - INFO - activitysim.core.pipeline - load_checkpoint table persons (135995, 21)
+28/12/2023 16:53:43 - DEBUG - activitysim.core.pipeline - rewrap table persons inplace=False
+28/12/2023 16:53:43 - INFO - activitysim.core.pipeline - load_checkpoint table geo_cross_walk (24321, 3)
+28/12/2023 16:53:43 - DEBUG - activitysim.core.pipeline - rewrap table geo_cross_walk inplace=False
+28/12/2023 16:53:43 - INFO - activitysim.core.pipeline - load_checkpoint table mgra_control_data (24321, 43)
+28/12/2023 16:53:43 - DEBUG - activitysim.core.pipeline - rewrap table mgra_control_data inplace=False
+28/12/2023 16:53:43 - INFO - activitysim.core.pipeline - load_checkpoint table region_control_data (1, 19)
+28/12/2023 16:53:43 - DEBUG - activitysim.core.pipeline - rewrap table region_control_data inplace=False
+28/12/2023 16:53:43 - INFO - activitysim.core.pipeline - load_checkpoint table crosswalk (2875, 3)
+28/12/2023 16:53:43 - DEBUG - activitysim.core.pipeline - rewrap table crosswalk inplace=False
+28/12/2023 16:53:43 - INFO - activitysim.core.pipeline - load_checkpoint table slice_crosswalk (3, 2)
+28/12/2023 16:53:43 - DEBUG - activitysim.core.pipeline - rewrap table slice_crosswalk inplace=False
+28/12/2023 16:53:43 - INFO - activitysim.core.pipeline - load_checkpoint table control_spec (56, 6)
+28/12/2023 16:53:43 - DEBUG - activitysim.core.pipeline - rewrap table control_spec inplace=False
+28/12/2023 16:53:43 - INFO - activitysim.core.pipeline - load_checkpoint table region_controls (1, 56)
+28/12/2023 16:53:43 - DEBUG - activitysim.core.pipeline - rewrap table region_controls inplace=False
+28/12/2023 16:53:43 - INFO - activitysim.core.pipeline - load_checkpoint table PUMA_controls (22, 56)
+28/12/2023 16:53:43 - DEBUG - activitysim.core.pipeline - rewrap table PUMA_controls inplace=False
+28/12/2023 16:53:43 - INFO - activitysim.core.pipeline - load_checkpoint table mgra_controls (17932, 38)
+28/12/2023 16:53:43 - DEBUG - activitysim.core.pipeline - rewrap table mgra_controls inplace=False
+28/12/2023 16:53:43 - INFO - activitysim.core.pipeline - load_checkpoint table household_groups (52105, 3)
+28/12/2023 16:53:43 - DEBUG - activitysim.core.pipeline - rewrap table household_groups inplace=False
+28/12/2023 16:53:43 - INFO - activitysim.core.pipeline - load_checkpoint table incidence_table (45971, 61)
+28/12/2023 16:53:43 - DEBUG - activitysim.core.pipeline - rewrap table incidence_table inplace=False
+28/12/2023 16:53:43 - INFO - activitysim.core.pipeline - load_checkpoint table PUMA_weights (45971, 6)
+28/12/2023 16:53:43 - DEBUG - activitysim.core.pipeline - rewrap table PUMA_weights inplace=False
+28/12/2023 16:53:43 - DEBUG - activitysim.core.pipeline - open_pipeline complete
+28/12/2023 16:53:43 - INFO - activitysim.core.pipeline - #run_model running step sub_balancing
+28/12/2023 16:53:44 - INFO - populationsim.steps.sub_balancing - balancing 1/1 seed 7314, PUMA 7314
+28/12/2023 16:53:46 - DEBUG - populationsim.simul_balancer - 2375 positive weight rows out of 2481
+28/12/2023 16:53:50 - DEBUG - populationsim.simul_balancer - np_simul_balancer sample_count 2375 control_count 38 zone_count 820
+28/12/2023 16:53:57 - DEBUG - populationsim.simul_balancer - np_simul_balancer iteration 0 delta 17.542956107429355 max_gamma_dif 90.46571812494658
+28/12/2023 17:06:51 - DEBUG - populationsim.simul_balancer - np_simul_balancer iteration 100 delta 0.03287415685732459 max_gamma_dif 12.349506177758274
+28/12/2023 17:17:05 - DEBUG - populationsim.simul_balancer - np_simul_balancer iteration 200 delta 0.016160410891590295 max_gamma_dif 12.189181277184435

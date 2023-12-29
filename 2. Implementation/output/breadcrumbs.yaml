@@ -1,3 +1,9 @@
 - apportion: true
-  completed: []
+  coalesce: true
+  completed:
+  - mp_seed_balancing
   name: mp_seed_balancing
+  simulate: true
+- apportion: true
+  completed: []
+  name: mp_sub_balancing_mgra

@@ -1,0 +1,2 @@
+process,pid,rss,full_rss,uss,event,children,time
+mp_sub_balancing_mgra_3,6824,161_976_320,161_976_320,133_165_056,pipeline.run_model sub_balancing.geography=mgra start,0,2023/12/28 16:53:41.601131

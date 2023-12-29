@@ -1,0 +1,9 @@
+database:
+  driver: '{ODBC Driver 13 for SQL Server}'
+  server: 'DDAMWSQL16.sandag.org'
+  database: 'demographic_warehouse'
+  trusted_connection: 'yes'
+
+staging:
+  table: '[2023_12_05]'
+

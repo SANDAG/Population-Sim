@@ -1,36 +1,36 @@
-27/12/2023 18:06:51 - INFO - activitysim - Read logging configuration from: configs\logging.yaml
-27/12/2023 18:06:51 - DEBUG - activitysim.core.mp_tasks - mp_run_simulation mp_seed_balancing locutor=True 
-27/12/2023 18:06:51 - DEBUG - activitysim.core.random - Set random seed base to 0
-27/12/2023 18:06:51 - DEBUG - activitysim.core.pipeline - open_pipeline - new, empty pipeline
-27/12/2023 18:06:51 - DEBUG - activitysim.core.pipeline - opened pipeline_store output\pipeline.h5
-27/12/2023 18:06:51 - DEBUG - activitysim.core.pipeline - add_checkpoint init timestamp 2023-12-27 18:06:51.046300
-27/12/2023 18:06:51 - DEBUG - activitysim.core.pipeline - open_pipeline complete
-27/12/2023 18:06:51 - INFO - activitysim.core.pipeline - #run_model running step input_pre_processor
-27/12/2023 18:06:51 - INFO - populationsim.steps.input_pre_processor - Using table list: [{'tablename': 'households', 'filename': 'seed_households_woGQ.csv', 'index_col': 'HHID'}, {'tablename': 'persons', 'filename': 'seed_persons_woGQ.csv'}, {'tablename': 'geo_cross_walk', 'filename': 'geo_cross_walk.csv'}, {'tablename': 'mgra_control_data', 'filename': 'mgra_controls.csv'}, {'tablename': 'region_control_data', 'filename': 'region_controls.csv'}]
-27/12/2023 18:06:51 - INFO - activitysim.core.input - Reading CSV file data\seed_households_woGQ.csv
-27/12/2023 18:06:51 - DEBUG - activitysim.core.input - raw households table size: (52105, 13) 5.4 MB
-27/12/2023 18:06:51 - DEBUG - activitysim.core.input - households table columns: ['PUMA' 'NP' 'HHADJINC' 'ADJINC' 'WGTP' 'HHT' 'child_present' 'WIF'
+28/12/2023 16:47:21 - INFO - activitysim - Read logging configuration from: configs\logging.yaml
+28/12/2023 16:47:21 - DEBUG - activitysim.core.mp_tasks - mp_run_simulation mp_seed_balancing locutor=True 
+28/12/2023 16:47:21 - DEBUG - activitysim.core.random - Set random seed base to 0
+28/12/2023 16:47:21 - DEBUG - activitysim.core.pipeline - open_pipeline - new, empty pipeline
+28/12/2023 16:47:21 - DEBUG - activitysim.core.pipeline - opened pipeline_store output\pipeline.h5
+28/12/2023 16:47:21 - DEBUG - activitysim.core.pipeline - add_checkpoint init timestamp 2023-12-28 16:47:21.617403
+28/12/2023 16:47:21 - DEBUG - activitysim.core.pipeline - open_pipeline complete
+28/12/2023 16:47:21 - INFO - activitysim.core.pipeline - #run_model running step input_pre_processor
+28/12/2023 16:47:21 - INFO - populationsim.steps.input_pre_processor - Using table list: [{'tablename': 'households', 'filename': 'seed_households_woGQ.csv', 'index_col': 'HHID'}, {'tablename': 'persons', 'filename': 'seed_persons_woGQ.csv'}, {'tablename': 'geo_cross_walk', 'filename': 'geo_cross_walk.csv'}, {'tablename': 'mgra_control_data', 'filename': 'mgra_controls.csv'}, {'tablename': 'region_control_data', 'filename': 'region_controls.csv'}]
+28/12/2023 16:47:21 - INFO - activitysim.core.input - Reading CSV file data\seed_households_woGQ.csv
+28/12/2023 16:47:21 - DEBUG - activitysim.core.input - raw households table size: (52105, 13) 5.4 MB
+28/12/2023 16:47:21 - DEBUG - activitysim.core.input - households table columns: ['PUMA' 'NP' 'HHADJINC' 'ADJINC' 'WGTP' 'HHT' 'child_present' 'WIF'
  'HUPAC' 'VEH' 'numWorkers' 'BLD']
-27/12/2023 18:06:51 - DEBUG - activitysim.core.input - households table size: (52105, 12) 5.4 MB
-27/12/2023 18:06:51 - DEBUG - activitysim.core.input - households index name: HHID
-27/12/2023 18:06:51 - INFO - populationsim.steps.input_pre_processor - registering table households
-27/12/2023 18:06:51 - INFO - activitysim.core.input - Reading CSV file data\seed_persons_woGQ.csv
-27/12/2023 18:06:51 - DEBUG - activitysim.core.input - raw persons table size: (135995, 21) 22.8 MB
-27/12/2023 18:06:51 - DEBUG - activitysim.core.input - persons table columns: ['HHID' 'SPORDER' 'PUMA' 'AGEP' 'SCHG' 'COW' 'SEX' 'ESR' 'MIL' 'WKHP'
+28/12/2023 16:47:21 - DEBUG - activitysim.core.input - households table size: (52105, 12) 5.4 MB
+28/12/2023 16:47:21 - DEBUG - activitysim.core.input - households index name: HHID
+28/12/2023 16:47:21 - INFO - populationsim.steps.input_pre_processor - registering table households
+28/12/2023 16:47:21 - INFO - activitysim.core.input - Reading CSV file data\seed_persons_woGQ.csv
+28/12/2023 16:47:22 - DEBUG - activitysim.core.input - raw persons table size: (135995, 21) 22.8 MB
+28/12/2023 16:47:22 - DEBUG - activitysim.core.input - persons table columns: ['HHID' 'SPORDER' 'PUMA' 'AGEP' 'SCHG' 'COW' 'SEX' 'ESR' 'MIL' 'WKHP'
  'RAC1P' 'HISP' 'isWorker' 'pop_race' 'NAICS2' 'WKW' 'OCCP' 'SCHL'
  'isinlaborforce' 'SOCP' 'SOC2']
-27/12/2023 18:06:51 - DEBUG - activitysim.core.input - persons table size: (135995, 21) 22.8 MB
-27/12/2023 18:06:51 - DEBUG - activitysim.core.input - persons index name: None
-27/12/2023 18:06:51 - INFO - populationsim.steps.input_pre_processor - registering table persons
-27/12/2023 18:06:51 - INFO - activitysim.core.input - Reading CSV file data\geo_cross_walk.csv
-27/12/2023 18:06:51 - DEBUG - activitysim.core.input - raw geo_cross_walk table size: (24321, 3) 583.8 KB
-27/12/2023 18:06:51 - DEBUG - activitysim.core.input - geo_cross_walk table columns: ['mgra' 'PUMA' 'region']
-27/12/2023 18:06:51 - DEBUG - activitysim.core.input - geo_cross_walk table size: (24321, 3) 583.8 KB
-27/12/2023 18:06:51 - DEBUG - activitysim.core.input - geo_cross_walk index name: None
-27/12/2023 18:06:51 - INFO - populationsim.steps.input_pre_processor - registering table geo_cross_walk
-27/12/2023 18:06:51 - INFO - activitysim.core.input - Reading CSV file data\mgra_controls.csv
-27/12/2023 18:06:51 - DEBUG - activitysim.core.input - raw mgra_control_data table size: (24321, 43) 8.4 MB
-27/12/2023 18:06:51 - DEBUG - activitysim.core.input - mgra_control_data table columns: ['mgra' 'Male' 'Female' 'Age_LT5' 'Age_5to9' 'Age_10to14' 'Age_15to17'
+28/12/2023 16:47:22 - DEBUG - activitysim.core.input - persons table size: (135995, 21) 22.8 MB
+28/12/2023 16:47:22 - DEBUG - activitysim.core.input - persons index name: None
+28/12/2023 16:47:22 - INFO - populationsim.steps.input_pre_processor - registering table persons
+28/12/2023 16:47:22 - INFO - activitysim.core.input - Reading CSV file data\geo_cross_walk.csv
+28/12/2023 16:47:22 - DEBUG - activitysim.core.input - raw geo_cross_walk table size: (24321, 3) 583.8 KB
+28/12/2023 16:47:22 - DEBUG - activitysim.core.input - geo_cross_walk table columns: ['mgra' 'PUMA' 'region']
+28/12/2023 16:47:22 - DEBUG - activitysim.core.input - geo_cross_walk table size: (24321, 3) 583.8 KB
+28/12/2023 16:47:22 - DEBUG - activitysim.core.input - geo_cross_walk index name: None
+28/12/2023 16:47:22 - INFO - populationsim.steps.input_pre_processor - registering table geo_cross_walk
+28/12/2023 16:47:22 - INFO - activitysim.core.input - Reading CSV file data\mgra_controls.csv
+28/12/2023 16:47:22 - DEBUG - activitysim.core.input - raw mgra_control_data table size: (24321, 43) 8.4 MB
+28/12/2023 16:47:22 - DEBUG - activitysim.core.input - mgra_control_data table columns: ['mgra' 'Male' 'Female' 'Age_LT5' 'Age_5to9' 'Age_10to14' 'Age_15to17'
  'Age_18to24' 'Age_25to34' 'Age_35to44' 'Age_45to54' 'Age_55to64'
  'Age_65to74' 'Age_75to84' 'Age_85Plus' 'Asian' 'Black' 'Hispanic'
  'Other_v2' 'TwoorMore' 'White' 'HHSize_1' 'HHSize_2' 'HHSize_3'
@@ -39,259 +39,410 @@
  'HHInc_30000to59999' 'HHInc_60000to99999' 'HHInc_100000to149999'
  'HHInc_150000to199999' 'HHInc_200000Plus' 'gq_college_pop' 'gq_mil_pop'
  'gq_other_pop' 'Total_HH_GQ']
-27/12/2023 18:06:51 - DEBUG - activitysim.core.input - mgra_control_data table size: (24321, 43) 8.4 MB
-27/12/2023 18:06:51 - DEBUG - activitysim.core.input - mgra_control_data index name: None
-27/12/2023 18:06:51 - INFO - populationsim.steps.input_pre_processor - registering table mgra_control_data
-27/12/2023 18:06:51 - INFO - activitysim.core.input - Reading CSV file data\region_controls.csv
-27/12/2023 18:06:51 - DEBUG - activitysim.core.input - raw region_control_data table size: (1, 19) 280 B
-27/12/2023 18:06:51 - DEBUG - activitysim.core.input - region_control_data table columns: ['region' 'job_1' 'job_2' 'job_3' 'job_4' 'job_5' 'job_6' 'job_7' 'job_8'
+28/12/2023 16:47:22 - DEBUG - activitysim.core.input - mgra_control_data table size: (24321, 43) 8.4 MB
+28/12/2023 16:47:22 - DEBUG - activitysim.core.input - mgra_control_data index name: None
+28/12/2023 16:47:22 - INFO - populationsim.steps.input_pre_processor - registering table mgra_control_data
+28/12/2023 16:47:22 - INFO - activitysim.core.input - Reading CSV file data\region_controls.csv
+28/12/2023 16:47:22 - DEBUG - activitysim.core.input - raw region_control_data table size: (1, 19) 280 B
+28/12/2023 16:47:22 - DEBUG - activitysim.core.input - region_control_data table columns: ['region' 'job_1' 'job_2' 'job_3' 'job_4' 'job_5' 'job_6' 'job_7' 'job_8'
  'job_9' 'job_10' 'job_11' 'job_12' 'job_13' 'job_14' 'lfp_black'
  'lfp_hispanic' 'lfp_other' 'lfp_white']
-27/12/2023 18:06:51 - DEBUG - activitysim.core.input - region_control_data table size: (1, 19) 280 B
-27/12/2023 18:06:51 - DEBUG - activitysim.core.input - region_control_data index name: None
-27/12/2023 18:06:51 - INFO - populationsim.steps.input_pre_processor - registering table region_control_data
-27/12/2023 18:06:51 - DEBUG - activitysim.core.tracing - Time to execute #run_model completed step 'input_pre_processor' : 0.446 seconds (0.0 minutes)
-27/12/2023 18:06:51 - DEBUG - activitysim.core.pipeline - add_checkpoint input_pre_processor timestamp 2023-12-27 18:06:51.527575
-27/12/2023 18:06:51 - DEBUG - activitysim.core.pipeline - add_checkpoint 'input_pre_processor' table 'households' (52105, 12) 5.4 MB
-27/12/2023 18:06:51 - DEBUG - activitysim.core.pipeline - add_checkpoint 'input_pre_processor' table 'persons' (135995, 21) 22.8 MB
-27/12/2023 18:06:51 - DEBUG - activitysim.core.pipeline - add_checkpoint 'input_pre_processor' table 'geo_cross_walk' (24321, 3) 583.8 KB
-27/12/2023 18:06:51 - DEBUG - activitysim.core.pipeline - add_checkpoint 'input_pre_processor' table 'mgra_control_data' (24321, 43) 8.4 MB
-27/12/2023 18:06:51 - DEBUG - activitysim.core.pipeline - add_checkpoint 'input_pre_processor' table 'region_control_data' (1, 19) 280 B
-27/12/2023 18:06:51 - INFO - activitysim.core.pipeline - #run_model running step setup_data_structures
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - Reading control file configs\controls.csv
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - dropping 5848 mgra control rows with empty total_hh_control
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - dropped 0 households not in seed zones
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - kept 52105 households in seed zones
-27/12/2023 18:06:51 - DEBUG - activitysim.core.pipeline - rewrap table households inplace=False
-27/12/2023 18:06:51 - DEBUG - activitysim.core.pipeline - rewrap table persons inplace=False
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target Total_HH
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.WGTP > 0) & (households.WGTP < np.inf)
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target HHSize_1
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression households.NP == 1
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target HHSize_2
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression households.NP == 2
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target HHSize_3
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression households.NP == 3
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target HHSize_4Plus
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression households.NP >= 4
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target HHInc_0to14999
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.HHADJINC >= 0) & (households.HHADJINC <= 14999)
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target HHInc_15000to29999
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.HHADJINC >= 15000) & (households.HHADJINC <= 29999)
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target HHInc_30000to59999
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.HHADJINC >= 30000) & (households.HHADJINC <= 59999)
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target HHInc_60000to99999
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.HHADJINC >= 60000) & (households.HHADJINC <= 99999)
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target HHInc_100000to149999
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.HHADJINC >= 100000) & (households.HHADJINC <= 149999)
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target HHInc_150000to199999
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.HHADJINC >= 150000) & (households.HHADJINC <= 199999)
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target HHInc_200000Plus
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.HHADJINC >= 200000) & (households.HHADJINC <= np.inf)
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target HHWork_0
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression households.numWorkers == 0
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target HHWork_1
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression households.numWorkers == 1
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target HHWork_2
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression households.numWorkers == 2
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target HHWork_3Plus
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression households.numWorkers >= 3
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target HHChild_0
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression households.child_present == 0
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target HHChild_1Plus
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression households.child_present == 1
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target Male
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.SEX == 1)
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target Female
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.SEX == 2)
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target Age_LT5
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 0) & (persons.AGEP <= 4)
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target Age_5to9
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 5) & (persons.AGEP <= 9)
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target Age_10to14
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 10) & (persons.AGEP <= 14)
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target Age_15to17
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 15) & (persons.AGEP <= 17)
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target Age_18to24
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 18) & (persons.AGEP <= 24)
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target Age_25to34
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 25) & (persons.AGEP <= 34)
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target Age_35to44
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 35) & (persons.AGEP <= 44)
-27/12/2023 18:06:51 - INFO - populationsim.steps.setup_data_structures - control target Age_45to54
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:51 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 45) & (persons.AGEP <= 54)
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target Age_55to64
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 55) & (persons.AGEP <= 64)
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target Age_65to74
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 65) & (persons.AGEP <= 74)
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target Age_75to84
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 75) & (persons.AGEP <= 84)
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target Age_85Plus
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 85)
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target Asian
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.pop_race == 'Asian')
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target Black
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.pop_race == 'Black')
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target Hispanic
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.pop_race == 'Hispanic')
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target Other
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.pop_race == 'Other')
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target TwoorMore
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.pop_race == 'Two or More')
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target White
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.pop_race == 'White')
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target job_1
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '92') 
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target job_10
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '22') | (persons.NAICS2 == '31') | (persons.NAICS2 == '32') | (persons.NAICS2 == '33') | (persons.NAICS2 == '42')| (persons.NAICS2 == '3M')
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target job_2
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == 'MIL')
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target job_3
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '11') | (persons.NAICS2 == '21')
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target job_4
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '51') | (persons.NAICS2 == '54') | (persons.NAICS2 == '56')
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target job_5
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '52') | (persons.NAICS2 == '53') | (persons.NAICS2 == '55')
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target job_6
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '61') 
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target job_7
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '62')
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target job_8
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '44') | (persons.NAICS2 == '45') | (persons.NAICS2 == '4M')
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target job_9
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '23') | (persons.NAICS2 == '48') | (persons.NAICS2 == '49')
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target job_11
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '71')
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target job_12
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '721')
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target job_13
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '722')
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target job_14
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '81')
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target lfp_white
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.pop_race == 'White') & (persons.isinlaborforce == 1)
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target lfp_black
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.pop_race == 'Black') & (persons.isinlaborforce == 1)
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target lfp_other
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression ((persons.pop_race == 'Other') | (persons.pop_race == 'Two or More') | (persons.pop_race == 'Asian') ) & (persons.isinlaborforce == 1)
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - control target lfp_hispanic
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
-27/12/2023 18:06:52 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.pop_race == 'Hispanic') & (persons.isinlaborforce == 1)
-27/12/2023 18:06:52 - INFO - populationsim.steps.setup_data_structures - grouped incidence table has 45971 entries, ungrouped has 52105
-27/12/2023 18:06:53 - DEBUG - activitysim.core.tracing - Time to execute #run_model completed step 'setup_data_structures' : 1.446 seconds (0.0 minutes)
-27/12/2023 18:06:53 - DEBUG - activitysim.core.pipeline - add_checkpoint setup_data_structures timestamp 2023-12-27 18:06:53.157774
-27/12/2023 18:06:53 - DEBUG - activitysim.core.pipeline - add_checkpoint 'setup_data_structures' table 'crosswalk' (24321, 3) 583.8 KB
-27/12/2023 18:06:53 - DEBUG - activitysim.core.pipeline - add_checkpoint 'setup_data_structures' table 'slice_crosswalk' (22, 2) 528 B
-27/12/2023 18:06:53 - DEBUG - activitysim.core.pipeline - add_checkpoint 'setup_data_structures' table 'control_spec' (56, 6) 2.8 KB
-27/12/2023 18:06:53 - DEBUG - activitysim.core.pipeline - add_checkpoint 'setup_data_structures' table 'region_controls' (1, 56) 456 B
-27/12/2023 18:06:53 - DEBUG - activitysim.core.pipeline - add_checkpoint 'setup_data_structures' table 'PUMA_controls' (22, 38) 6.9 KB
-27/12/2023 18:06:53 - DEBUG - activitysim.core.pipeline - add_checkpoint 'setup_data_structures' table 'mgra_controls' (18473, 38) 5.8 MB
-27/12/2023 18:06:53 - DEBUG - activitysim.core.pipeline - add_checkpoint 'setup_data_structures' table 'households' (52105, 12) 5.4 MB
-27/12/2023 18:06:53 - DEBUG - activitysim.core.pipeline - add_checkpoint 'setup_data_structures' table 'persons' (135995, 21) 22.8 MB
-27/12/2023 18:06:53 - DEBUG - activitysim.core.pipeline - add_checkpoint 'setup_data_structures' table 'household_groups' (52105, 3) 1.3 MB
-27/12/2023 18:06:53 - DEBUG - activitysim.core.pipeline - add_checkpoint 'setup_data_structures' table 'incidence_table' (45971, 61) 12.1 MB
-27/12/2023 18:06:53 - INFO - activitysim.core.pipeline - #run_model running step initial_seed_balancing
-27/12/2023 18:06:53 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7317
-27/12/2023 18:06:59 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1584, 'delta': 9.455794265899997e-10, 'max_gamma_dif': 4.702891409635868e-10}
-27/12/2023 18:06:59 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7317 = 57004.00000444146
-27/12/2023 18:06:59 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7316
-27/12/2023 18:07:07 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1579, 'delta': 8.678117901340543e-10, 'max_gamma_dif': 3.649076596445866e-10}
-27/12/2023 18:07:07 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7316 = 89351.99987009625
-27/12/2023 18:07:07 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7313
-27/12/2023 18:07:13 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1581, 'delta': 9.457442985038412e-10, 'max_gamma_dif': 6.631801774403812e-10}
-27/12/2023 18:07:13 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7313 = 63822.000040084895
-27/12/2023 18:07:13 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7309
-27/12/2023 18:07:21 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1586, 'delta': 9.874927288025808e-10, 'max_gamma_dif': 6.564154775290376e-10}
-27/12/2023 18:07:21 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7309 = 65743.00008180198
-27/12/2023 18:07:21 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7310
-27/12/2023 18:07:28 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1580, 'delta': 9.674714290644853e-10, 'max_gamma_dif': 6.518530160093405e-10}
-27/12/2023 18:07:28 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7310 = 71299.00014489138
-27/12/2023 18:07:28 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7320
-27/12/2023 18:07:33 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1632, 'delta': 9.353567934732304e-10, 'max_gamma_dif': 1.7880052993746176e-10}
-27/12/2023 18:07:33 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7320 = 49289.000057242156
-27/12/2023 18:07:33 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7318
-27/12/2023 18:07:40 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1586, 'delta': 9.133740192028563e-10, 'max_gamma_dif': 2.937943222036665e-10}
-27/12/2023 18:07:40 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7318 = 42426.000021265354
-27/12/2023 18:07:40 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7319
-27/12/2023 18:07:46 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1462, 'delta': 9.48114251479875e-10, 'max_gamma_dif': 7.596998585768233e-10}
-27/12/2023 18:07:46 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7319 = 43998.00001737093
-27/12/2023 18:07:46 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7308
-27/12/2023 18:07:54 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1610, 'delta': 9.973452090836146e-10, 'max_gamma_dif': 3.3791103248859145e-10}
-27/12/2023 18:07:54 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7308 = 47796.000036509125
-27/12/2023 18:07:54 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7314
-27/12/2023 18:08:01 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1574, 'delta': 9.457623793348729e-10, 'max_gamma_dif': 6.168348054558237e-10}
-27/12/2023 18:08:01 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7314 = 63536.000010827454
-27/12/2023 18:08:01 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7322
-27/12/2023 18:08:06 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1591, 'delta': 8.992030273166396e-10, 'max_gamma_dif': 3.710175500160062e-10}
-27/12/2023 18:08:06 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7322 = 39124.000020866726
-27/12/2023 18:08:06 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7321
-27/12/2023 18:08:12 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1476, 'delta': 9.91640541762982e-10, 'max_gamma_dif': 9.69922586691041e-10}
-27/12/2023 18:08:12 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7321 = 54799.00002401584
-27/12/2023 18:08:12 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7301
-27/12/2023 18:08:19 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1617, 'delta': 9.52589814442768e-10, 'max_gamma_dif': 2.531876930333965e-10}
-27/12/2023 18:08:19 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7301 = 63802.000010008305
-27/12/2023 18:08:19 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7315
-27/12/2023 18:08:26 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1612, 'delta': 9.748983203136888e-10, 'max_gamma_dif': 2.45571341039863e-10}
-27/12/2023 18:08:26 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7315 = 67223.00004334317
-27/12/2023 18:08:26 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7307
-27/12/2023 18:08:31 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1628, 'delta': 8.491462653043045e-10, 'max_gamma_dif': 2.3072477262076063e-10}
-27/12/2023 18:08:31 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7307 = 39006.00003269037
-27/12/2023 18:08:31 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7311
-27/12/2023 18:08:36 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1613, 'delta': 9.107833712486534e-10, 'max_gamma_dif': 2.1907586855718364e-10}
-27/12/2023 18:08:36 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7311 = 42617.0000401017
-27/12/2023 18:08:36 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7312
+28/12/2023 16:47:22 - DEBUG - activitysim.core.input - region_control_data table size: (1, 19) 280 B
+28/12/2023 16:47:22 - DEBUG - activitysim.core.input - region_control_data index name: None
+28/12/2023 16:47:22 - INFO - populationsim.steps.input_pre_processor - registering table region_control_data
+28/12/2023 16:47:22 - DEBUG - activitysim.core.tracing - Time to execute #run_model completed step 'input_pre_processor' : 0.458 seconds (0.0 minutes)
+28/12/2023 16:47:22 - DEBUG - activitysim.core.pipeline - add_checkpoint input_pre_processor timestamp 2023-12-28 16:47:22.113185
+28/12/2023 16:47:22 - DEBUG - activitysim.core.pipeline - add_checkpoint 'input_pre_processor' table 'households' (52105, 12) 5.4 MB
+28/12/2023 16:47:22 - DEBUG - activitysim.core.pipeline - add_checkpoint 'input_pre_processor' table 'persons' (135995, 21) 22.8 MB
+28/12/2023 16:47:22 - DEBUG - activitysim.core.pipeline - add_checkpoint 'input_pre_processor' table 'geo_cross_walk' (24321, 3) 583.8 KB
+28/12/2023 16:47:22 - DEBUG - activitysim.core.pipeline - add_checkpoint 'input_pre_processor' table 'mgra_control_data' (24321, 43) 8.4 MB
+28/12/2023 16:47:22 - DEBUG - activitysim.core.pipeline - add_checkpoint 'input_pre_processor' table 'region_control_data' (1, 19) 280 B
+28/12/2023 16:47:22 - INFO - activitysim.core.pipeline - #run_model running step setup_data_structures
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - Reading control file configs\controls.csv
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - dropping 6389 mgra control rows with empty total_hh_control
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - dropped 0 households not in seed zones
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - kept 52105 households in seed zones
+28/12/2023 16:47:22 - DEBUG - activitysim.core.pipeline - rewrap table households inplace=False
+28/12/2023 16:47:22 - DEBUG - activitysim.core.pipeline - rewrap table persons inplace=False
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target Total_HH
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.WGTP > 0) & (households.WGTP < np.inf)
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target HHSize_1
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression households.NP == 1
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target HHSize_2
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression households.NP == 2
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target HHSize_3
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression households.NP == 3
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target HHSize_4Plus
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression households.NP >= 4
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target HHInc_0to14999
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.HHADJINC >= 0) & (households.HHADJINC <= 14999)
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target HHInc_15000to29999
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.HHADJINC >= 15000) & (households.HHADJINC <= 29999)
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target HHInc_30000to59999
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.HHADJINC >= 30000) & (households.HHADJINC <= 59999)
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target HHInc_60000to99999
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.HHADJINC >= 60000) & (households.HHADJINC <= 99999)
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target HHInc_100000to149999
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.HHADJINC >= 100000) & (households.HHADJINC <= 149999)
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target HHInc_150000to199999
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.HHADJINC >= 150000) & (households.HHADJINC <= 199999)
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target HHInc_200000Plus
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (households.HHADJINC >= 200000) & (households.HHADJINC <= np.inf)
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target HHWork_0
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression households.numWorkers == 0
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target HHWork_1
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression households.numWorkers == 1
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target HHWork_2
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression households.numWorkers == 2
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target HHWork_3Plus
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression households.numWorkers >= 3
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target HHChild_0
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression households.child_present == 0
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target HHChild_1Plus
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table households
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression households.child_present == 1
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target Male
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.SEX == 1)
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target Female
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.SEX == 2)
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target Age_LT5
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 0) & (persons.AGEP <= 4)
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target Age_5to9
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 5) & (persons.AGEP <= 9)
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target Age_10to14
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 10) & (persons.AGEP <= 14)
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target Age_15to17
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 15) & (persons.AGEP <= 17)
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target Age_18to24
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 18) & (persons.AGEP <= 24)
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target Age_25to34
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 25) & (persons.AGEP <= 34)
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target Age_35to44
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 35) & (persons.AGEP <= 44)
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target Age_45to54
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 45) & (persons.AGEP <= 54)
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target Age_55to64
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 55) & (persons.AGEP <= 64)
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target Age_65to74
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 65) & (persons.AGEP <= 74)
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target Age_75to84
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 75) & (persons.AGEP <= 84)
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target Age_85Plus
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.AGEP >= 85)
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target Asian
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.pop_race == 'Asian')
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target Black
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.pop_race == 'Black')
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target Hispanic
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.pop_race == 'Hispanic')
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target Other
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.pop_race == 'Other')
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target TwoorMore
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.pop_race == 'Two or More')
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target White
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.pop_race == 'White')
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target job_1
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '92') 
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target job_10
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '22') | (persons.NAICS2 == '31') | (persons.NAICS2 == '32') | (persons.NAICS2 == '33') | (persons.NAICS2 == '42')| (persons.NAICS2 == '3M')
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target job_2
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == 'MIL')
+28/12/2023 16:47:22 - INFO - populationsim.steps.setup_data_structures - control target job_3
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:22 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '11') | (persons.NAICS2 == '21')
+28/12/2023 16:47:23 - INFO - populationsim.steps.setup_data_structures - control target job_4
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '51') | (persons.NAICS2 == '54') | (persons.NAICS2 == '56')
+28/12/2023 16:47:23 - INFO - populationsim.steps.setup_data_structures - control target job_5
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '52') | (persons.NAICS2 == '53') | (persons.NAICS2 == '55')
+28/12/2023 16:47:23 - INFO - populationsim.steps.setup_data_structures - control target job_6
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '61') 
+28/12/2023 16:47:23 - INFO - populationsim.steps.setup_data_structures - control target job_7
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '62')
+28/12/2023 16:47:23 - INFO - populationsim.steps.setup_data_structures - control target job_8
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '44') | (persons.NAICS2 == '45') | (persons.NAICS2 == '4M')
+28/12/2023 16:47:23 - INFO - populationsim.steps.setup_data_structures - control target job_9
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '23') | (persons.NAICS2 == '48') | (persons.NAICS2 == '49')
+28/12/2023 16:47:23 - INFO - populationsim.steps.setup_data_structures - control target job_11
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '71')
+28/12/2023 16:47:23 - INFO - populationsim.steps.setup_data_structures - control target job_12
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '721')
+28/12/2023 16:47:23 - INFO - populationsim.steps.setup_data_structures - control target job_13
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '722')
+28/12/2023 16:47:23 - INFO - populationsim.steps.setup_data_structures - control target job_14
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.NAICS2 == '81')
+28/12/2023 16:47:23 - INFO - populationsim.steps.setup_data_structures - control target lfp_white
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.pop_race == 'White') & (persons.isinlaborforce == 1)
+28/12/2023 16:47:23 - INFO - populationsim.steps.setup_data_structures - control target lfp_black
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.pop_race == 'Black') & (persons.isinlaborforce == 1)
+28/12/2023 16:47:23 - INFO - populationsim.steps.setup_data_structures - control target lfp_other
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression ((persons.pop_race == 'Other') | (persons.pop_race == 'Two or More') | (persons.pop_race == 'Asian') ) & (persons.isinlaborforce == 1)
+28/12/2023 16:47:23 - INFO - populationsim.steps.setup_data_structures - control target lfp_hispanic
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.seed_table persons
+28/12/2023 16:47:23 - DEBUG - populationsim.steps.setup_data_structures - control_row.expression (persons.pop_race == 'Hispanic') & (persons.isinlaborforce == 1)
+28/12/2023 16:47:23 - INFO - populationsim.steps.setup_data_structures - grouped incidence table has 45971 entries, ungrouped has 52105
+28/12/2023 16:47:23 - DEBUG - activitysim.core.tracing - Time to execute #run_model completed step 'setup_data_structures' : 1.518 seconds (0.0 minutes)
+28/12/2023 16:47:23 - DEBUG - activitysim.core.pipeline - add_checkpoint setup_data_structures timestamp 2023-12-28 16:47:23.814919
+28/12/2023 16:47:23 - DEBUG - activitysim.core.pipeline - add_checkpoint 'setup_data_structures' table 'crosswalk' (24321, 3) 583.8 KB
+28/12/2023 16:47:23 - DEBUG - activitysim.core.pipeline - add_checkpoint 'setup_data_structures' table 'slice_crosswalk' (22, 2) 528 B
+28/12/2023 16:47:23 - DEBUG - activitysim.core.pipeline - add_checkpoint 'setup_data_structures' table 'control_spec' (56, 6) 2.8 KB
+28/12/2023 16:47:23 - DEBUG - activitysim.core.pipeline - add_checkpoint 'setup_data_structures' table 'region_controls' (1, 56) 456 B
+28/12/2023 16:47:23 - DEBUG - activitysim.core.pipeline - add_checkpoint 'setup_data_structures' table 'PUMA_controls' (22, 38) 6.9 KB
+28/12/2023 16:47:23 - DEBUG - activitysim.core.pipeline - add_checkpoint 'setup_data_structures' table 'mgra_controls' (17932, 38) 5.6 MB
+28/12/2023 16:47:23 - DEBUG - activitysim.core.pipeline - add_checkpoint 'setup_data_structures' table 'households' (52105, 12) 5.4 MB
+28/12/2023 16:47:23 - DEBUG - activitysim.core.pipeline - add_checkpoint 'setup_data_structures' table 'persons' (135995, 21) 22.8 MB
+28/12/2023 16:47:23 - DEBUG - activitysim.core.pipeline - add_checkpoint 'setup_data_structures' table 'household_groups' (52105, 3) 1.3 MB
+28/12/2023 16:47:23 - DEBUG - activitysim.core.pipeline - add_checkpoint 'setup_data_structures' table 'incidence_table' (45971, 61) 12.1 MB
+28/12/2023 16:47:24 - INFO - activitysim.core.pipeline - #run_model running step initial_seed_balancing
+28/12/2023 16:47:24 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7317
+28/12/2023 16:47:30 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1595, 'delta': 9.108336946124762e-10, 'max_gamma_dif': 5.880842479655257e-10}
+28/12/2023 16:47:30 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7317 = 58111.99996546535
+28/12/2023 16:47:30 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7316
+28/12/2023 16:47:37 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1607, 'delta': 8.832912633046869e-10, 'max_gamma_dif': 3.3950531275195317e-10}
+28/12/2023 16:47:37 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7316 = 106322.99953870865
+28/12/2023 16:47:37 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7313
+28/12/2023 16:47:47 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1622, 'delta': 9.603424498303967e-10, 'max_gamma_dif': 3.160827155568313e-10}
+28/12/2023 16:47:47 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7313 = 65570.00000303783
+28/12/2023 16:47:47 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7309
+28/12/2023 16:47:54 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1590, 'delta': 9.325352970903423e-10, 'max_gamma_dif': 5.750087073153054e-10}
+28/12/2023 16:47:54 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7309 = 67434.0000256275
+28/12/2023 16:47:54 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7310
+28/12/2023 16:48:01 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1598, 'delta': 9.51758500439346e-10, 'max_gamma_dif': 4.818576648801809e-10}
+28/12/2023 16:48:01 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7310 = 72209.0000491057
+28/12/2023 16:48:01 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7320
+28/12/2023 16:48:07 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1636, 'delta': 8.165200630956061e-10, 'max_gamma_dif': 1.5555734478311933e-10}
+28/12/2023 16:48:07 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7320 = 54432.00003051049
+28/12/2023 16:48:07 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7318
+28/12/2023 16:48:14 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1589, 'delta': 8.860929521496031e-10, 'max_gamma_dif': 3.0472879775089723e-10}
+28/12/2023 16:48:14 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7318 = 42855.000005786824
+28/12/2023 16:48:14 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7319
+28/12/2023 16:48:20 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1480, 'delta': 7.0910337943543e-10, 'max_gamma_dif': 9.988725402365617e-10}
+28/12/2023 16:48:20 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7319 = 44780.99999316379
+28/12/2023 16:48:20 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7308
+28/12/2023 16:48:27 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1615, 'delta': 8.918001843445711e-10, 'max_gamma_dif': 3.2851255049592964e-10}
+28/12/2023 16:48:27 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7308 = 50249.00000930719
+28/12/2023 16:48:27 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7314
+28/12/2023 16:48:34 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1583, 'delta': 9.328922632822233e-10, 'max_gamma_dif': 6.818159370425292e-10}
+28/12/2023 16:48:34 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7314 = 64369.99996047939
+28/12/2023 16:48:34 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7322
+28/12/2023 16:48:39 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1596, 'delta': 9.111565547228807e-10, 'max_gamma_dif': 5.77318748362643e-10}
+28/12/2023 16:48:39 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7322 = 43352.99999134369
+28/12/2023 16:48:39 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7321
+28/12/2023 16:48:47 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1487, 'delta': 9.237098305577702e-10, 'max_gamma_dif': 2.8780655636495567e-10}
+28/12/2023 16:48:47 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7321 = 56387.00000061227
+28/12/2023 16:48:47 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7301
+28/12/2023 16:48:55 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1626, 'delta': 9.708856032037396e-10, 'max_gamma_dif': 2.9260216471982403e-10}
+28/12/2023 16:48:55 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7301 = 67065.99996365557
+28/12/2023 16:48:55 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7315
+28/12/2023 16:49:01 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1620, 'delta': 9.023124794208335e-10, 'max_gamma_dif': 2.4081714400381315e-10}
+28/12/2023 16:49:01 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7315 = 78235.9999873192
+28/12/2023 16:49:01 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7307
+28/12/2023 16:49:07 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1633, 'delta': 9.944250283724473e-10, 'max_gamma_dif': 3.1603408778835274e-10}
+28/12/2023 16:49:07 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7307 = 39216.00000718102
+28/12/2023 16:49:07 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7311
+28/12/2023 16:49:13 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1616, 'delta': 8.718907680330577e-10, 'max_gamma_dif': 2.1612001077642162e-10}
+28/12/2023 16:49:13 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7311 = 45691.00002172199
+28/12/2023 16:49:13 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7312
+28/12/2023 16:49:19 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1528, 'delta': 9.613813416310645e-10, 'max_gamma_dif': 3.8260594692474115e-10}
+28/12/2023 16:49:19 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7312 = 41486.00001034529
+28/12/2023 16:49:19 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7306
+28/12/2023 16:49:26 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1632, 'delta': 9.449331924094796e-10, 'max_gamma_dif': 3.354518884890467e-10}
+28/12/2023 16:49:26 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7306 = 45723.000013612545
+28/12/2023 16:49:26 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7304
+28/12/2023 16:49:32 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1617, 'delta': 9.216477530624992e-10, 'max_gamma_dif': 2.636337814720946e-10}
+28/12/2023 16:49:32 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7304 = 51892.9999865547
+28/12/2023 16:49:32 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7302
+28/12/2023 16:49:38 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1629, 'delta': 9.070564135726024e-10, 'max_gamma_dif': 3.487126143397745e-10}
+28/12/2023 16:49:38 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7302 = 44314.99996771081
+28/12/2023 16:49:38 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7303
+28/12/2023 16:49:43 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1633, 'delta': 8.631778195040824e-10, 'max_gamma_dif': 2.733633319706996e-10}
+28/12/2023 16:49:43 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7303 = 39418.99999389918
+28/12/2023 16:49:43 - INFO - populationsim.steps.initial_seed_balancing - initial_seed_balancing seed id 7305
+28/12/2023 16:49:48 - INFO - populationsim.steps.initial_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1484, 'delta': 9.417435810471308e-10, 'max_gamma_dif': 2.661854070495906e-10}
+28/12/2023 16:49:48 - INFO - populationsim.steps.initial_seed_balancing - Total balanced weights for seed 7305 = 48154.99998944784
+28/12/2023 16:49:48 - DEBUG - activitysim.core.tracing - Time to execute #run_model completed step 'initial_seed_balancing' : 144.628 seconds (2.4 minutes)
+28/12/2023 16:49:48 - DEBUG - activitysim.core.pipeline - add_checkpoint initial_seed_balancing timestamp 2023-12-28 16:49:48.700158
+28/12/2023 16:49:48 - DEBUG - activitysim.core.pipeline - add_checkpoint 'initial_seed_balancing' table 'PUMA_weights' (45971, 4) 1.5 MB
+28/12/2023 16:49:48 - INFO - activitysim.core.pipeline - #run_model running step meta_control_factoring
+28/12/2023 16:49:48 - INFO - populationsim.steps.meta_control_factoring - meta_control_factoring 18 targets
+28/12/2023 16:49:48 - DEBUG - activitysim.core.pipeline - rewrap table PUMA_controls inplace=False
+28/12/2023 16:49:48 - DEBUG - activitysim.core.tracing - Time to execute #run_model completed step 'meta_control_factoring' : 0.074 seconds (0.0 minutes)
+28/12/2023 16:49:48 - DEBUG - activitysim.core.pipeline - add_checkpoint meta_control_factoring timestamp 2023-12-28 16:49:48.828087
+28/12/2023 16:49:48 - DEBUG - activitysim.core.pipeline - add_checkpoint 'meta_control_factoring' table 'PUMA_controls' (22, 56) 9.0 KB
+28/12/2023 16:49:48 - INFO - activitysim.core.pipeline - #run_model running step final_seed_balancing
+28/12/2023 16:49:48 - INFO - populationsim.steps.final_seed_balancing - final_seed_balancing seed id 7317
+28/12/2023 16:49:58 - INFO - populationsim.steps.final_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1637, 'delta': 9.746392899971857e-10, 'max_gamma_dif': 1.6490697696269763e-10}
+28/12/2023 16:49:58 - INFO - populationsim.steps.final_seed_balancing - final_seed_balancing seed id 7316
+28/12/2023 16:50:09 - INFO - populationsim.steps.final_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1731, 'delta': 9.888557120203534e-10, 'max_gamma_dif': 1.928643911242034e-10}
+28/12/2023 16:50:09 - INFO - populationsim.steps.final_seed_balancing - final_seed_balancing seed id 7313
+28/12/2023 16:50:20 - INFO - populationsim.steps.final_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1630, 'delta': 9.427109310773942e-10, 'max_gamma_dif': 1.8203927254489827e-10}
+28/12/2023 16:50:20 - INFO - populationsim.steps.final_seed_balancing - final_seed_balancing seed id 7309
+28/12/2023 16:50:32 - INFO - populationsim.steps.final_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1676, 'delta': 9.663772337741486e-10, 'max_gamma_dif': 2.681899147205513e-10}
+28/12/2023 16:50:32 - INFO - populationsim.steps.final_seed_balancing - final_seed_balancing seed id 7310
+28/12/2023 16:50:44 - INFO - populationsim.steps.final_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1681, 'delta': 9.941488254872987e-10, 'max_gamma_dif': 2.5862134656051694e-10}
+28/12/2023 16:50:44 - INFO - populationsim.steps.final_seed_balancing - final_seed_balancing seed id 7320
+28/12/2023 16:50:51 - INFO - populationsim.steps.final_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1668, 'delta': 9.923355267231679e-10, 'max_gamma_dif': 2.0795631883174792e-10}
+28/12/2023 16:50:51 - INFO - populationsim.steps.final_seed_balancing - final_seed_balancing seed id 7318
+28/12/2023 16:51:01 - INFO - populationsim.steps.final_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1633, 'delta': 9.562117434727038e-10, 'max_gamma_dif': 2.8462321388644796e-10}
+28/12/2023 16:51:01 - INFO - populationsim.steps.final_seed_balancing - final_seed_balancing seed id 7319
+28/12/2023 16:51:10 - INFO - populationsim.steps.final_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1579, 'delta': 9.890723422068578e-10, 'max_gamma_dif': 2.4384116947828716e-10}
+28/12/2023 16:51:10 - INFO - populationsim.steps.final_seed_balancing - final_seed_balancing seed id 7308
+28/12/2023 16:51:20 - INFO - populationsim.steps.final_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1665, 'delta': 9.872996388467638e-10, 'max_gamma_dif': 2.1730961474730748e-10}
+28/12/2023 16:51:20 - INFO - populationsim.steps.final_seed_balancing - final_seed_balancing seed id 7314
+28/12/2023 16:51:30 - INFO - populationsim.steps.final_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1640, 'delta': 9.416059629379565e-10, 'max_gamma_dif': 2.2542390176738536e-10}
+28/12/2023 16:51:30 - INFO - populationsim.steps.final_seed_balancing - final_seed_balancing seed id 7322
+28/12/2023 16:51:40 - INFO - populationsim.steps.final_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1655, 'delta': 9.797649132581402e-10, 'max_gamma_dif': 2.073556881754257e-10}
+28/12/2023 16:51:40 - INFO - populationsim.steps.final_seed_balancing - final_seed_balancing seed id 7321
+28/12/2023 16:51:51 - INFO - populationsim.steps.final_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1602, 'delta': 9.77755744897334e-10, 'max_gamma_dif': 3.681221993900863e-10}
+28/12/2023 16:51:51 - INFO - populationsim.steps.final_seed_balancing - final_seed_balancing seed id 7301
+28/12/2023 16:52:01 - INFO - populationsim.steps.final_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1658, 'delta': 9.972372975573213e-10, 'max_gamma_dif': 2.9301849835405847e-10}
+28/12/2023 16:52:01 - INFO - populationsim.steps.final_seed_balancing - final_seed_balancing seed id 7315
+28/12/2023 16:52:12 - INFO - populationsim.steps.final_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1658, 'delta': 9.910058480899759e-10, 'max_gamma_dif': 1.7407431052163247e-10}
+28/12/2023 16:52:12 - INFO - populationsim.steps.final_seed_balancing - final_seed_balancing seed id 7307
+28/12/2023 16:52:21 - INFO - populationsim.steps.final_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1661, 'delta': 9.513161704720048e-10, 'max_gamma_dif': 3.0095448355638155e-10}
+28/12/2023 16:52:21 - INFO - populationsim.steps.final_seed_balancing - final_seed_balancing seed id 7311
+28/12/2023 16:52:29 - INFO - populationsim.steps.final_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1642, 'delta': 9.669065892356192e-10, 'max_gamma_dif': 2.1805035554933738e-10}
+28/12/2023 16:52:29 - INFO - populationsim.steps.final_seed_balancing - final_seed_balancing seed id 7312
+28/12/2023 16:52:36 - INFO - populationsim.steps.final_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1599, 'delta': 9.825784113738691e-10, 'max_gamma_dif': 4.281317522725203e-10}
+28/12/2023 16:52:36 - INFO - populationsim.steps.final_seed_balancing - final_seed_balancing seed id 7306
+28/12/2023 16:52:47 - INFO - populationsim.steps.final_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1653, 'delta': 9.948402847571249e-10, 'max_gamma_dif': 1.6519519085989032e-10}
+28/12/2023 16:52:47 - INFO - populationsim.steps.final_seed_balancing - final_seed_balancing seed id 7304
+28/12/2023 16:52:55 - INFO - populationsim.steps.final_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1685, 'delta': 9.308800622240899e-10, 'max_gamma_dif': 2.0966517411125096e-10}
+28/12/2023 16:52:55 - INFO - populationsim.steps.final_seed_balancing - final_seed_balancing seed id 7302
+28/12/2023 16:53:04 - INFO - populationsim.steps.final_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1662, 'delta': 9.561953191496682e-10, 'max_gamma_dif': 3.429756478823265e-10}
+28/12/2023 16:53:04 - INFO - populationsim.steps.final_seed_balancing - final_seed_balancing seed id 7303
+28/12/2023 16:53:13 - INFO - populationsim.steps.final_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1674, 'delta': 9.905446261161144e-10, 'max_gamma_dif': 3.1863334193360515e-10}
+28/12/2023 16:53:13 - INFO - populationsim.steps.final_seed_balancing - final_seed_balancing seed id 7305
+28/12/2023 16:53:20 - INFO - populationsim.steps.final_seed_balancing - seed_balancer status: {'converged': True, 'iter': 1606, 'delta': 9.978359387237288e-10, 'max_gamma_dif': 2.761584294574959e-10}
+28/12/2023 16:53:20 - DEBUG - activitysim.core.tracing - Time to execute #run_model completed step 'final_seed_balancing' : 211.376 seconds (3.5 minutes)
+28/12/2023 16:53:20 - DEBUG - activitysim.core.pipeline - add_checkpoint final_seed_balancing timestamp 2023-12-28 16:53:20.257294
+28/12/2023 16:53:20 - DEBUG - activitysim.core.pipeline - rewrap table PUMA_weights inplace=True
+28/12/2023 16:53:20 - DEBUG - activitysim.core.pipeline - add_checkpoint 'final_seed_balancing' table 'PUMA_weights' (45971, 5) 1.8 MB
+28/12/2023 16:53:20 - INFO - activitysim.core.pipeline - #run_model running step integerize_final_seed_weights
+28/12/2023 16:53:20 - INFO - populationsim.steps.integerize_final_seed_weights - integerize_final_seed_weights seed id 7317
+28/12/2023 16:53:20 - DEBUG - populationsim.integerizer - Integerizer: 52 out of 2284 different from round
+28/12/2023 16:53:20 - DEBUG - populationsim.integerizer - Integerizer status for unbackstopped PUMA_7317: OPTIMAL
+28/12/2023 16:53:20 - INFO - populationsim.steps.integerize_final_seed_weights - integerize_final_seed_weights seed id 7316
+28/12/2023 16:53:21 - DEBUG - populationsim.integerizer - Integerizer: 56 out of 2723 different from round
+28/12/2023 16:53:21 - DEBUG - populationsim.integerizer - Integerizer status for unbackstopped PUMA_7316: OPTIMAL
+28/12/2023 16:53:21 - INFO - populationsim.steps.integerize_final_seed_weights - integerize_final_seed_weights seed id 7313
+28/12/2023 16:53:21 - DEBUG - populationsim.integerizer - Integerizer: 116 out of 2639 different from round
+28/12/2023 16:53:21 - DEBUG - populationsim.integerizer - Integerizer status for unbackstopped PUMA_7313: OPTIMAL
+28/12/2023 16:53:21 - INFO - populationsim.steps.integerize_final_seed_weights - integerize_final_seed_weights seed id 7309
+28/12/2023 16:53:22 - DEBUG - populationsim.integerizer - Integerizer: 64 out of 2305 different from round
+28/12/2023 16:53:22 - DEBUG - populationsim.integerizer - Integerizer status for unbackstopped PUMA_7309: OPTIMAL
+28/12/2023 16:53:22 - INFO - populationsim.steps.integerize_final_seed_weights - integerize_final_seed_weights seed id 7310
+28/12/2023 16:53:22 - DEBUG - populationsim.integerizer - Integerizer: 92 out of 2786 different from round
+28/12/2023 16:53:22 - DEBUG - populationsim.integerizer - Integerizer status for unbackstopped PUMA_7310: OPTIMAL
+28/12/2023 16:53:22 - INFO - populationsim.steps.integerize_final_seed_weights - integerize_final_seed_weights seed id 7320
+28/12/2023 16:53:22 - DEBUG - populationsim.integerizer - Integerizer: 49 out of 1528 different from round
+28/12/2023 16:53:22 - DEBUG - populationsim.integerizer - Integerizer status for unbackstopped PUMA_7320: OPTIMAL
+28/12/2023 16:53:22 - INFO - populationsim.steps.integerize_final_seed_weights - integerize_final_seed_weights seed id 7318
+28/12/2023 16:53:23 - DEBUG - populationsim.integerizer - Integerizer: 72 out of 2196 different from round
+28/12/2023 16:53:23 - DEBUG - populationsim.integerizer - Integerizer status for unbackstopped PUMA_7318: OPTIMAL
+28/12/2023 16:53:23 - INFO - populationsim.steps.integerize_final_seed_weights - integerize_final_seed_weights seed id 7319
+28/12/2023 16:53:23 - DEBUG - populationsim.integerizer - Integerizer: 78 out of 1936 different from round
+28/12/2023 16:53:23 - DEBUG - populationsim.integerizer - Integerizer status for unbackstopped PUMA_7319: OPTIMAL
+28/12/2023 16:53:23 - INFO - populationsim.steps.integerize_final_seed_weights - integerize_final_seed_weights seed id 7308
+28/12/2023 16:53:24 - DEBUG - populationsim.integerizer - Integerizer: 76 out of 2127 different from round
+28/12/2023 16:53:24 - DEBUG - populationsim.integerizer - Integerizer status for unbackstopped PUMA_7308: OPTIMAL
+28/12/2023 16:53:24 - INFO - populationsim.steps.integerize_final_seed_weights - integerize_final_seed_weights seed id 7314
+28/12/2023 16:53:24 - DEBUG - populationsim.integerizer - Integerizer: 85 out of 2481 different from round
+28/12/2023 16:53:24 - DEBUG - populationsim.integerizer - Integerizer status for unbackstopped PUMA_7314: OPTIMAL
+28/12/2023 16:53:24 - INFO - populationsim.steps.integerize_final_seed_weights - integerize_final_seed_weights seed id 7322
+28/12/2023 16:53:24 - DEBUG - populationsim.integerizer - Integerizer: 64 out of 1717 different from round
+28/12/2023 16:53:24 - DEBUG - populationsim.integerizer - Integerizer status for unbackstopped PUMA_7322: OPTIMAL
+28/12/2023 16:53:24 - INFO - populationsim.steps.integerize_final_seed_weights - integerize_final_seed_weights seed id 7321
+28/12/2023 16:53:25 - DEBUG - populationsim.integerizer - Integerizer: 118 out of 2497 different from round
+28/12/2023 16:53:25 - DEBUG - populationsim.integerizer - Integerizer status for unbackstopped PUMA_7321: OPTIMAL
+28/12/2023 16:53:25 - INFO - populationsim.steps.integerize_final_seed_weights - integerize_final_seed_weights seed id 7301
+28/12/2023 16:53:25 - DEBUG - populationsim.integerizer - Integerizer: 85 out of 2377 different from round
+28/12/2023 16:53:25 - DEBUG - populationsim.integerizer - Integerizer status for unbackstopped PUMA_7301: OPTIMAL
+28/12/2023 16:53:25 - INFO - populationsim.steps.integerize_final_seed_weights - integerize_final_seed_weights seed id 7315
+28/12/2023 16:53:26 - DEBUG - populationsim.integerizer - Integerizer: 82 out of 2341 different from round
+28/12/2023 16:53:26 - DEBUG - populationsim.integerizer - Integerizer status for unbackstopped PUMA_7315: OPTIMAL
+28/12/2023 16:53:26 - INFO - populationsim.steps.integerize_final_seed_weights - integerize_final_seed_weights seed id 7307
+28/12/2023 16:53:26 - DEBUG - populationsim.integerizer - Integerizer: 62 out of 1597 different from round
+28/12/2023 16:53:26 - DEBUG - populationsim.integerizer - Integerizer status for unbackstopped PUMA_7307: OPTIMAL
+28/12/2023 16:53:26 - INFO - populationsim.steps.integerize_final_seed_weights - integerize_final_seed_weights seed id 7311
+28/12/2023 16:53:26 - DEBUG - populationsim.integerizer - Integerizer: 51 out of 1678 different from round
+28/12/2023 16:53:26 - DEBUG - populationsim.integerizer - Integerizer status for unbackstopped PUMA_7311: OPTIMAL
+28/12/2023 16:53:26 - INFO - populationsim.steps.integerize_final_seed_weights - integerize_final_seed_weights seed id 7312
+28/12/2023 16:53:27 - DEBUG - populationsim.integerizer - Integerizer: 70 out of 1787 different from round
+28/12/2023 16:53:27 - DEBUG - populationsim.integerizer - Integerizer status for unbackstopped PUMA_7312: OPTIMAL
+28/12/2023 16:53:27 - INFO - populationsim.steps.integerize_final_seed_weights - integerize_final_seed_weights seed id 7306
+28/12/2023 16:53:27 - DEBUG - populationsim.integerizer - Integerizer: 79 out of 2099 different from round
+28/12/2023 16:53:27 - DEBUG - populationsim.integerizer - Integerizer status for unbackstopped PUMA_7306: OPTIMAL
+28/12/2023 16:53:27 - INFO - populationsim.steps.integerize_final_seed_weights - integerize_final_seed_weights seed id 7304
+28/12/2023 16:53:27 - DEBUG - populationsim.integerizer - Integerizer: 68 out of 1671 different from round
+28/12/2023 16:53:27 - DEBUG - populationsim.integerizer - Integerizer status for unbackstopped PUMA_7304: OPTIMAL
+28/12/2023 16:53:27 - INFO - populationsim.steps.integerize_final_seed_weights - integerize_final_seed_weights seed id 7302
+28/12/2023 16:53:28 - DEBUG - populationsim.integerizer - Integerizer: 83 out of 2052 different from round
+28/12/2023 16:53:28 - DEBUG - populationsim.integerizer - Integerizer status for unbackstopped PUMA_7302: OPTIMAL
+28/12/2023 16:53:28 - INFO - populationsim.steps.integerize_final_seed_weights - integerize_final_seed_weights seed id 7303
+28/12/2023 16:53:28 - DEBUG - populationsim.integerizer - Integerizer: 73 out of 1626 different from round
+28/12/2023 16:53:28 - DEBUG - populationsim.integerizer - Integerizer status for unbackstopped PUMA_7303: OPTIMAL
+28/12/2023 16:53:28 - INFO - populationsim.steps.integerize_final_seed_weights - integerize_final_seed_weights seed id 7305
+28/12/2023 16:53:28 - DEBUG - populationsim.integerizer - Integerizer: 64 out of 1524 different from round
+28/12/2023 16:53:28 - DEBUG - populationsim.integerizer - Integerizer status for unbackstopped PUMA_7305: OPTIMAL
+28/12/2023 16:53:28 - DEBUG - activitysim.core.tracing - Time to execute #run_model completed step 'integerize_final_seed_weights' : 8.501 seconds (0.1 minutes)
+28/12/2023 16:53:28 - DEBUG - activitysim.core.pipeline - add_checkpoint integerize_final_seed_weights timestamp 2023-12-28 16:53:28.815806
+28/12/2023 16:53:28 - DEBUG - activitysim.core.pipeline - rewrap table PUMA_weights inplace=True
+28/12/2023 16:53:28 - DEBUG - activitysim.core.pipeline - add_checkpoint 'integerize_final_seed_weights' table 'PUMA_weights' (45971, 6) 2.2 MB
+28/12/2023 16:53:28 - INFO - activitysim.core.tracing - Time to execute run (6 models) : 367.221 seconds (6.1 minutes)
+28/12/2023 16:53:28 - DEBUG - activitysim.core.pipeline - add_checkpoint mp_seed_balancing timestamp 2023-12-28 16:53:28.856785
+28/12/2023 16:53:28 - DEBUG - activitysim.core.pipeline - close_pipeline
+28/12/2023 16:53:28 - INFO - activitysim.core.mem - mp_seed_balancing high water mark rss: 172_150_784 (172.2 MB) timestamp: 28/12/2023 16:53:20 label:pipeline.run_model final_seed_balancing finished
+28/12/2023 16:53:28 - INFO - activitysim.core.mem - mp_seed_balancing high water mark uss: 142_532_608 (142.5 MB) timestamp: 28/12/2023 16:53:20 label:pipeline.run_model final_seed_balancing finished
