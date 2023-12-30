@@ -97,18 +97,20 @@ def combine_dataframes(dataframes_dict):
     combined_df['Total_HH_GQ'] = combined_df['Total_HH'] + combined_df['gq_college_pop'] + combined_df['gq_mil_pop'] + combined_df['gq_other_pop']
     return combined_df
 
-def process_yearly_data(year, staging_table):
+def process_yearly_data(year):
+    conn, staging_table = establish_db_connection()
     dataframes = load_all_data_for_year(staging_table, year, conn)
     dataframes = manipulate_all_data(dataframes)
     output = combine_dataframes(dataframes)
     output.to_csv(rf'../1. Getting Data/outputs/mgra_control_{year}.csv', index=False)
+    print(f"{year} mgra controls data is built")
     return output
 
-# Do Work 
-conn, staging_table = establish_db_connection()
-for year in [2022, 2026, 2029, 2032, 2035, 2040, 2050]:
-    process_yearly_data(year, staging_table)
-    print(f"{year} mgra controls is created")
+# # Do Work 
+# conn, staging_table = establish_db_connection()
+# for year in [2022, 2026, 2029, 2032, 2035, 2040, 2050]:
+#     process_yearly_data(year, staging_table)
+#     print(f"{year} mgra controls is created")
 
 
 

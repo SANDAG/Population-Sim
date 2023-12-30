@@ -3,6 +3,14 @@ import shutil
 import subprocess
 import logging
 import yaml
+import sys
+sys.path.insert(1, 'python') # Add Python folder to path 
+from create_mgra_base import process_yearly_data, establish_db_connection
+
+# If the working directory is in the python folder, move up a folder 
+if os.path.basename(os.getcwd()) == 'python':
+    os.chdir('..')
+
 
 # Set up basic logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -65,17 +73,27 @@ def organize_outputs(year):
     except Exception as e:
         logging.error(f"Error organizing outputs for {year}: {e}")
 
-
-#years = [2022, 2026, 2029, 2032, 2035, 2040, 2050]
+# Get Data From YML File 
 with open('config.yml', 'r') as file:
     config = yaml.safe_load(file)
 years = config['years']
+staging_table = config['staging']['table']
+
+# Store current directory 
+current_dir = os.getcwd()
 
 for year in years:
+    try:
+        os.chdir('python') # the process_yearly_data function needs to be in the python folder (I can change this later)
+        process_yearly_data(year) #Run mgra base
+        print(os.getcwd())
+    finally:
+        os.chdir(current_dir) # Change back to the top folder 
     prepare_data(year)
     run_simulation()
     organize_outputs(year)
 
+print(f"Outputs for {staging_table} is complete")
 logging.info("All years processed successfully.")
 
 
