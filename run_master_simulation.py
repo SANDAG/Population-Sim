@@ -1,13 +1,15 @@
+# This works for both running in VScode and Terminal 
 import os
 import shutil
 import subprocess
 import logging
 import yaml
 import sys
-sys.path.insert(1, 'python') # Add Python folder to path 
-from create_mgra_base import process_yearly_data, establish_db_connection
+print(os.getcwd())
+sys.path.insert(1, 'python')
+from create_mgra_base import process_yearly_data
 
-# If the working directory is in the python folder, move up a folder 
+# If the working directory is in the python folder, move up a folder
 if os.path.basename(os.getcwd()) == 'python':
     os.chdir('..')
 
@@ -86,7 +88,6 @@ for year in years:
     try:
         os.chdir('python') # the process_yearly_data function needs to be in the python folder (I can change this later)
         process_yearly_data(year) #Run mgra base
-        print(os.getcwd())
     finally:
         os.chdir(current_dir) # Change back to the top folder 
     prepare_data(year)
