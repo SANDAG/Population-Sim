@@ -2,6 +2,7 @@ import os
 import shutil
 import subprocess
 import logging
+import yaml
 
 # Set up basic logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -65,7 +66,10 @@ def organize_outputs(year):
         logging.error(f"Error organizing outputs for {year}: {e}")
 
 
-years = [2022, 2026, 2029, 2032, 2035, 2040, 2050]
+#years = [2022, 2026, 2029, 2032, 2035, 2040, 2050]
+with open('config.yml', 'r') as file:
+    config = yaml.safe_load(file)
+years = config['years']
 
 for year in years:
     prepare_data(year)
@@ -73,4 +77,6 @@ for year in years:
     organize_outputs(year)
 
 logging.info("All years processed successfully.")
+
+
 

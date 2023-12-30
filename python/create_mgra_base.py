@@ -13,7 +13,7 @@ import os
 
 # The Run Code in VS Code starts at the root
 try:
-    os.chdir(r'1. Getting Data/mgra_control_build')
+    os.chdir(r'python')
 except Exception as e:
     print(f"Could not change directory: {e}")
 
@@ -33,7 +33,7 @@ def load_demographic_data(sql_file_path, staging_table, year, conn):
     return query_database(sql_query, conn)
 
 
-def establish_db_connection(config_path='../../config.yml'):
+def establish_db_connection(config_path='../config.yml'):
     with open(config_path, 'r') as file:
         config = yaml.safe_load(file)
     db_config = config['database']
@@ -47,11 +47,11 @@ def establish_db_connection(config_path='../../config.yml'):
 
 def load_all_data_for_year(staging_table, year, conn):
     data = {
-        'sex': load_demographic_data('../../sql/mgra_control_sex.sql', staging_table, year, conn),
-        'age': load_demographic_data('../../sql/mgra_control_age.sql', staging_table, year, conn),
-        'race': load_demographic_data('../../sql/mgra_control_ethnicity.sql', staging_table, year, conn),
-        'household': load_demographic_data('../../sql/mgra_control_hh_char.sql', staging_table, year, conn),
-        'income': load_demographic_data('../../sql/mgra_control_income.sql', staging_table, year, conn)
+        'sex': load_demographic_data('../sql/mgra_control_sex.sql', staging_table, year, conn),
+        'age': load_demographic_data('../sql/mgra_control_age.sql', staging_table, year, conn),
+        'race': load_demographic_data('../sql/mgra_control_ethnicity.sql', staging_table, year, conn),
+        'household': load_demographic_data('../sql/mgra_control_hh_char.sql', staging_table, year, conn),
+        'income': load_demographic_data('../sql/mgra_control_income.sql', staging_table, year, conn)
     }
     return data
 
@@ -101,7 +101,7 @@ def process_yearly_data(year, staging_table):
     dataframes = load_all_data_for_year(staging_table, year, conn)
     dataframes = manipulate_all_data(dataframes)
     output = combine_dataframes(dataframes)
-    output.to_csv(rf'../outputs/mgra_control_{year}.csv', index=False)
+    output.to_csv(rf'../1. Getting Data/outputs/mgra_control_{year}.csv', index=False)
     return output
 
 # Do Work 

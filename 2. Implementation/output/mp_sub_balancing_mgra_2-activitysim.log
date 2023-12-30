@@ -44,3 +44,5 @@
 28/12/2023 16:53:48 - DEBUG - populationsim.simul_balancer - np_simul_balancer iteration 0 delta 15.884696172848908 max_gamma_dif 327.600436410983
 28/12/2023 17:03:07 - DEBUG - populationsim.simul_balancer - np_simul_balancer iteration 100 delta 0.038019084708713624 max_gamma_dif 22.990503354041135
 28/12/2023 17:11:52 - DEBUG - populationsim.simul_balancer - np_simul_balancer iteration 200 delta 0.03253069740627906 max_gamma_dif 22.82449907599732
+28/12/2023 17:20:28 - DEBUG - populationsim.simul_balancer - np_simul_balancer iteration 300 delta 0.021613679971458574 max_gamma_dif 286.8459304108071
+28/12/2023 17:29:40 - DEBUG - populationsim.simul_balancer - np_simul_balancer iteration 400 delta 0.0206783476464698 max_gamma_dif 22.157621260676898
