@@ -48,9 +48,14 @@ def mgra_based_input_creation(year):
     print(f"{year} mgra based input is outputted")
 
 def create_abm_ouputs(year):
+    # Make sure the output folder exists
+    output_dir = f'abm_output/{year}'
+    os.makedirs(output_dir, exist_ok=True)
+
     print(f'Building {year} ABM outputs')
     combine_population_data(year)
     mgra_based_input_creation(year)
+
 
 # Get Data From YML File 
 with open('config.yml', 'r') as file:
