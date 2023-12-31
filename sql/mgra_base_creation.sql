@@ -1,0 +1,13 @@
+SELECT mgra, taz, LUZ, pop, hhp, hs, hs_sf, hs_mf, hs_mh,
+        hh, hh_sf, hh_mf, hh_mh, hhs, gq_civ, gq_mil, i1, i2,
+        i3, i4, i5, i6, i7, i8, i9, i10, emp_gov, emp_mil,
+        emp_ag_min, emp_bus_svcs, emp_fin_res_mgm, emp_educ, emp_hlth,
+        emp_ret, emp_trn_wrh, emp_con, emp_utl, emp_mnf, emp_whl,
+        emp_ent, emp_accm, emp_food, emp_oth, emp_non_ws_wfh,
+        emp_non_ws_oth, emp_tot AS emp_total, pseudomsa, zip, enrollgradekto8,
+        enrollgrade9to12, majorcollegeenroll_total,
+        othercollegeenroll_total, hotelroomtotal, parkactive,
+        openspaceparkpreserve, beachactive, district27, milestocoast,
+        acre, landacre, effective_acres, truckregiontype
+    FROM [sr15_staging].{staging_table}.[mgrabase]
+    WHERE increment = {year}

@@ -13,6 +13,8 @@ from create_mgra_base import process_yearly_data
 if os.path.basename(os.getcwd()) == 'python':
     os.chdir('..')
 
+print(os.getcwd())
+
 
 # Set up basic logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
