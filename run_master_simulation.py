@@ -8,13 +8,11 @@ import sys
 print(os.getcwd())
 sys.path.insert(1, 'python')
 from create_mgra_base import process_yearly_data
+from create_region_controls import build_region_control
 
 # If the working directory is in the python folder, move up a folder
 if os.path.basename(os.getcwd()) == 'python':
     os.chdir('..')
-
-print(os.getcwd())
-
 
 # Set up basic logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -88,8 +86,9 @@ current_dir = os.getcwd()
 
 for year in years:
     try:
-        os.chdir('python') # the process_yearly_data function needs to be in the python folder (I can change this later)
-        process_yearly_data(year) #Run mgra base
+        os.chdir('python') 
+        process_yearly_data(year) #Build MGRA controls 
+        build_region_control(year) #Build region controls 
     finally:
         os.chdir(current_dir) # Change back to the top folder 
     prepare_data(year)

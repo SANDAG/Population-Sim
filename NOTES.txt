@@ -11,3 +11,6 @@ Step 5: conda install pytables
 Step 6: pip install populationsim
 Step 7: Go to the location of this folder 
 Step 8: Run the command: python run_master_simulation
+
+
+- popsim region controls live here: T:\socioec\population sim\region_controls\remi_output_for_popsim.xlsx
