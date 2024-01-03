@@ -1,0 +1,13 @@
+process_name,model_name,seconds,minutes
+mp_seed_balancing,input_pre_processor,0.6,0.0
+mp_seed_balancing,setup_data_structures,1.5,0.0
+mp_seed_balancing,initial_seed_balancing,98.8,1.6
+mp_seed_balancing,meta_control_factoring,0.2,0.0
+mp_seed_balancing,final_seed_balancing,149.3,2.5
+mp_seed_balancing,integerize_final_seed_weights,7.3,0.1
+mp_sub_balancing_mgra_0,sub_balancing.geography=mgra,18979.7,316.3
+mp_summarize,expand_households,38.6,0.6
+mp_summarize,summarize,1096.9,18.3
+mp_summarize,write_synthetic_population,23.2,0.4
+mp_summarize,write_data_dictionary,2.6,0.0
+mp_summarize,write_tables,1.9,0.0

@@ -37,7 +37,7 @@ def organize_outputs(year):
     try:
         # Adjusted paths for the standard output
         base_path = "populationsim/output"
-        post_process_path = f"3. Post_processing/{year}"
+        post_process_path = f"output/{year}"
 
         if not os.path.exists(post_process_path):
             os.makedirs(post_process_path)
@@ -80,7 +80,7 @@ for year in years:
     run_simulation()
     organize_outputs(year)
 
-print(f"Outputs for {staging_table} is complete")
+print(f"Outputs for {staging_table} are complete")
 logging.info("All years processed successfully.")
 
 

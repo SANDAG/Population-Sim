@@ -12,10 +12,10 @@ while os.path.basename(os.getcwd()) != 'Population-Sim' and os.path.basename(os.
 
 # Combine Synthetic and GQ Populations for both households and persons 
 def combine_population_data(year):
-    hhgq_df = pd.read_csv(f'3. Post_processing/{year}/synthetic_households_gq.csv')
-    hh_df = pd.read_csv(f'3. Post_processing/{year}/synthetic_households.csv')
-    pergq_df = pd.read_csv(f'3. Post_processing/{year}/synthetic_persons_gq.csv')
-    per_df = pd.read_csv(f'3. Post_processing/{year}/synthetic_persons.csv')
+    hhgq_df = pd.read_csv(f'output/{year}/synthetic_households_gq.csv')
+    hh_df = pd.read_csv(f'output/{year}/synthetic_households.csv')
+    pergq_df = pd.read_csv(f'output/{year}/synthetic_persons_gq.csv')
+    per_df = pd.read_csv(f'output/{year}/synthetic_persons.csv')
 
     hhgq_df['household_id'] += len(hh_df)
     pergq_df['household_id'] += len(hh_df)
