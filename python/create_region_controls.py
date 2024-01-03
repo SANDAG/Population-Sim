@@ -6,7 +6,7 @@ import json
 import pymssql
 import sys
 sys.path.insert(1, 'python')
-from create_mgra_base import read_sql_file, query_database, establish_db_connection
+from create_mgra_controls import read_sql_file, query_database, establish_db_connection
 
 def get_gq_mil(year):
     conn, staging_table = establish_db_connection(config_path='../config.yml')
@@ -102,11 +102,12 @@ def build_region_control(year):
     region_control = pd.concat([forecast_production, labor_force_components], axis=1)
 
     # Output
-    region_control.to_csv(f'../2. Implementation/data/region_controls.csv', index=False)
+    region_control.to_csv(f'../populationsim/data/region_controls.csv', index=False)
 
     return region_control
 
-# # Do Work
+# Do Work
 # for year in [2022, 2026, 2029, 2032, 2040, 2050]:
 #     build_region_control(year)
 #     print(f'{year} region controls have been built and loaded to PopSim.')
+# 

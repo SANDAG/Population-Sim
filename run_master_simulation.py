@@ -7,7 +7,7 @@ import yaml
 import sys
 print(os.getcwd())
 sys.path.insert(1, 'python')
-from create_mgra_base import process_yearly_data
+from create_mgra_controls import build_mgra_control
 from create_region_controls import build_region_control
 
 # If the working directory is in the python folder, move up a folder
@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 def run_simulation():
     try:
         # Change to the correct directory
-        os.chdir("2. Implementation")
+        os.chdir("populationsim")
         
         # Run the model
         subprocess.call("python run_populationsim.py -c configs_mp -c configs", shell=True)
@@ -36,7 +36,7 @@ def run_simulation():
 def organize_outputs(year):
     try:
         # Adjusted paths for the standard output
-        base_path = "2. Implementation/output"
+        base_path = "populationsim/output"
         post_process_path = f"3. Post_processing/{year}"
 
         if not os.path.exists(post_process_path):
@@ -49,7 +49,7 @@ def organize_outputs(year):
         logging.info(f"Standard outputs organized for {year}")
 
         # Adjusted paths for the GQ output
-        gq_base_path = "2. Implementation/output_gq"
+        gq_base_path = "populationsim/output_gq"
 
         # Move GQ output files
         shutil.move(f"{gq_base_path}/synthetic_households_gq.csv", f"{post_process_path}/synthetic_households_gq.csv")
@@ -72,8 +72,8 @@ current_dir = os.getcwd()
 for year in years:
     try:
         os.chdir('python') 
-        process_yearly_data(year) #Build MGRA controls 
-        build_region_control(year) #Build region controls 
+        build_mgra_control(year) # Build mgra controls 
+        build_region_control(year) # Build region controls 
         print(f"{year} controls have been built and loaded to PopSim.")
     finally:
         os.chdir(current_dir) # Change back to the top folder 

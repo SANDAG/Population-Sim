@@ -3,7 +3,7 @@ import os
 import sys
 import pyodbc
 import yaml
-from create_mgra_base import read_sql_file, query_database, establish_db_connection
+from create_mgra_controls import read_sql_file, query_database, establish_db_connection
 
 # Change to the top-level of the Population-Sim repository (this needs to be ran in the python folder)
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
