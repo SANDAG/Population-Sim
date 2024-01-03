@@ -75,6 +75,7 @@ def organize_outputs(year):
     except Exception as e:
         logging.error(f"Error organizing outputs for {year}: {e}")
 
+
 # Get Data From YML File 
 with open('config.yml', 'r') as file:
     config = yaml.safe_load(file)

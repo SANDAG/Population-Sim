@@ -14,3 +14,7 @@ Step 8: Run the command: python run_master_simulation
 
 
 - popsim region controls live here: T:\socioec\population sim\region_controls\remi_output_for_popsim.xlsx
+- The name of this folder needs to be Population-Sim 
+
+
+- Unsure why when I run the abm script I get: Could not change directory: [WinError 2] The system cannot find the file specified: 'python'

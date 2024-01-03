@@ -3,15 +3,12 @@ import os
 import sys
 import pyodbc
 import yaml
-
-sys.path.insert(1, 'python')
 from create_mgra_base import read_sql_file, query_database, establish_db_connection
 
-# Change to the top-level of the Population-Sim repository
+# Change to the top-level of the Population-Sim repository (this needs to be ran in the python folder)
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 while os.path.basename(os.getcwd()) != 'Population-Sim' and os.path.basename(os.getcwd()) != '':
     os.chdir('..')
-
 
 # Combine Synthetic and GQ Populations for both households and persons 
 def combine_population_data(year):
@@ -65,3 +62,4 @@ years = config['years']
 # Create Outputs for each year 
 for year in years: 
     create_abm_ouputs(year)
+print("ABM files have been created.")
