@@ -1,10 +1,8 @@
 # Import libraries
 import pandas as pd
 import numpy as np
-import sqlalchemy as sql
-import json
-import pymssql
 import sys
+
 sys.path.insert(1, 'python')
 from create_mgra_controls import read_sql_file, query_database, establish_db_connection
 
