@@ -102,11 +102,11 @@ def build_region_control(year):
     region_control = pd.concat([forecast_production, labor_force_components], axis=1)
 
     # Output
-    region_control.to_csv(f'../1. Getting Data/outputs/region_controls_{year}.csv', index=False)
+    region_control.to_csv(f'../2. Implementation/data/region_controls.csv', index=False)
 
     return region_control
 
-
+# # Do Work
 # for year in [2022, 2026, 2029, 2032, 2040, 2050]:
 #     build_region_control(year)
-#     print(f'{year} is complete')
+#     print(f'{year} region controls have been built and loaded to PopSim.')

@@ -17,22 +17,6 @@ if os.path.basename(os.getcwd()) == 'python':
 # Set up basic logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def prepare_data(year):
-    try:
-        # Adjusted paths
-        mgra_src = f"1. Getting Data/outputs/mgra_control_{year}.csv"
-        region_src = f"1. Getting Data/outputs/region_controls_ind_{year}.csv"
-        
-        mgra_dest = "2. Implementation/data/mgra_controls.csv"
-        region_dest = "2. Implementation/data/region_controls.csv"
-
-        shutil.copy(mgra_src, mgra_dest)
-        shutil.copy(region_src, region_dest)
-        logging.info(f"Data prepared for {year}")
-    except Exception as e:
-        logging.error(f"Error preparing data for {year}: {e}")
-
-
 def run_simulation():
     try:
         # Change to the correct directory
@@ -90,9 +74,9 @@ for year in years:
         os.chdir('python') 
         process_yearly_data(year) #Build MGRA controls 
         build_region_control(year) #Build region controls 
+        print(f"{year} controls have been built and loaded to PopSim.")
     finally:
         os.chdir(current_dir) # Change back to the top folder 
-    prepare_data(year)
     run_simulation()
     organize_outputs(year)
 

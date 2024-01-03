@@ -102,15 +102,14 @@ def process_yearly_data(year):
     dataframes = load_all_data_for_year(staging_table, year, conn)
     dataframes = manipulate_all_data(dataframes)
     output = combine_dataframes(dataframes)
-    output.to_csv(rf'../1. Getting Data/outputs/mgra_control_{year}.csv', index=False)
-    print(f"{year} mgra controls data is built")
+    output.to_csv(rf'../2. Implementation/data/mgra_controls.csv', index=False)
     return output
 
 # # Do Work 
 # conn, staging_table = establish_db_connection()
 # for year in [2022, 2026, 2029, 2032, 2035, 2040, 2050]:
-#     process_yearly_data(year, staging_table)
-#     print(f"{year} mgra controls is created")
+#     process_yearly_data(year)
+#     print(f"{year} mgra controls have been built and loaded to PopSim. Yaayyyyyy")
 
 
 
