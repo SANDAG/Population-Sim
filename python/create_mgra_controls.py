@@ -4,8 +4,6 @@ import numpy as np
 import pyodbc
 import warnings
 warnings.filterwarnings('ignore')
-import copy
-import datetime
 from functools import reduce
 import yaml
 import os
