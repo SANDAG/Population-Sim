@@ -5,7 +5,7 @@ database:
   trusted_connection: 'yes'
 
 staging:
-  table: '[2023_12_05]'
+  table: '[2023_12_29]'
 
 years:
   - 2022
