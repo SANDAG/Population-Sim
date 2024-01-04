@@ -104,9 +104,6 @@ def build_region_control(year):
 
     return region_control
 
-test = build_region_control(2022)
-print(test.columns)
-
 # Do Work
 # for year in [2022, 2026, 2029, 2032, 2040, 2050]:
 #     build_region_control(year)

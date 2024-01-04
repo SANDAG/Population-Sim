@@ -5,7 +5,6 @@ import subprocess
 import logging
 import yaml
 import sys
-print(os.getcwd())
 sys.path.insert(1, 'python')
 from create_mgra_controls import build_mgra_control
 from create_region_controls import build_region_control
