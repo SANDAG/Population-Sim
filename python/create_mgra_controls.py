@@ -103,6 +103,7 @@ def build_mgra_control(year):
     output.to_csv(rf'../populationsim/data/mgra_controls.csv', index=False)
     return output
 
+
 # # Do Work 
 # conn, staging_table = establish_db_connection()
 # for year in [2022, 2026, 2029, 2032, 2035, 2040, 2050]:

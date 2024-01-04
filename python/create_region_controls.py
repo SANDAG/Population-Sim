@@ -97,7 +97,7 @@ def build_labor_force_components(year):
 def build_region_control(year):
     forecast_production = build_forecast_production(year)
     labor_force_components = build_labor_force_components(year)
-    region_control = pd.concat([forecast_production, labor_force_components], axis=1)
+    region_control = pd.concat([forecast_production, labor_force_components], axis=1).astype(int)
 
     # Output
     region_control.to_csv(f'../populationsim/data/region_controls.csv', index=False)
