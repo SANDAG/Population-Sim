@@ -88,7 +88,7 @@ def build_labor_force_components(year):
     # Clean the output 
     lf_comp = lf_comp.drop(['Category', 'Units'], axis=1)
     lf_comp = lf_comp.set_index('Race').T
-    lf_comp = lf_comp[['lfp_black', 'lfp_hispanic', 'lfp_other', 'lfp_hispanic']]
+    lf_comp = lf_comp[['lfp_black', 'lfp_hispanic', 'lfp_other', 'lfp_white']]
     lf_comp.columns.name = ''
     lf_comp = lf_comp*1000
 
@@ -103,6 +103,9 @@ def build_region_control(year):
     region_control.to_csv(f'../populationsim/data/region_controls.csv', index=False)
 
     return region_control
+
+test = build_region_control(2022)
+print(test.columns)
 
 # Do Work
 # for year in [2022, 2026, 2029, 2032, 2040, 2050]:
