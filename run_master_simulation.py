@@ -69,6 +69,7 @@ staging_table = config['staging']['table']
 current_dir = os.getcwd()
 
 for year in years:
+    print(f"PopSim has began building outputs for {year}")
     try:
         os.chdir('python') 
         build_mgra_control(year) # Build mgra controls 
