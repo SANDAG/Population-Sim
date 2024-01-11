@@ -61,6 +61,14 @@ def build_households_all(read_sql_file, query_database, build_persons_all):
     persons_all_hhid = build_persons_all(read_sql_file, query_database)[['SERIALNO', 'HHID']].drop_duplicates()
     households_all = households_all.merge(persons_all_hhid, on='SERIALNO', how='left')
 
-    # TODO: Match the datatypes as required
+    # Match the datatypes as required
+    households_all['PUMA'] = households_all['PUMA'].astype(int)
+    households_all['NP'] = households_all['NP'].astype(int)
+    households_all['HHADJINC'] = households_all['HHADJINC'].astype(float)
+    households_all['WGTP'] = households_all['WGTP'].astype(int)
+    households_all['HHT'] = households_all['HHT'].astype(float)
+    households_all['GQ_type'] = households_all['GQ_type'].astype(int)
+    households_all['BLD'] = households_all['BLD'].astype(float)
+    households_all['HUPAC'] = households_all['HUPAC'].astype(float)
 
     return households_all
