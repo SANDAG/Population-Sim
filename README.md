@@ -39,6 +39,8 @@ Follow these steps to run PopulationSim:
 2. **Install Required Packages:**
    - Install tables support: `conda install pytables`.
    - Install PopulationSim: `pip install populationsim`.
+   - Install pyodbc: `pip install pyodbc`.
+   - Install openpyxl: `pip install openpyxl`.
 3. **Run the Simulation:**
    - Navigate to the repository's location on your computer.
    - Execute: `python run_master_simulation`.
