@@ -36,7 +36,7 @@ years:  # years for which to generate controls and run populationsim
   - 2050
 ```
 
-3. **Update PopulationSim configuration files** (if necessesary)
+3. **Update PopulationSim configuration files** (if necessary)
    - SANDAG commonly sets the `populationsim/conigs_mp/settings.yaml` file such that `multiprocess: True`, `num_processes: 22`, `multiprocess_steps: num_processes: 22` to enable the maximum level of multiprocessing using the 22 San Diego PUMAS as the `slice_geography: PUMA`
    - See the PopulationSim [official documentation](https://activitysim.github.io/populationsim/)
 
