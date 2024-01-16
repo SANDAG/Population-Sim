@@ -1,7 +1,0 @@
-process_name,model_name,seconds,minutes
-mp_seed_balancing,input_pre_processor,0.6,0.0
-mp_seed_balancing,setup_data_structures,1.8,0.0
-mp_seed_balancing,initial_seed_balancing,144.7,2.4
-mp_seed_balancing,meta_control_factoring,0.1,0.0
-mp_seed_balancing,final_seed_balancing,211.4,3.5
-mp_seed_balancing,integerize_final_seed_weights,8.6,0.1

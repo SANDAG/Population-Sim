@@ -18,6 +18,8 @@ dependencies:
   - mkl_fft=1.3.8=py38h2bbff1b_0
   - mkl_random=1.2.4=py38h59b6b97_0
   - numexpr=2.8.4=py38h7b80656_1
+  - numpy=1.24.3=py38h79a8e48_1
+  - numpy-base=1.24.3=py38h8a87ada_1
   - openssl=3.0.12=h2bbff1b_0
   - packaging=23.1=py38haa95532_0
   - pip=23.3.1=py38haa95532_0
@@ -35,39 +37,43 @@ dependencies:
   - zlib-ng=2.0.7=h2bbff1b_0
   - zstd=1.5.5=hd43e919_0
   - pip:
-      - absl-py==2.0.0
-      - activitysim==1.1.0
-      - blosc2==2.0.0
-      - certifi==2023.11.17
-      - charset-normalizer==3.3.2
-      - click==8.1.7
-      - colorama==0.4.6
-      - cython==3.0.7
-      - cytoolz==0.12.2
-      - et-xmlfile==1.1.0
-      - idna==3.6
-      - importlib-metadata==7.0.1
-      - llvmlite==0.41.1
-      - msgpack==1.0.7
-      - numba==0.58.0
-      - numpy==1.21.0
-      - openmatrix==0.3.5.0
-      - openpyxl==3.1.2
-      - orca==1.8
-      - ortools==9.8.3296
-      - pandas==2.0.3
-      - populationsim==0.5.1
-      - protobuf==4.25.1
-      - psutil==5.9.7
-      - pyarrow==14.0.2
-      - pyodbc==5.0.1
-      - python-dateutil==2.8.2
-      - pytz==2023.3.post1
-      - pyyaml==6.0.1
-      - requests==2.31.0
-      - simwrapper==1.8.5
-      - six==1.16.0
-      - toolz==0.12.0
-      - tzdata==2023.4
-      - urllib3==2.1.0
-      - zipp==3.17.0
+    - absl-py==2.0.0
+    - activitysim==1.1.0
+    - blosc2==2.0.0
+    - certifi==2023.11.17
+    - charset-normalizer==3.3.2
+    - click==8.1.7
+    - colorama==0.4.6
+    - cython==3.0.8
+    - cytoolz==0.12.2
+    - et-xmlfile==1.1.0
+    - greenlet==3.0.3
+    - idna==3.6
+    - importlib-metadata==7.0.1
+    - llvmlite==0.41.1
+    - msgpack==1.0.7
+    - numba==0.58.0
+    - openmatrix==0.3.5.0
+    - openpyxl==3.1.2
+    - orca==1.8
+    - ortools==9.8.3296
+    - pandas==2.0.3
+    - populationsim==0.5.1
+    - protobuf==4.25.2
+    - psutil==5.9.7
+    - pyarrow==14.0.2
+    - pymssql==2.2.11
+    - pyodbc==5.0.1
+    - python-dateutil==2.8.2
+    - pytz==2023.3.post1
+    - pyyaml==6.0.1
+    - requests==2.31.0
+    - simwrapper==1.8.5
+    - six==1.16.0
+    - sqlalchemy==2.0.25
+    - tables==3.8.0
+    - toolz==0.12.0
+    - typing_extensions==4.9.0
+    - tzdata==2023.4
+    - urllib3==2.1.0
+    - zipp==3.17.0

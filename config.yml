@@ -1,11 +1,13 @@
-database:
-  driver: '{ODBC Driver 13 for SQL Server}'
-  server: 'DDAMWSQL16.sandag.org'
-  database: 'demographic_warehouse'
-  trusted_connection: 'yes'
+sql:
+  server: ""
+  schema: ""
+  seed_households: "sql/seed_households.sql"
+  seed_persons: "sql/seed_persons.sql"
+  mgra_controls: "sql/mgra_controls.sql"
+  region_controls: "sql/region_controls.sql"
+  mgrabase: "sql/mgrabase.sql"
 
-staging:
-  table: '[2023_12_29]'
+economic_controls: "data/Economic Team Region Controls.csv"
 
 years:
   - 2022
@@ -15,5 +17,3 @@ years:
   - 2035
   - 2040
   - 2050
-
-

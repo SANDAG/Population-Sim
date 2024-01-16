@@ -35,17 +35,12 @@ data_dir: data
 # input_pre_processor input_table_list
 input_table_list:
   - tablename: households
-    filename : seed_households_woGQ.csv
-    index_col: HHID
+    filename : seed_households_hh.csv
+    index_col: hhid
   - tablename: persons
-    # expression_filename: seed_persons_expressions.csv
-    filename : seed_persons_woGQ.csv
+    filename : seed_persons_hh.csv
   - tablename: geo_cross_walk
     filename : geo_cross_walk.csv
-    # column_map:
-    #   TRACTCE: tract
-    #filename : taz_controls_adjusted.csv
-
   - tablename: mgra_control_data
     filename : mgra_controls.csv
   - tablename: region_control_data
@@ -55,7 +50,7 @@ input_table_list:
 # Reserved Column Names
 # ------------------------------------------------------------------
 household_weight_col: WGTP
-household_id_col: HHID
+household_id_col: hhid
 total_hh_control: Total_HH
 
 
@@ -86,17 +81,18 @@ output_synthetic_population:
   households:
     filename: synthetic_households.csv
     columns:
+      - SERIALNO
       - NP
       - HHADJINC
       - HHT
-      - WIF 
-      - HUPAC # number of children present
+      - HUPAC
       - VEH
-      #- numWorkers
       - BLD
+      - TYPEHUGQ
   persons:
     filename: synthetic_persons.csv
     columns:
+      - SERIALNO
       - SPORDER
       - AGEP
       - SEX
@@ -109,8 +105,10 @@ output_synthetic_population:
       - MIL
       - SCHL
       - OCCP
-      - WKW # Weeks worked during past 12 months
-      - NAICS2 
+      - WKW
+      - NAICSP
+      - NAICS2
+      - SOCP 
       - SOC2
 
 
@@ -139,18 +137,15 @@ gq_options:
 
   input_table_list:
     - tablename: households
-      filename : seed_households_GQ.csv
+      filename : seed_households_gq.csv
     - tablename: persons
-      # expression_filename: seed_persons_expressions.csv
-      filename : seed_persons_GQ.csv
+      filename : seed_persons_gq.csv
     - tablename: geo_cross_walk
       filename : geo_cross_walk.csv
     - tablename: mgra_control_data
       filename : mgra_controls.csv
-      
-  # output_control_file: 'data/taz_controls_adjusted.csv'
   
-  GQ_type_column: GQ_type
+  GQ_type_column: gq_type
   GQ_control_map:
     - code: 1
       control_column: gq_mil_pop
@@ -160,40 +155,42 @@ gq_options:
       control_column: gq_other_pop
   
   household_weight_col: WGTP
-  household_id_col: HHID
+  household_id_col: hhid
 
   output_gq_population:
     household_id: household_id
     households:
       filename: output_gq/synthetic_households_gq.csv
       columns:
+        - SERIALNO
         - NP
         - HHADJINC
         - HHT
-        - WIF # number of workers 
-        - HUPAC # number of children present
+        - HUPAC
         - VEH
-        #- numWorkers
-        - GQ_type
         - BLD
+        - TYPEHUGQ
     persons:
       filename: output_gq/synthetic_persons_gq.csv
       columns:
-      - SPORDER
-      - AGEP
-      - SEX
-      - ESR
-      - COW
-      - WKHP
-      - SCHG
-      - RAC1P
-      - HISP
-      - MIL
-      - SCHL
-      - OCCP
-      - WKW
-      - NAICS2 
-      - SOC2
+        - SERIALNO
+        - SPORDER
+        - AGEP
+        - SEX
+        - ESR
+        - COW
+        - WKHP
+        - SCHG
+        - RAC1P
+        - HISP
+        - MIL
+        - SCHL
+        - OCCP
+        - WKW
+        - NAICSP
+        - NAICS2
+        - SOCP 
+        - SOC2
 
 
   random_seed: 1729

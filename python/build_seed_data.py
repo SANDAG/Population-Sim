@@ -1,74 +1,72 @@
-import pandas as pd
-import numpy as np
-import sys
-
-sys.path.insert(1, 'python')
-from create_mgra_controls import read_sql_file, query_database, establish_db_connection
+""" This module creates seed files for use in populationsim."""
 
 import pandas as pd
-
-def clean_esr(esr):
-    """Assigns 1 if ESR is 1, 2, or 3, otherwise 0."""
-    return 1 if esr in [1, 2, 3] else 0
-
-def build_persons_all(read_sql_file, query_database):
-    # Download the data
-    conn, _ = establish_db_connection(config_path='../config.yml')
-    sql_query = read_sql_file(r'../sql/persons_all.sql')
-    persons_all_sql = query_database(sql_query, conn)
-
-    # SERIALNO that do not exist 
-    persons_serialno_to_remove = pd.read_csv(r'../data/persons_SERIALNO_not_in_persons_all_seed_data.csv')
-    persons_serialno_to_remove['SERIALNO'] = persons_serialno_to_remove['SERIALNO'].astype(str)
-    persons_all = persons_all_sql[~persons_all_sql['SERIALNO'].isin(list(persons_serialno_to_remove['SERIALNO']))]
-    
-    # Add the HHID numerically
-    persons_all['HHID'] = pd.factorize(persons_all['SERIALNO'])[0] + 1 
-
-    # Cleaning to match the seed CSV
-    persons_all['AGEP'] = persons_all['AGEP'].astype(int)
-    persons_all['SCHG'].replace(to_replace=[None], value=0, inplace=True)
-    persons_all['COW'] = persons_all['COW'].astype(float)
-    persons_all['ESR'] = persons_all['ESR'].astype(float)
-    persons_all['MIL'] = persons_all['MIL'].astype(float)
-    persons_all['SPORDER'] = persons_all['SPORDER'].astype(int)
-    persons_all['PUMA'] = persons_all['PUMA'].astype(int)
-    persons_all['SCHG'] = persons_all['SCHG'].astype(int)
-    persons_all['SEX'] = persons_all['SEX'].astype(int)
-
-    # Build the isinlaborforce (1 for ESR 1,2,3 and 0 otherwise)
-    persons_all['isinlaborforce'] = persons_all['ESR'].apply(clean_esr)
-
-    # Arrange the final output
-    persons_all = persons_all[['SERIALNO', 'HHID', 'SPORDER', 'PUMA', 'AGEP', 'SCHG', 'COW', 'SEX', 'ESR', 'MIL', 'WKHP', 'isinlaborforce']]
-    
-    return persons_all
+import sqlalchemy as sql
 
 
+def get_seed_households(sql_engine: sql.engine, query_file: str) -> dict:
+    """Get households seed files.
 
-def build_households_all(read_sql_file, query_database, build_persons_all):
-    # Read the households SQL data
-    conn, _ = establish_db_connection(config_path='../config.yml')
-    sql_query = read_sql_file(r'../sql/households_all.sql')
-    households_all_sql = query_database(sql_query, conn)
+    Get the ACS PUMS households seed data, splitting by Group Quarters versus
+    Households.
 
-    # Remove SERIALNOs that do not exist in the seed data
-    households_serialno_to_remove = pd.read_csv(r'../data/households_SERIALNO_not_in_households_all_seed_data.csv')
-    households_serialno_to_remove['SERIALNO'] = households_serialno_to_remove['SERIALNO'].astype(str)
-    households_all = households_all_sql[~households_all_sql['SERIALNO'].isin(list(households_serialno_to_remove['SERIALNO']))]
+    Args:
+        sql_engine (sql.engine): SQL Database connection
+        query_file (str): SQL query file to return households seed data
 
-    # Merge with the HHID from persons_all
-    persons_all_hhid = build_persons_all(read_sql_file, query_database)[['SERIALNO', 'HHID']].drop_duplicates()
-    households_all = households_all.merge(persons_all_hhid, on='SERIALNO', how='left')
+    Returns:
+        dict[pd.DataFrame, pd.DataFrame]: A two-element dictionary. The first
+            element, "gq", containing the Group Quarters houesholds seed data
+            and the second element, "hh", containing the Households households
+            seed data.
+    """
+    # Get seed data
+    with sql_engine.connect() as connection:
+        with open(query_file, "r") as query:
+            households = pd.read_sql_query(sql.text(query.read()), connection)
 
-    # Match the datatypes as required
-    households_all['PUMA'] = households_all['PUMA'].astype(int)
-    households_all['NP'] = households_all['NP'].astype(int)
-    households_all['HHADJINC'] = households_all['HHADJINC'].astype(float)
-    households_all['WGTP'] = households_all['WGTP'].astype(int)
-    households_all['HHT'] = households_all['HHT'].astype(float)
-    households_all['GQ_type'] = households_all['GQ_type'].astype(int)
-    households_all['BLD'] = households_all['BLD'].astype(float)
-    households_all['HUPAC'] = households_all['HUPAC'].astype(float)
+    # Split into Group Quarters/non-Group Quarters
+    households_gq = households[households["TYPEHUGQ"].isin(["2", "3"])]
+    households_hh = households[households["TYPEHUGQ"] == "1"]
 
-    return households_all
+    # Add the hhid field by sorting SERIALNO
+    households_gq = households_gq.sort_values(by="SERIALNO")
+    households_gq["hhid"] = pd.factorize(households_gq["SERIALNO"])[0] + 1
+    households_hh = households_hh.sort_values(by="SERIALNO")
+    households_hh["hhid"] = pd.factorize(households_hh["SERIALNO"])[0] + 1
+
+    return {"gq": households_gq, "hh": households_hh}
+
+
+def get_seed_persons(sql_engine: sql.engine, query_file: str) -> dict:
+    """Get persons seed files.
+
+    Get the ACS PUMS persons seed data, splitting by Group Quarters versus
+    Households.
+
+    Args:
+        sql_engine (sql.engine): SQL Database connection
+        query_file (str): SQL query file to return persons seed data
+
+    Returns:
+        dict[pd.DataFrame, pd.DataFrame]: A two-element dictionary. The first
+            element, "gq", containing the Group Quarters persons seed data and
+            the second element, "hh", containing the Households persons seed
+            data.
+    """
+    # Get seed data
+    with sql_engine.connect() as connection:
+        with open(query_file, "r") as query:
+            persons = pd.read_sql_query(sql.text(query.read()), connection)
+
+    # Split into Group Quarters/non-Group Quarters
+    persons_gq = persons[persons["TYPEHUGQ"].isin(["2", "3"])]
+    persons_hh = persons[persons["TYPEHUGQ"] == "1"]
+
+    # Add the hhid field by sorting SERIALNO
+    persons_gq = persons_gq.sort_values(by=["SERIALNO", "SPORDER"])
+    persons_gq["hhid"] = pd.factorize(persons_gq["SERIALNO"])[0] + 1
+    persons_hh = persons_hh.sort_values(by=["SERIALNO", "SPORDER"])
+    persons_hh["hhid"] = pd.factorize(persons_hh["SERIALNO"])[0] + 1
+
+    return {"gq": persons_gq, "hh": persons_hh}
