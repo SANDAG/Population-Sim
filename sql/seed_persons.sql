@@ -1,4 +1,4 @@
--- Get ACS PUMS seed persons; San Diego persons with pre-2018 GQs removed
+-- Get ACS PUMS seed persons
 SELECT
     [persons].[SERIALNO],
     [SPORDER],
@@ -45,8 +45,6 @@ FROM
 	[persons].[SERIALNO] = [households].[SERIALNO]
 WHERE
 	[NP] > 0 -- remove vacant households (not necessary for persons but here for documentation)
-    -- undocumented legacy filter from Nivedya Kottayi, pre-2018 GQs removed
-    AND ([TYPEHUGQ] = 1 OR ([TYPEHUGQ] IN (2,3) AND LEFT([persons].[SERIALNO], 4) != '2017'))
     -- Note the 2017-2021 ACS PUMS uses 2010 PUMAS
     AND [persons].[ST] = '06' AND [persons].[PUMA] IN  (
 	'07301', '07302','07303','07304', '07305','07306',

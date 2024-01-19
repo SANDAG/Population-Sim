@@ -1,4 +1,4 @@
--- Get ACS PUMS seed households; non-vacant San Diego households with pre-2018 GQs removed
+-- Get ACS PUMS seed households
 SELECT
     [households].[SERIALNO],
     [PUMA],
@@ -40,8 +40,6 @@ FROM
 	[households].[SERIALNO] = [hh_workers].[SERIALNO]
 WHERE
 	[NP] > 0 -- remove vacant households
-    -- undocumented legacy filter from Nivedya Kottayi, pre-2018 GQs removed
-    AND ([TYPEHUGQ] = 1 OR ([TYPEHUGQ] IN (2,3) AND LEFT([households].[SERIALNO], 4) != '2017'))
     -- Note the 2017-2021 ACS PUMS uses 2010 PUMAS
     AND [households].[ST] = '06' AND [households].[PUMA] IN  (
 	'07301', '07302','07303','07304', '07305','07306',
