@@ -4,9 +4,15 @@ SELECT
     [PUMA],
     [NP],
     [HINCP],
-    -- Adjust HINCP using ADJINC to account for survey month and year
-    -- This brings HINCP to last year of survey (2021), then use SD CPI to adjust to 2022
-    ROUND([HINCP] * [ADJINC] * .000001 * (1+(344.416 - 319.761)/344.416), 0) AS [HHADJINC],
+    -- Adjust HINCP using the San Diego Region CPI based on survey year to 2022 dollars
+    -- https://fred.stlouisfed.org/series/CUUSA424SA0
+    ROUND(
+        CASE WHEN LEFT([households].[SERIALNO], 4) = '2017' THEN [HINCP] * 344.416/283.012
+             WHEN LEFT([households].[SERIALNO], 4) = '2018' THEN [HINCP] * 344.416/292.547
+             WHEN LEFT([households].[SERIALNO], 4) = '2019' THEN [HINCP] * 344.416/299.433
+             WHEN LEFT([households].[SERIALNO], 4) = '2020' THEN [HINCP] * 344.416/303.932
+             WHEN LEFT([households].[SERIALNO], 4) = '2021' THEN [HINCP] * 344.416/319.761
+             ELSE 'error' END, 0) AS [HHADJINC],
     [HHT],
     [workers],
     [HUPAC],
