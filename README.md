@@ -1,25 +1,60 @@
-# Population-Sim
-PopulationSim is an open platform for gnerating synthetic person and households. It emerged from Oregon DOT’s desire to build a shared, open, platform that could be easily adapted for statewide, regional, and urban transportation planning needs and for the Series 15 forecasting, SANDAG has used population sim platform and made it custom ready for San Diego region. 
+# SANDAG PopulationSim Repository
 
-More details about population sim can be found here, https://activitysim.github.io/populationsim/
+## Introduction
 
+This repository is dedicated to running PopulationSim, a powerful demographic simulation tool used by SANDAG to translate marginal control totals produced by the Estimates & Forecast team to micro-simulated households and persons for use by SANDAG's Activity-Based Model team.
 
-# What is population synthesis?
-SANDAG's activity based model (ABM) which operates at an individual level, wherein the travel choices of person and household decision-making agents are predicted by applying Monte Carlo methods to behavioral models, requires a data set of households and persons representing the entire population in the modeling region. Population synthesis refers to the process used to create this data.
+PopulationSim is well-suited for generating detailed household and person-level synthetic populations based on sample data and control totals. It is a important component in urban planning and transportation modeling. Learn more about PopulationSim in its [official documentation](https://activitysim.github.io/populationsim/).
 
-The required inputs to population synthesis are a population sample and marginal distributions (or control totals). The population sample is commonly referred to as the seed or reference sample and the marginal distributions are commonly referred to as controls or targets. The process of expanding the seed sample to match the marginal distribution is termed population synthesis. The software tool which implements this population synthesis process is termed as a Population Synthesizer.
+## Getting Started
 
+### Running PopulationSim
 
-## How does it work?
-![image](https://user-images.githubusercontent.com/97697460/227371687-59ac1922-b15c-4efa-9dfd-edcb8ffbae9e.png)
+1. **Clone the Repository** and ensure an installation of [Miniconda/Anaconda](https://docs.conda.io/projects/miniconda/en/latest/) exists. Use the `environment.yml` file in the root directory of the project to [create the Python virtual environment](https://docs.conda.io/projects/conda/en/4.6.1/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file) needed to run the project.
 
+2. **Update the `config.yml` configuration file** in the project root directory
 
-### Methodology for SANDAG
-![method](https://user-images.githubusercontent.com/97697460/227370137-2004cb37-2a32-47b2-8ba1-b7dcfd29cd9b.PNG)
+```yaml
+sql:
+  server: ""  # SQL instance containing seed and control data
+  schema: ""  # E&F team Series 15 UDM schema to use for control data
+  seed_households: "sql/seed_households.sql"  # household seed data query
+  seed_persons: "sql/seed_persons.sql"  # person seed data query
+  mgra_controls: "sql/mgra_controls.sql"  # mgra controls data query
+  region_controls: "sql/region_controls.sql"  # region controls data query
+  mgrabase: "sql/mgrabase.sql"  # mgrabase file generation data query
 
-### Control variables
-![image](https://user-images.githubusercontent.com/97697460/231205377-b6c26da2-8bb4-48ba-b9ab-2abf7afa0097.png)
+economic_controls: "data/Economic Team Region Controls.csv"  # region economic controls provided by SANDAG's Economics Team
 
+years:  # years for which to generate controls and run populationsim
+  - 2022
+  - 2026
+  - 2029
+  - 2032
+  - 2035
+  - 2040
+  - 2050
+```
 
+3. **Update PopulationSim configuration files** (if necessary)
+   - SANDAG commonly sets the `populationsim/conigs_mp/settings.yaml` file such that `multiprocess: True`, `num_processes: 22`, `multiprocess_steps: num_processes: 22` to enable the maximum level of multiprocessing using the 22 San Diego PUMAS as the `slice_geography: PUMA`. If at least 22 logical processors are not available (not advised due to long run times), it is suggested to set both `num_processes:` configurations to the number of logical processors.
+   - See the PopulationSim [official documentation](https://activitysim.github.io/populationsim/)
 
+4. **Run the `main.py` entry point file** from the project root directory
 
+### Outputs of PopulationSim
+
+Once completed, the output folder will contain subfolders for each year specified in the `config.yml` file. Each subfolder will contain the following files.
+
+| File | Description |
+| ---- | ----------- |
+| synthetic_persons_gq.csv | PopulationSim output synthetic group quarters persons |
+| synthetic_persons.csv | PopulationSim output synthetic persons (non-group quarters) |
+| synthetic_persons_`year`.csv | Combined synthetic persons file for use by the Activity-Based Model team |
+| synthetic_households_gq.csv | PopulationSim output synthetic group quarters households |
+| synthetic_households.csv | PopulationSim output synthetic households (non-group quarters) |
+| synthetic_households_`year`.csv | Combined synthetic households file for use by the Activity-Based Model team |
+| mgra15_based_input_`year`.csv | The mgrabase file for use by the Activity-Based Model team |
+| timing_log.csv | PopulationSim log of process runtimes |
+
+If running PopulationSim as an *official run* for use by SANDAG's QA and/or Activity-Based Model teams, update the version tracker at: `sandag.org\\transdata\socioec\Current_Projects\SR15\S0\version_history.xlsx`
