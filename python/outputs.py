@@ -97,6 +97,14 @@ def organize_outputs(year: int) -> None:
                     "timing_log.csv",
                 ],
             },
+            "controls": {
+                "default_path": "populationsim/data/",
+                "new_path": post_process_path,
+                "files": [
+                    "mgra_controls.csv",
+                    "region_controls.csv",
+                ],
+            }
         }
 
         for k, v in files.items():
