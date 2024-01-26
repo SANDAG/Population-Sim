@@ -36,7 +36,7 @@ def create_abm_outputs(
                 HUPAC=lambda x: x["HUPAC"].fillna(0),
                 BLD=lambda x: x["BLD"].fillna(0),
             )
-        ).to_csv(folder + f"synthetic_households_{year}.csv")
+        ).to_csv(folder + f"synthetic_households_{year}.csv", index=False)
 
         # Combine person files and write to output directory
         persons_hh = pd.read_csv(folder + "synthetic_persons.csv")
@@ -56,7 +56,7 @@ def create_abm_outputs(
                 OCCP=lambda x: x["OCCP"].fillna(0),
                 WKW=lambda x: x["WKW"].fillna(0),
             )
-        ).to_csv(folder + f"synthetic_persons_{year}.csv")
+        ).to_csv(folder + f"synthetic_persons_{year}.csv", index=False)
 
         # Get and write mgrabase file
         with sql_engine.connect() as connection:
