@@ -88,7 +88,8 @@ output_synthetic_population:
       - HUPAC
       - VEH
       - BLD
-      - TYPEHUGQ
+      - gq_type
+      - workers
   persons:
     filename: synthetic_persons.csv
     columns:
@@ -169,7 +170,8 @@ gq_options:
         - HUPAC
         - VEH
         - BLD
-        - TYPEHUGQ
+        - gq_type
+        - workers
     persons:
       filename: output_gq/synthetic_persons_gq.csv
       columns:
