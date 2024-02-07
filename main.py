@@ -80,4 +80,6 @@ for year in config["years"]:
         schema=config["sql"]["schema"],
     )
 
+    
+
 logging.info("All years processed successfully.")
