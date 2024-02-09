@@ -104,6 +104,15 @@ def organize_outputs(year: int) -> None:
                     "mgra_controls.csv",
                     "region_controls.csv",
                 ],
+            },
+            "other_outputs": {
+                "default_path": "populationsim/output/",
+                "new_path": post_process_path,
+                "files": [
+                    "final_summary_mgra.csv",
+                    "final_summary_mgra_PUMA.csv",
+                    "final_summary_region_1.csv",
+                ],
             }
         }
 

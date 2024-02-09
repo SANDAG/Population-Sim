@@ -68,8 +68,8 @@ output_tables:
   action: include
   tables:
     - summary_mgra
-    - summary_region
-    - expanded_household_ids
+    - summary_mgra_PUMA
+    - summary_region_1
 
 
 # Synthetic Population Output Specification
