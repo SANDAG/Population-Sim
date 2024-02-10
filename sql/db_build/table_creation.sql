@@ -14,9 +14,9 @@ DROP TABLE [metadata].[run];
 */
 
 -- Create '[inputs]' schema if it does not exist
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = '[inputs]')
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'inputs')
 BEGIN
-    EXEC('CREATE SCHEMA [inputs]')
+    EXEC('CREATE SCHEMA inputs')
 END
 GO
 
