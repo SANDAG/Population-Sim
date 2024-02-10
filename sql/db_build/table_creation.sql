@@ -1,3 +1,18 @@
+/*
+In case you are deleting the tables post creation: 
+DROP TABLE [inputs].[controls];
+DROP TABLE [inputs].[region_controls];
+DROP TABLE [inputs].[mgra_controls];
+DROP TABLE [inputs].[seed_households_hh];
+DROP TABLE [inputs].[seed_households_gq];
+DROP TABLE [inputs].[seed_persons_hh];
+DROP TABLE [inputs].[seed_persons_gq];
+DROP TABLE [outputs].[households];
+DROP TABLE [outputs].[persons];
+DROP TABLE [outputs].[mgra_based_input];
+DROP TABLE [metadata].[run];
+*/
+
 -- Create '[inputs]' schema if it does not exist
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = '[inputs]')
 BEGIN
@@ -35,12 +50,12 @@ GO
 -- Create Table '[inputs].[controls]'
 CREATE TABLE [inputs].[controls] (
     [run_id] INT NOT NULL,
-    [control_id] INT NOT NULL,
-    [control_name] NVARCHAR(255) NOT NULL,
-    [geography_name] NVARCHAR(255) NOT NULL,
-    [output_name] NVARCHAR(255) NOT NULL,
+    [target] NVARCHAR(255) NOT NULL,
+    [geography] NVARCHAR(255) NOT NULL,
+    [seed_table] NVARCHAR(255) NOT NULL,
     [importance] INT NOT NULL,
-    [expression] NVARCHAR(MAX) NOT NULL,
+    [control_field] NVARCHAR(255) NOT NULL,
+    [expression] NVARCHAR(255) NOT NULL,
     FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id])
 ) WITH (DATA_COMPRESSION = PAGE);
 GO
@@ -96,14 +111,13 @@ CREATE TABLE [inputs].[mgra_controls] (
     [Asian] INT NOT NULL,
     [Black] INT NOT NULL,
     [Hispanic] INT NOT NULL,
-    [Other_v2] INT NOT NULL,
-    [TwoorMore] INT NOT NULL,
+    [Other] INT NOT NULL,
+    [Two_or_More] INT NOT NULL,
     [White] INT NOT NULL,
     [HHSize_1] INT NOT NULL,
     [HHSize_2] INT NOT NULL,
     [HHSize_3] INT NOT NULL,
     [HHSize_4Plus] INT NOT NULL,
-    [Total_HH] INT NOT NULL,
     [HHWork_0] INT NOT NULL,
     [HHWork_1] INT NOT NULL,
     [HHWork_2] INT NOT NULL,
@@ -117,6 +131,7 @@ CREATE TABLE [inputs].[mgra_controls] (
     [HHInc_100000to149999] INT NOT NULL,
     [HHInc_150000to199999] INT NOT NULL,
     [HHInc_200000Plus] INT NOT NULL,
+    [Total_HH] INT NOT NULL,
     [gq_college_pop] INT NOT NULL,
     [gq_mil_pop] INT NOT NULL,
     [gq_other_pop] INT NOT NULL,
@@ -130,19 +145,19 @@ GO
 CREATE TABLE [inputs].[seed_households_hh] (
     [run_id] INT NOT NULL,
     [SERIALNO] NVARCHAR(15) NOT NULL,
-    [hhid] INT NOT NULL,
     [PUMA] INT NOT NULL,
     [NP] INT NOT NULL,
-    [HHADJINC] NVARCHAR(15) NOT NULL,
-    [ADJINC] NVARCHAR(15) NOT NULL,
-    [WGTP] INT NOT NULL,
+    [HINCP] INT NOT NULL,
+    [HHADJINC] INT NOT NULL,
     [HHT] INT NOT NULL,
-    [child_present] INT NOT NULL,
-    [WIF] INT NOT NULL,
+    [workers] INT NOT NULL,
     [HUPAC] INT NOT NULL,
     [VEH] INT NOT NULL,
-    [numWorkers] INT NOT NULL,
     [BLD] INT NOT NULL,
+    [TYPEHUGQ] INT NOT NULL,
+    [gq_type] INT NOT NULL,
+    [WGTP] INT NOT NULL,
+    [hhid] INT NOT NULL,
     FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id])
 ) WITH (DATA_COMPRESSION = PAGE);
 GO
@@ -151,51 +166,51 @@ GO
 CREATE TABLE [inputs].[seed_households_gq] (
     [run_id] INT NOT NULL,
     [SERIALNO] NVARCHAR(15) NOT NULL,
-    [hhid] INT NOT NULL,
     [PUMA] INT NOT NULL,
     [NP] INT NOT NULL,
-    [HHADJINC] NVARCHAR(15) NOT NULL,
-    [ADJINC] NVARCHAR(15) NOT NULL,
-    [WGTP] INT NOT NULL,
-    [HHT] INT NULL,
-    [GQ_type] INT NOT NULL,
-    [child_present] INT NOT NULL,
-    [WIF] INT NULL,
+    [HINCP] INT NULL,
+    [HHADJINC] INT NULL,
+    [HHT] INT NOT NULL,
+    [workers] INT NOT NULL,
     [HUPAC] INT NULL,
     [VEH] INT NULL,
-    [numWorkers] INT NOT NULL,
     [BLD] INT NULL,
+    [TYPEHUGQ] INT NOT NULL,
+    [gq_type] INT NOT NULL,
+    [WGTP] INT NOT NULL,
+    [hhid] INT NOT NULL,
     FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id])
 ) WITH (DATA_COMPRESSION = PAGE);
 GO
 
-
-
-
 -- Create Table '[inputs].[seed_persons_hh]'
 CREATE TABLE [inputs].[seed_persons_hh] (
     [run_id] INT NOT NULL,
-    [HHID] INT NOT NULL,
+    [SERIALNO] NVARCHAR(15) NOT NULL,
     [SPORDER] INT NOT NULL,
     [PUMA] INT NOT NULL,
     [AGEP] INT NOT NULL,
-    [SCHG] INT NOT NULL,
-    [COW] INT NULL,
     [SEX] NVARCHAR(1) NOT NULL,
     [ESR] NVARCHAR(1) NULL,
-    [MIL] NVARCHAR(1) NULL,
+    [laborforce] INT NOT NULL,
+    [worker] INT NOT NULL,
+    [COW] INT NULL,
     [WKHP] INT NULL,
-    [RAC1P] INT NOT NULL,
+    [SCHG] INT NOT NULL,
     [HISP] INT NOT NULL,
-    [isWorker] INT NOT NULL,
-    [pop_race] NVARCHAR(255) NOT NULL,
-    [NAICS2] NVARCHAR(3) NOT NULL,
-    [WKW] NVARCHAR(1) NULL,
-    [OCCP] NVARCHAR(4) NULL,
+    [RAC1P] INT NOT NULL,
+    [race] NVARCHAR(255) NOT NULL,
+    [MIL] NVARCHAR(1) NULL,
     [SCHL] NVARCHAR(2) NULL,
-    [isinlaborforce] INT NOT NULL,
-    [SOCP] NVARCHAR(255) NOT NULL,
-    [SOC2] NVARCHAR(3) NOT NULL,
+    [OCCP] NVARCHAR(4) NULL,
+    [WKW] NVARCHAR(1) NULL,
+    [NAICSP] NVARCHAR(255) NULL,
+    [NAICS2] NVARCHAR(3) NULL,
+    [SOCP] NVARCHAR(255) NULL,
+    [SOC2] NVARCHAR(3) NULL,
+    [TYPEHUGQ] INT NOT NULL,
+    [gq_type] INT NOT NULL,
+    [hhid] INT NOT NULL,
     FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id])
 ) WITH (DATA_COMPRESSION = PAGE);
 GO
@@ -204,26 +219,31 @@ GO
 -- Create Table '[inputs].[seed_persons_gq]'
 CREATE TABLE [inputs].[seed_persons_gq] (
     [run_id] INT NOT NULL,
+    [SERIALNO] NVARCHAR(15) NOT NULL,
     [SPORDER] INT NOT NULL,
     [PUMA] INT NOT NULL,
     [AGEP] INT NOT NULL,
-    [SCHG] INT NOT NULL,
-    [COW] INT NULL,
     [SEX] NVARCHAR(1) NOT NULL,
     [ESR] NVARCHAR(1) NULL,
-    [MIL] NVARCHAR(1) NULL,
+    [laborforce] INT NOT NULL,
+    [worker] INT NOT NULL,
+    [COW] INT NULL,
     [WKHP] INT NULL,
-    [RAC1P] INT NOT NULL,
+    [SCHG] INT NOT NULL,
     [HISP] INT NOT NULL,
-    [isWorker] INT NOT NULL,
-    [pop_race] NVARCHAR(255) NOT NULL,
-    [NAICS2] NVARCHAR(3) NOT NULL,
-    [WKW] NVARCHAR(1) NULL,
-    [OCCP] NVARCHAR(4) NULL,
+    [RAC1P] INT NOT NULL,
+    [race] NVARCHAR(255) NOT NULL,
+    [MIL] NVARCHAR(1) NULL,
     [SCHL] NVARCHAR(2) NULL,
-    [isinlaborforce] INT NOT NULL,
-    [SOCP] NVARCHAR(255) NOT NULL,
-    [SOC2] NVARCHAR(3) NOT NULL,
+    [OCCP] NVARCHAR(4) NULL,
+    [WKW] NVARCHAR(1) NULL,
+    [NAICSP] NVARCHAR(255) NULL,
+    [NAICS2] NVARCHAR(3) NULL,
+    [SOCP] NVARCHAR(255) NULL,
+    [SOC2] NVARCHAR(3) NULL,
+    [TYPEHUGQ] INT NOT NULL,
+    [gq_type] INT NOT NULL,
+    [hhid] INT NOT NULL,
     FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id])
 ) WITH (DATA_COMPRESSION = PAGE);
 GO
@@ -236,14 +256,15 @@ CREATE TABLE [outputs].[households] (
     [year] INT NOT NULL, 
     [household_id] INT NOT NULL,
     [mgra] INT NOT NULL,
-    [NP] FLOAT NOT NULL,
-    [HHADJINC] FLOAT NOT NULL,
+    [SERIALNO] NVARCHAR(15) NOT NULL,
+    [NP] INT NOT NULL,
+    [HHADJINC] INT NOT NULL,
     [HHT] NVARCHAR(1) NOT NULL,
-    [WIF] INT NULL,
     [HUPAC] NVARCHAR(1) NOT NULL,
-    [VEH] NVARCHAR(1),
-    [BLD] NVARCHAR(2),
-    [GQ_type] INT NOT NULL,
+    [VEH] NVARCHAR(1) NOT NULL,
+    [BLD] NVARCHAR(2) NOT NULL,
+    [gq_type] INT NOT NULL,
+    [workers] INT NOT NULL,
     INDEX ccsi_outputs_households CLUSTERED COLUMNSTORE
 );
 GO
@@ -255,6 +276,7 @@ CREATE TABLE [outputs].[persons] (
     [year] INT NOT NULL,
     [mgra] INT NOT NULL,
     [household_id] INT NOT NULL,
+    [SERIALNO] NVARCHAR(15) NOT NULL,
     [SPORDER] FLOAT NULL,
     [AGEP] FLOAT NULL,
     [SEX] NVARCHAR(1) NOT NULL,
@@ -268,8 +290,10 @@ CREATE TABLE [outputs].[persons] (
     [SCHL] NVARCHAR(2) NOT NULL,
     [OCCP] NVARCHAR(4) NOT NULL,
     [WKW] NVARCHAR(1) NOT NULL,
-    [NAICS2] NVARCHAR(3) NOT NULL,
-    [SOC2] NVARCHAR(3) NOT NULL,
+    [NAICSP] NVARCHAR(15) NULL,
+    [NAICS2] NVARCHAR(3) NULL,
+    [SOCP] NVARCHAR(15) NULL,
+    [SOC2] NVARCHAR(3) NULL,
     INDEX CCI_outputs_persons CLUSTERED COLUMNSTORE
 );
 GO
@@ -293,7 +317,7 @@ CREATE TABLE [outputs].[mgra_based_input] (
     [hh_sf] INT NOT NULL,
     [hh_mf] INT NOT NULL,
     [hh_mh] INT NOT NULL,
-    [hhs] INT NOT NULL,
+    [hhs] FLOAT NOT NULL,
     [gq_civ] INT NOT NULL,
     [gq_mil] INT NOT NULL,
     [i1] INT NOT NULL,
