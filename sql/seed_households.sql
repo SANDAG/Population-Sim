@@ -7,12 +7,24 @@ SELECT
     -- Adjust HINCP using the San Diego Region CPI based on survey year to 2022 dollars
     -- https://fred.stlouisfed.org/series/CUUSA424SA0
     ROUND(
-        CASE WHEN LEFT([households].[SERIALNO], 4) = '2017' THEN [HINCP] * 344.416/283.012
-             WHEN LEFT([households].[SERIALNO], 4) = '2018' THEN [HINCP] * 344.416/292.547
-             WHEN LEFT([households].[SERIALNO], 4) = '2019' THEN [HINCP] * 344.416/299.433
-             WHEN LEFT([households].[SERIALNO], 4) = '2020' THEN [HINCP] * 344.416/303.932
-             WHEN LEFT([households].[SERIALNO], 4) = '2021' THEN [HINCP] * 344.416/319.761
-             ELSE 'error' END, 0) AS [HHADJINC],
+        CASE 
+            WHEN CHARINDEX('GQ', [households].[SERIALNO]) > 0 THEN
+                CASE WHEN LEFT([households].[SERIALNO], 4) = '2017' THEN [PINCP] * 344.416/283.012
+                     WHEN LEFT([households].[SERIALNO], 4) = '2018' THEN [PINCP] * 344.416/292.547
+                     WHEN LEFT([households].[SERIALNO], 4) = '2019' THEN [PINCP] * 344.416/299.433
+                     WHEN LEFT([households].[SERIALNO], 4) = '2020' THEN [PINCP] * 344.416/303.932
+                     WHEN LEFT([households].[SERIALNO], 4) = '2021' THEN [PINCP] * 344.416/319.761
+                     ELSE 'error' 
+                END
+            ELSE
+                CASE WHEN LEFT([households].[SERIALNO], 4) = '2017' THEN [HINCP] * 344.416/283.012
+                     WHEN LEFT([households].[SERIALNO], 4) = '2018' THEN [HINCP] * 344.416/292.547
+                     WHEN LEFT([households].[SERIALNO], 4) = '2019' THEN [HINCP] * 344.416/299.433
+                     WHEN LEFT([households].[SERIALNO], 4) = '2020' THEN [HINCP] * 344.416/303.932
+                     WHEN LEFT([households].[SERIALNO], 4) = '2021' THEN [HINCP] * 344.416/319.761
+                     ELSE 'error'
+                END
+        END, 0) AS [HHADJINC],
     [HHT],
     [workers],
     [HUPAC],
@@ -36,7 +48,8 @@ FROM
         -- use only for GQs (1 person)
         MAX([MIL]) AS [MIL],
         MAX([SCHG]) AS [SCHG],
-        MAX([PWGTP]) AS [PWGTP]
+        MAX([PWGTP]) AS [PWGTP],
+		SUM([PINCP]) AS [PINCP]
     FROM
         [acs].[pums].[5y_2017_2021_persons]
     GROUP BY

@@ -36,7 +36,8 @@ SELECT
          WHEN [TYPEHUGQ] = 3 AND [MIL] = 1 THEN 1  -- military gq
          WHEN [TYPEHUGQ] = 3 AND [SCHG] IN (15,16) THEN 2  -- college gq
 		 WHEN [TYPEHUGQ] IN (2,3) THEN 3  -- other gq
-		 END AS [gq_type]
+		 END AS [gq_type],
+    [PINCP]
 FROM
     [acs].[pums].[5y_2017_2021_persons] AS [persons]
     INNER JOIN
