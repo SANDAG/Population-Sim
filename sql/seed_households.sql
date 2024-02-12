@@ -8,7 +8,7 @@ SELECT
     -- https://fred.stlouisfed.org/series/CUUSA424SA0
     ROUND(
         CASE 
-            WHEN CHARINDEX('GQ', [households].[SERIALNO]) > 0 THEN
+            WHEN [TYPEHUGQ] IN (2,3) THEN
                 CASE WHEN LEFT([households].[SERIALNO], 4) = '2017' THEN [PINCP] * 344.416/283.012
                      WHEN LEFT([households].[SERIALNO], 4) = '2018' THEN [PINCP] * 344.416/292.547
                      WHEN LEFT([households].[SERIALNO], 4) = '2019' THEN [PINCP] * 344.416/299.433
@@ -49,7 +49,7 @@ FROM
         MAX([MIL]) AS [MIL],
         MAX([SCHG]) AS [SCHG],
         MAX([PWGTP]) AS [PWGTP],
-		SUM([PINCP]) AS [PINCP]
+		MAX([PINCP]) AS [PINCP]
     FROM
         [acs].[pums].[5y_2017_2021_persons]
     GROUP BY
