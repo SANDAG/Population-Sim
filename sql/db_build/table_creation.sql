@@ -1,11 +1,10 @@
--- Create '[inputs]' schema if it does not exist
-CREATE SCHEMA inputs;
+CREATE SCHEMA [inputs];
 GO
 
-CREATE SCHEMA outputs;
+CREATE SCHEMA [outputs];
 GO
 
-CREATE SCHEMA metadata;
+CREATE SCHEMA [metadata];
 GO
 
 -- Create Table [metadata].[run]
@@ -17,7 +16,7 @@ CREATE TABLE [metadata].[run] (
     [version] NVARCHAR(50) NOT NULL,
     [comments] NVARCHAR(200) NULL,
     [loaded] BIT NOT NULL,
-    CONSTRAINT [pk_run] PRIMARY KEY ([run_id]))
+    CONSTRAINT [pk_metadata_run] PRIMARY KEY ([run_id]))
 WITH (DATA_COMPRESSION = PAGE)
 GO
 
@@ -31,8 +30,9 @@ CREATE TABLE [inputs].[controls] (
     [importance] INT NOT NULL,
     [control_field] NVARCHAR(255) NOT NULL,
     [expression] NVARCHAR(255) NOT NULL,
-    CONSTRAINT [pk_run_control] PRIMARY KEY ([run_id], [control_id]),
-    FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id])
+    CONSTRAINT [pk_inputs_controls] PRIMARY KEY ([run_id], [control_id]),
+    CONSTRAINT fk_inputs_controls_run_id FOREIGN KEY ([run_id])
+    REFERENCES [metadata].[run]([run_id])
 ) WITH (DATA_COMPRESSION = PAGE);
 GO
 
@@ -45,8 +45,9 @@ CREATE TABLE [outputs].[control_totals] (
     [control_value] INT NOT NULL,
     [result] INT NOT NULL,
     INDEX ccsi_outputs_control_totals CLUSTERED COLUMNSTORE,
-    CONSTRAINT fk_control_totals_controls FOREIGN KEY ([run_id], [control_id]) 
-    REFERENCES [inputs].[controls] ([run_id], [control_id])
+    CONSTRAINT fk_control_totals_run_id_control_id FOREIGN KEY ([run_id], [control_id]) 
+    REFERENCES [inputs].[controls] ([run_id], [control_id]),
+    CONSTRAINT fk_control_totals_run_id FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id])
 );
 GO
 
@@ -68,13 +69,13 @@ CREATE TABLE [inputs].[seed_households] (
     [gq_type] INT NOT NULL,
     [WGTP] INT NOT NULL,
     [hhid] INT NOT NULL,
-    FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id]),
+    CONSTRAINT fk_inputs_seed_households_run_id FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id]),
     INDEX ccsi_inputs_seed_households CLUSTERED COLUMNSTORE
 );
 GO
 
--- Create Table '[inputs].[seed_persons_hh]'
-CREATE TABLE [inputs].[seed_persons_hh] (
+-- Create Table '[inputs].[seed_persons]'
+CREATE TABLE [inputs].[seed_persons] (
     [run_id] INT NOT NULL,
     [SERIALNO] NVARCHAR(15) NOT NULL,
     [SPORDER] INT NOT NULL,
@@ -102,7 +103,7 @@ CREATE TABLE [inputs].[seed_persons_hh] (
     [gq_type] INT NOT NULL,
     [hhid] INT NOT NULL,
     [PINCP] INT NOT NULL
-    FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id]),
+    CONSTRAINT fk_inputs_seed_persons_run_id FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id]),
     INDEX ccsi_inputs_seed_persons CLUSTERED COLUMNSTORE
 );
 GO
@@ -122,7 +123,7 @@ CREATE TABLE [outputs].[households] (
     [BLD] NVARCHAR(2) NOT NULL,
     [gq_type] INT NOT NULL,
     [workers] INT NOT NULL,
-    FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id]),
+    CONSTRAINT fk_outputs_households_run_id FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id]),
     INDEX ccsi_outputs_households CLUSTERED COLUMNSTORE
 );
 GO
@@ -151,8 +152,8 @@ CREATE TABLE [outputs].[persons] (
     [NAICS2] NVARCHAR(3) NULL,
     [SOCP] NVARCHAR(15) NULL,
     [SOC2] NVARCHAR(3) NULL,
-    FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id]),
-    INDEX CCI_outputs_persons CLUSTERED COLUMNSTORE
+    CONSTRAINT fk_outputs_persons_run_id FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id]),
+    INDEX ccsi_outputs_persons CLUSTERED COLUMNSTORE
 );
 GO
 
@@ -221,7 +222,7 @@ CREATE TABLE [outputs].[mgra_based_input] (
     [landacre] FLOAT NOT NULL,
     [effective_acres] FLOAT NOT NULL,
     [truckregiontype] INT NOT NULL,
-    FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id]),
+    CONSTRAINT fk_outputs_mgra_based_input_run_id FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id]),
     INDEX ccsi_mgra_based_input CLUSTERED COLUMNSTORE
 );
 GO
