@@ -1,37 +1,11 @@
-/*
-In case you are deleting the tables post creation: 
-DROP TABLE [inputs].[controls];
-DROP TABLE [inputs].[region_controls];
-DROP TABLE [inputs].[mgra_controls];
-DROP TABLE [inputs].[seed_households_hh];
-DROP TABLE [inputs].[seed_households_gq];
-DROP TABLE [inputs].[seed_persons_hh];
-DROP TABLE [inputs].[seed_persons_gq];
-DROP TABLE [outputs].[households];
-DROP TABLE [outputs].[persons];
-DROP TABLE [outputs].[mgra_based_input];
-DROP TABLE [metadata].[run];
-*/
-
 -- Create '[inputs]' schema if it does not exist
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'inputs')
-BEGIN
-    EXEC('CREATE SCHEMA inputs')
-END
+CREATE SCHEMA inputs;
 GO
 
--- Create 'outputs' schema if it does not exist
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'outputs')
-BEGIN
-    EXEC('CREATE SCHEMA outputs')
-END
+CREATE SCHEMA outputs;
 GO
 
--- Create 'outputs' schema if it does not exist
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'metadata')
-BEGIN
-    EXEC('CREATE SCHEMA metadata')
-END
+CREATE SCHEMA metadata;
 GO
 
 -- Create Table [metadata].[run]
@@ -50,99 +24,35 @@ GO
 -- Create Table '[inputs].[controls]'
 CREATE TABLE [inputs].[controls] (
     [run_id] INT NOT NULL,
+    [control_id] INT NOT NULL,
     [target] NVARCHAR(255) NOT NULL,
     [geography] NVARCHAR(255) NOT NULL,
     [seed_table] NVARCHAR(255) NOT NULL,
     [importance] INT NOT NULL,
     [control_field] NVARCHAR(255) NOT NULL,
     [expression] NVARCHAR(255) NOT NULL,
+    CONSTRAINT [pk_run_control] PRIMARY KEY ([run_id], [control_id]),
     FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id])
 ) WITH (DATA_COMPRESSION = PAGE);
 GO
 
-
--- Create Table '[inputs].[region_controls]'
-CREATE TABLE [inputs].[region_controls] (
+-- Create Table '[outputs].[control_totals]'
+CREATE TABLE [outputs].[control_totals] (
     [run_id] INT NOT NULL,
-    [year] INT NOT NULL,
-    [region] INT NOT NULL,
-    [job_1] INT NOT NULL,
-    [job_2] INT NOT NULL,
-    [job_3] INT NOT NULL,
-    [job_4] INT NOT NULL,
-    [job_5] INT NOT NULL,
-    [job_6] INT NOT NULL,
-    [job_7] INT NOT NULL,
-    [job_8] INT NOT NULL,
-    [job_9] INT NOT NULL,
-    [job_10] INT NOT NULL,
-    [job_11] INT NOT NULL,
-    [job_12] INT NOT NULL,
-    [job_13] INT NOT NULL,
-    [job_14] INT NOT NULL,
-    [lfp_black] INT NOT NULL,
-    [lfp_hispanic] INT NOT NULL,
-    [lfp_other] INT NOT NULL,
-    [lfp_white] INT NOT NULL,
-    FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id])
-) WITH (DATA_COMPRESSION = PAGE);
+    [geography] NVARCHAR(15) NOT NULL,
+    [geography_id] NVARCHAR(15) NOT NULL,
+    [control_id] INT NOT NULL,
+    [control_value] INT NOT NULL,
+    [result] INT NOT NULL,
+    INDEX ccsi_outputs_control_totals CLUSTERED COLUMNSTORE,
+    CONSTRAINT fk_control_totals_controls FOREIGN KEY ([run_id], [control_id]) 
+    REFERENCES [inputs].[controls] ([run_id], [control_id])
+);
 GO
 
 
--- Create Table '[inputs].[mgra_controls]'
-CREATE TABLE [inputs].[mgra_controls] (
-    [run_id] INT NOT NULL,
-    [year] INT NOT NULL,
-    [mgra] INT NOT NULL,
-    [Male] INT NOT NULL,
-    [Female] INT NOT NULL,
-    [Age_LT5] INT NOT NULL,
-    [Age_5to9] INT NOT NULL,
-    [Age_10to14] INT NOT NULL,
-    [Age_15to17] INT NOT NULL,
-    [Age_18to24] INT NOT NULL,
-    [Age_25to34] INT NOT NULL,
-    [Age_35to44] INT NOT NULL,
-    [Age_45to54] INT NOT NULL,
-    [Age_55to64] INT NOT NULL,
-    [Age_65to74] INT NOT NULL,
-    [Age_75to84] INT NOT NULL,
-    [Age_85Plus] INT NOT NULL,
-    [Asian] INT NOT NULL,
-    [Black] INT NOT NULL,
-    [Hispanic] INT NOT NULL,
-    [Other] INT NOT NULL,
-    [Two_or_More] INT NOT NULL,
-    [White] INT NOT NULL,
-    [HHSize_1] INT NOT NULL,
-    [HHSize_2] INT NOT NULL,
-    [HHSize_3] INT NOT NULL,
-    [HHSize_4Plus] INT NOT NULL,
-    [HHWork_0] INT NOT NULL,
-    [HHWork_1] INT NOT NULL,
-    [HHWork_2] INT NOT NULL,
-    [HHWork_3Plus] INT NOT NULL,
-    [HHChild_0] INT NOT NULL,
-    [HHChild_1Plus] INT NOT NULL,
-    [HHInc_0to14999] INT NOT NULL,
-    [HHInc_15000to29999] INT NOT NULL,
-    [HHInc_30000to59999] INT NOT NULL,
-    [HHInc_60000to99999] INT NOT NULL,
-    [HHInc_100000to149999] INT NOT NULL,
-    [HHInc_150000to199999] INT NOT NULL,
-    [HHInc_200000Plus] INT NOT NULL,
-    [Total_HH] INT NOT NULL,
-    [gq_college_pop] INT NOT NULL,
-    [gq_mil_pop] INT NOT NULL,
-    [gq_other_pop] INT NOT NULL,
-    [Total_HH_GQ] INT NOT NULL,
-    FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id])
-) WITH (DATA_COMPRESSION = PAGE);
-GO
-
-
--- Create Table '[inputs].[seed_households_hh]'
-CREATE TABLE [inputs].[seed_households_hh] (
+-- Create Table '[inputs].[seed_households]'
+CREATE TABLE [inputs].[seed_households] (
     [run_id] INT NOT NULL,
     [SERIALNO] NVARCHAR(15) NOT NULL,
     [PUMA] INT NOT NULL,
@@ -158,29 +68,9 @@ CREATE TABLE [inputs].[seed_households_hh] (
     [gq_type] INT NOT NULL,
     [WGTP] INT NOT NULL,
     [hhid] INT NOT NULL,
-    FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id])
-) WITH (DATA_COMPRESSION = PAGE);
-GO
-
--- Create Table '[inputs].[seed_households_gq]'
-CREATE TABLE [inputs].[seed_households_gq] (
-    [run_id] INT NOT NULL,
-    [SERIALNO] NVARCHAR(15) NOT NULL,
-    [PUMA] INT NOT NULL,
-    [NP] INT NOT NULL,
-    [HINCP] INT NULL,
-    [HHADJINC] INT NULL,
-    [HHT] INT NOT NULL,
-    [workers] INT NOT NULL,
-    [HUPAC] INT NULL,
-    [VEH] INT NULL,
-    [BLD] INT NULL,
-    [TYPEHUGQ] INT NOT NULL,
-    [gq_type] INT NOT NULL,
-    [WGTP] INT NOT NULL,
-    [hhid] INT NOT NULL,
-    FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id])
-) WITH (DATA_COMPRESSION = PAGE);
+    FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id]),
+    INDEX ccsi_inputs_seed_households CLUSTERED COLUMNSTORE
+);
 GO
 
 -- Create Table '[inputs].[seed_persons_hh]'
@@ -211,49 +101,16 @@ CREATE TABLE [inputs].[seed_persons_hh] (
     [TYPEHUGQ] INT NOT NULL,
     [gq_type] INT NOT NULL,
     [hhid] INT NOT NULL,
-    FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id])
-) WITH (DATA_COMPRESSION = PAGE);
+    [PINCP] INT NOT NULL
+    FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id]),
+    INDEX ccsi_inputs_seed_persons CLUSTERED COLUMNSTORE
+);
 GO
-
-
--- Create Table '[inputs].[seed_persons_gq]'
-CREATE TABLE [inputs].[seed_persons_gq] (
-    [run_id] INT NOT NULL,
-    [SERIALNO] NVARCHAR(15) NOT NULL,
-    [SPORDER] INT NOT NULL,
-    [PUMA] INT NOT NULL,
-    [AGEP] INT NOT NULL,
-    [SEX] NVARCHAR(1) NOT NULL,
-    [ESR] NVARCHAR(1) NULL,
-    [laborforce] INT NOT NULL,
-    [worker] INT NOT NULL,
-    [COW] INT NULL,
-    [WKHP] INT NULL,
-    [SCHG] INT NOT NULL,
-    [HISP] INT NOT NULL,
-    [RAC1P] INT NOT NULL,
-    [race] NVARCHAR(255) NOT NULL,
-    [MIL] NVARCHAR(1) NULL,
-    [SCHL] NVARCHAR(2) NULL,
-    [OCCP] NVARCHAR(4) NULL,
-    [WKW] NVARCHAR(1) NULL,
-    [NAICSP] NVARCHAR(255) NULL,
-    [NAICS2] NVARCHAR(3) NULL,
-    [SOCP] NVARCHAR(255) NULL,
-    [SOC2] NVARCHAR(3) NULL,
-    [TYPEHUGQ] INT NOT NULL,
-    [gq_type] INT NOT NULL,
-    [hhid] INT NOT NULL,
-    FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id])
-) WITH (DATA_COMPRESSION = PAGE);
-GO
-
 
 
 -- Create Table '[outputs].[households]' 
 CREATE TABLE [outputs].[households] (
     [run_id] INT NOT NULL,
-    [year] INT NOT NULL, 
     [household_id] INT NOT NULL,
     [mgra] INT NOT NULL,
     [SERIALNO] NVARCHAR(15) NOT NULL,
@@ -265,6 +122,7 @@ CREATE TABLE [outputs].[households] (
     [BLD] NVARCHAR(2) NOT NULL,
     [gq_type] INT NOT NULL,
     [workers] INT NOT NULL,
+    FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id]),
     INDEX ccsi_outputs_households CLUSTERED COLUMNSTORE
 );
 GO
@@ -273,7 +131,6 @@ GO
 -- Create Table '[outputs].[persons]'
 CREATE TABLE [outputs].[persons] (
     [run_id] INT NOT NULL,
-    [year] INT NOT NULL,
     [mgra] INT NOT NULL,
     [household_id] INT NOT NULL,
     [SERIALNO] NVARCHAR(15) NOT NULL,
@@ -294,16 +151,14 @@ CREATE TABLE [outputs].[persons] (
     [NAICS2] NVARCHAR(3) NULL,
     [SOCP] NVARCHAR(15) NULL,
     [SOC2] NVARCHAR(3) NULL,
+    FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id]),
     INDEX CCI_outputs_persons CLUSTERED COLUMNSTORE
 );
 GO
 
-
-
 -- Create Table '[outputs].[mgra_based_input]' (This is for the ABM Team) 
 CREATE TABLE [outputs].[mgra_based_input] (
     [run_id] INT NOT NULL,
-    [year] INT NOT NULL,
     [mgra] INT NOT NULL,
     [taz] INT NOT NULL,
     [LUZ] INT NOT NULL,
@@ -365,8 +220,8 @@ CREATE TABLE [outputs].[mgra_based_input] (
     [acre] FLOAT NOT NULL,
     [landacre] FLOAT NOT NULL,
     [effective_acres] FLOAT NOT NULL,
-    [truckregiontype] INT NOT NULL
-) WITH (DATA_COMPRESSION = PAGE);
+    [truckregiontype] INT NOT NULL,
+    FOREIGN KEY ([run_id]) REFERENCES [metadata].[run]([run_id]),
+    INDEX ccsi_mgra_based_input CLUSTERED COLUMNSTORE
+);
 GO
-
-
