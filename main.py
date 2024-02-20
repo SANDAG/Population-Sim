@@ -10,6 +10,7 @@ import yaml
 from python.build_controls import get_mgra_controls, get_region_controls
 from python.build_seed_data import get_seed_households, get_seed_persons
 from python.outputs import create_abm_outputs, organize_outputs
+from python.etl import run_etl
 
 
 # Method used to run populationsim from entry point
@@ -80,6 +81,7 @@ for year in config["years"]:
         schema=config["sql"]["schema"],
     )
 
-    
+    # Run the ETL process
+    run_etl(year=year, config_path='config.yml')
 
 logging.info("All years processed successfully.")
