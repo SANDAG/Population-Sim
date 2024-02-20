@@ -98,7 +98,7 @@ def run_etl(year, config_path='config.yml'):
         'user': user,
         'date': pd.Timestamp.now(),
         'version': config['version'],
-        'comments': 'Testing',
+        'comments': config['comments'],
         'loaded': 0
     }
     pd.DataFrame([run_metadata]).to_sql(name='run', con=engine, schema='metadata', if_exists='append', index=False)

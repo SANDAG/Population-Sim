@@ -1,15 +1,15 @@
 version: "v1.0.0-prerelease"
+user: "cra"
+comments: "No Comments"
 
 sql:
-  server: ""
-  schema: ""
+  server: "ddamwsql16"
+  schema: "[2024_01_24]"
   seed_households: "sql/seed_households.sql"
   seed_persons: "sql/seed_persons.sql"
   mgra_controls: "sql/mgra_controls.sql"
   region_controls: "sql/region_controls.sql"
   mgrabase: "sql/mgrabase.sql"
-
-economic_controls: "data/Economic Team Region Controls.csv"
 
 years:
   - 2022
