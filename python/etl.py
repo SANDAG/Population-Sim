@@ -1,5 +1,7 @@
 import pandas as pd
 import sqlalchemy as sql
+from sqlalchemy.orm import Session
+from sqlalchemy import insert
 import yaml
 import os
 
@@ -58,11 +60,32 @@ def add_control_id(df, engine, run_id, control_column='target'):
     df['control_id'] = df[control_column].map(control_id_mapping)
     return df[df['control_id'].notnull()]
 
+def load_to_sql(df, name, con, schema):
+    insert_blocks = df.to_dict('records')
+    
+    # Replace nan values with None (NULL) in each dictionary
+    for block in insert_blocks:
+        for key, value in block.items():
+            if pd.isna(value):  
+                block[key] = None  
+
+    table = sql.Table(
+        name,
+        sql.MetaData(),
+        schema=schema,
+        autoload_with=con,
+    )
+    
+    # Bulk insert
+    with Session(con) as session:
+        session.execute(insert(table), insert_blocks)
+        session.commit()
+
 def etl_controls_csv(run_id, filepath, engine, table_name, schema):
     df = pd.read_csv(filepath)
     df = add_run_id(df, run_id)
     df['control_id'] = range(1, len(df) + 1)
-    df.to_sql(name=table_name, con=engine, schema=schema, if_exists='append', index=False)
+    load_to_sql(df=df, name=table_name, con=engine, schema=schema)
 
 def etl_final_summary(engine, run_id, year, transformations_func, input_path, output_table, schema):
     df = pd.read_csv(f'output/{year}/{input_path}')
@@ -71,22 +94,46 @@ def etl_final_summary(engine, run_id, year, transformations_func, input_path, ou
     df = add_control_id(df, engine, run_id, control_column='target')
     df = df.rename(columns={'id': 'geography_id', 'control':'control_value'})
     df = df[['run_id', 'geography', 'geography_id', 'control_id', 'control_value', 'result']]
-    df.to_sql(name=output_table, con=engine, schema=schema, if_exists='append', index=False)
+    load_to_sql(df=df, name=output_table, con=engine, schema=schema)
+
+seed_persons_dtype_dict = {
+    'PUMA': 'Int64', 
+    'SEX': 'Int64',
+    'ESR': 'Int64',
+    'COW': 'Int64',
+    'SCHG': 'Int64',
+    'RAC1P': 'Int64',
+    'MIL': 'Int64',
+    'SCHL': 'Int64',
+    'OCCP': 'Int64',
+    'WKW': 'Int64',
+    'SOC2': 'Int64'
+}
+output_households_dtype_dict = {
+    'HHT': 'Int64', 
+    'HUPAC': 'Int64',
+    'VEH': 'Int64',
+    'BLD': 'Int64',
+}
 
 def etl_simple_files(run_id, file_mapping, year, engine):
     for filepath, table_info in file_mapping.items():
-        df = pd.read_csv(filepath.replace('year', str(year)))
+        if 'persons' in filepath:
+            df = pd.read_csv(filepath.replace('year', str(year)), dtype=seed_persons_dtype_dict)
+        elif 'synthetic_households':
+            df = pd.read_csv(filepath.replace('year', str(year)), dtype=output_households_dtype_dict)
+        else:
+            df = pd.read_csv(filepath.replace('year', str(year)))
         df = add_run_id(df, run_id)
         with engine.begin() as conn: 
-            df.to_sql(name=table_info[1], con=conn, schema=table_info[0], if_exists='append', index=False)
+            load_to_sql(df=df, name=table_info[1], con=conn, schema=table_info[0])
         print(f"{filepath} is uploaded")
     
-
 def run_etl(year, config_path='config.yml'):
     engine, config = create_engine_from_config(config_path)
     run_id = get_next_run_id(engine)
     
-    # Get the user - to load into the metadata
+    # load the user to the metadata
     with engine.connect() as conn:
         result = conn.execute(sql.text("SELECT USER_NAME() as username"))
         user = result.first()[0].split("\\")[1] 
@@ -101,7 +148,10 @@ def run_etl(year, config_path='config.yml'):
         'comments': config['comments'],
         'loaded': 0
     }
-    pd.DataFrame([run_metadata]).to_sql(name='run', con=engine, schema='metadata', if_exists='append', index=False)
+    load_to_sql(df=pd.DataFrame([run_metadata]), 
+                name='run', 
+                con=engine, 
+                schema='metadata')
     print('metadata is loaded')
 
     # Non-simple ETL Tasks
