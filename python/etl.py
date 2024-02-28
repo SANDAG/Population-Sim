@@ -3,7 +3,7 @@ import sqlalchemy as sql
 from sqlalchemy.orm import Session
 from sqlalchemy import insert
 import yaml
-import os
+import csv
 
 def region_summary_transformations(df):
     df = df[['control_name', 'control_value', 'mgra_integer_weight']]
@@ -61,6 +61,7 @@ def add_control_id(df, engine, run_id, control_column='target'):
     return df[df['control_id'].notnull()]
 
 def load_to_sql(df, name, con, schema):
+    df = df.head(1000)
     insert_blocks = df.to_dict('records')
     
     # Replace nan values with None (NULL) in each dictionary
@@ -96,38 +97,42 @@ def etl_final_summary(engine, run_id, year, transformations_func, input_path, ou
     df = df[['run_id', 'geography', 'geography_id', 'control_id', 'control_value', 'result']]
     load_to_sql(df=df, name=output_table, con=engine, schema=schema)
 
-seed_persons_dtype_dict = {
-    'PUMA': 'Int64', 
-    'SEX': 'Int64',
-    'ESR': 'Int64',
-    'COW': 'Int64',
-    'SCHG': 'Int64',
-    'RAC1P': 'Int64',
-    'MIL': 'Int64',
-    'SCHL': 'Int64',
-    'OCCP': 'Int64',
-    'WKW': 'Int64',
-    'SOC2': 'Int64'
-}
-output_households_dtype_dict = {
-    'HHT': 'Int64', 
-    'HUPAC': 'Int64',
-    'VEH': 'Int64',
-    'BLD': 'Int64',
-}
+def load_simple_files_to_sql(engine, csv_path, run_id, schema, table_name):
+    # Define the table metadata
+    table = sql.Table(
+        table_name,
+        sql.MetaData(),
+        schema=schema,
+        autoload_with=engine,
+    )
+    
+    # Read records from CSV
+    insert_records = []
+    with open(csv_path, "r") as csv_file:
+        csv_reader = csv.reader(csv_file)
+        header = next(csv_reader)  # Assumes first row is header
+        for i, row in enumerate(csv_reader):
+            if i >= 2000:  # Stop after reading 1000 rows
+                break
+            # Create a dictionary for each row, removing ".0" from values and adding 'run_id'
+            row_dict = {header[i]: value.replace(".0", "") for i, value in enumerate(row)}
+            row_dict["run_id"] = run_id
+            insert_records.append(row_dict)
+    
+    # Insert records into the database
+    with Session(engine) as session:
+        session.execute(insert(table), insert_records)
+        session.commit()
 
-def etl_simple_files(run_id, file_mapping, year, engine):
-    for filepath, table_info in file_mapping.items():
-        if 'persons' in filepath:
-            df = pd.read_csv(filepath.replace('year', str(year)), dtype=seed_persons_dtype_dict)
-        elif 'synthetic_households':
-            df = pd.read_csv(filepath.replace('year', str(year)), dtype=output_households_dtype_dict)
-        else:
-            df = pd.read_csv(filepath.replace('year', str(year)))
-        df = add_run_id(df, run_id)
-        with engine.begin() as conn: 
-            load_to_sql(df=df, name=table_info[1], con=conn, schema=table_info[0])
-        print(f"{filepath} is uploaded")
+
+def process_simple_files_to_sql(run_id, file_mapping, year, engine):
+    for path in file_mapping.keys():
+        load_simple_files_to_sql(engine=engine, 
+                            csv_path=path.replace('year', str(year)), 
+                            run_id=run_id, 
+                            schema=file_mapping[path][0], 
+                            table_name=file_mapping[path][1])
+        print(f"{path} is outputted")
     
 def run_etl(year, config_path='config.yml'):
     engine, config = create_engine_from_config(config_path)
@@ -197,10 +202,11 @@ def run_etl(year, config_path='config.yml'):
         f'output/{year}/synthetic_persons_{year}.csv': ['outputs', 'persons'],
         f'output/{year}/mgra15_based_input_{year}.csv': ['outputs', 'mgra_based_input'],
                 }
-    etl_simple_files(run_id, 
-                     file_mapping, 
-                     year, 
-                     engine)
+    process_simple_files_to_sql(run_id, 
+                             file_mapping, 
+                             year, 
+                             engine)
+    
 
     # Update the 'loaded' status to 1 after all ETL tasks are complete
     with engine.connect() as conn:
