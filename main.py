@@ -81,7 +81,8 @@ for year in config["years"]:
         schema=config["sql"]["schema"],
     )
 
-    # Run the ETL process
-    run_etl(year=year, config_path='config.yml')
+    if config["load_to_database"]:
+        # Run the ETL process
+        run_etl(year, engine, config)
 
 logging.info("All years processed successfully.")
