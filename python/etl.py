@@ -116,7 +116,6 @@ def load_to_sql(df: pd.DataFrame, name: str, con: sqlalchemy.engine.base.Engine,
     - con (Engine): The SQLAlchemy engine connection.
     - schema (str): The schema of the target SQL table.
     """
-    df = df.head(1000)
     insert_blocks = df.to_dict('records')
     
     # Replace nan values with None (NULL) in each dictionary
@@ -199,9 +198,7 @@ def load_simple_files_to_sql(engine: sqlalchemy.engine.base.Engine, csv_path: st
     with open(csv_path, "r") as csv_file:
         csv_reader = csv.reader(csv_file)
         header = next(csv_reader)  # Assumes first row is header
-        for i, row in enumerate(csv_reader):
-            if i >= 2000:  # Stop after reading 1000 rows
-                break
+        for row in csv_reader:
             # Create a dictionary for each row, removing ".0" from values and adding 'run_id'
             row_dict = {header[i]: value.replace(".0", "") for i, value in enumerate(row)}
             row_dict["run_id"] = run_id
