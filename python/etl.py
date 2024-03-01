@@ -52,42 +52,42 @@ def sub_geography_summary_manipulations(df: pd.DataFrame) -> pd.DataFrame:
     # Merge and complete 
     return pd.merge(df_control, df_result, on=['geography', 'id', 'target'])
 
-def get_next_run_id(engine: sqlalchemy.engine.base.Engine, config: Dict) -> int:
+def get_next_run_id(engine: sqlalchemy.engine.base.Engine, output_database: str) -> int:
     """
     Retrieves the next available numeric run_id from the database based on the maximum existing run_id.
     
     Parameters:
     - engine (Engine): SQLAlchemy engine instance connected to the database.
-    - config (dict): Configuration dictionary containing database schema information.
+    - output_database (str): The name of the database where popsim data is stored. 
     
     Returns:
     - int: The next run_id to be used.
     """
-    query = sql.text(f"SELECT MAX(run_id) as max_run_id FROM {config['sql']['output_database']}.[metadata].[run]")
+    query = sql.text(f"SELECT MAX(run_id) as max_run_id FROM {output_database}.[metadata].[run]")
     with engine.connect() as connection:
         result = connection.execute(query).scalar()
         return result + 1 if result else 1
 
-def generate_control_id_mapping(engine: sqlalchemy.engine.base.Engine, run_id: int, config: Dict) -> Dict[str, int]:
+def generate_control_id_mapping(engine: sqlalchemy.engine.base.Engine, run_id: int, output_database: str) -> Dict[str, int]:
     """
     Generates a mapping of control_id to target based on a specified run_id's already outputed controls table (as controls may vary by run_id)
     
     Parameters:
     - engine (Engine): SQLAlchemy engine instance connected to the database.
     - run_id (int): The run_id to filter controls.
-    - config (dict): Configuration dictionary containing database schema information.
+    - output_database (str): The name of the database where popsim data is stored. 
     
     Returns:
     - dict: A dictionary mapping 'target' to 'control_id'.
     """
-    query = sql.text(f"SELECT control_id, target FROM {config['sql']['output_database']}.[inputs].[controls] WHERE run_id = {run_id}")
+    query = sql.text(f"SELECT control_id, target FROM {output_database}.[inputs].[controls] WHERE run_id = {run_id}")
     with engine.connect() as connection:
         result = connection.execute(query)
         rows = result.fetchall()
         control_id_mapping = {row[1]: row[0] for row in rows}
         return control_id_mapping
 
-def add_control_id(df: pd.DataFrame, engine: sqlalchemy.engine.base.Engine, run_id: int, config: Dict, control_column: str = 'target') -> pd.DataFrame:
+def add_control_id(df: pd.DataFrame, engine: sqlalchemy.engine.base.Engine, run_id: int, output_database: str, control_column: str = 'target') -> pd.DataFrame:
     """
     Adds a 'control_id' column to the dataframe based on a mapping built from the controls table for this run_id.
     
@@ -95,14 +95,14 @@ def add_control_id(df: pd.DataFrame, engine: sqlalchemy.engine.base.Engine, run_
     - df (DataFrame): The input dataframe to which 'control_id' will be added.
     - engine (Engine): SQLAlchemy engine instance connected to the database.
     - run_id (int): The run_id used to filter controls for mapping.
-    - config (dict): Configuration dictionary containing database schema information. This comes from the generate_control_id_mapping function.
+    - output_database (str): The name of the database where popsim data is stored. 
     - control_column (str): The column name in df that corresponds to 'target' in the control_id mapping.
     
     Returns:
     - DataFrame: The input dataframe with a 'control_id' column added.
     """
     # Assign control_id based on the provided mapping
-    control_id_mapping = generate_control_id_mapping(engine, run_id, config)
+    control_id_mapping = generate_control_id_mapping(engine, run_id, output_database)
     df['control_id'] = df[control_column].map(control_id_mapping)
     return df[df['control_id'].notnull()]
 
@@ -152,7 +152,7 @@ def etl_controls_csv(run_id: int, filepath: str, engine: sqlalchemy.engine.base.
     df['control_id'] = range(1, len(df) + 1)
     load_to_sql(df=df, name=table_name, con=engine, schema=schema)
 
-def etl_final_summary(engine: sqlalchemy.engine.base.Engine, run_id: int, year: int, transformations_func: Callable[[pd.DataFrame], pd.DataFrame], input_path: str, output_table: str, schema: str, config: Dict) -> None:
+def etl_final_summary(engine: sqlalchemy.engine.base.Engine, run_id: int, year: int, transformations_func: Callable[[pd.DataFrame], pd.DataFrame], input_path: str, output_table: str, schema: str, output_database: str) -> None:
     """
     Transforms summary data and loads it into a SQL table after applying transformations from the inputted transformation function and adding control IDs.
     
@@ -164,12 +164,12 @@ def etl_final_summary(engine: sqlalchemy.engine.base.Engine, run_id: int, year: 
     - input_path (str): The path of the input CSV file.
     - output_table (str): The name of the target SQL table.
     - schema (str): The schema of the target SQL table.
-    - config (dict): Configuration dictionary containing database schema information.
+    - output_database (str): The name of the database where popsim data is stored. 
     """
     df = pd.read_csv(f'output/{year}/{input_path}')
     df = transformations_func(df)
     df.insert(0, 'run_id', run_id)
-    df = add_control_id(df, engine, run_id, config, control_column='target')
+    df = add_control_id(df, engine, run_id, output_database, control_column='target')
     df = df.rename(columns={'id': 'geography_id', 'control':'control_value'})
     df = df[['run_id', 'geography', 'geography_id', 'control_id', 'control_value', 'result']]
     load_to_sql(df=df, name=output_table, con=engine, schema=schema)
@@ -209,16 +209,18 @@ def load_simple_files_to_sql(engine: sqlalchemy.engine.base.Engine, csv_path: st
         session.execute(insert(table), insert_records)
         session.commit()
     
-def run_etl(year: int, engine: sqlalchemy.engine.base.Engine, config: Dict) -> None:
+def run_etl(year: int, engine: sqlalchemy.engine.base.Engine, output_database: str, version: str, comments: str) -> None:
     """
     Runs the ETL process for loading popsim data into the SQL database for a given year.
     
     Parameters:
     - year (int): The year for which data is being loaded.
     - engine (Engine): The SQLAlchemy engine connection.
-    - config (dict): Configuration dictionary containing database and ETL process information.
+    - output_database (str): The name of the database where popsim data is stored. 
+    - version (str): The popsim version that is being ran. 
+    - comments (str): Additional comments about the run. 
     """
-    run_id = get_next_run_id(engine, config)
+    run_id = get_next_run_id(engine, output_database)
     
     # load the user to the metadata
     with engine.connect() as conn:
@@ -231,8 +233,8 @@ def run_etl(year: int, engine: sqlalchemy.engine.base.Engine, config: Dict) -> N
         'year': year,
         'user': user,
         'date': pd.Timestamp.now(),
-        'version': config['version'],
-        'comments': config['comments'],
+        'version': version,
+        'comments': comments,
         'loaded': 0
     }
     load_to_sql(df=pd.DataFrame([run_metadata]), 
@@ -256,7 +258,7 @@ def run_etl(year: int, engine: sqlalchemy.engine.base.Engine, config: Dict) -> N
                       input_path='final_summary_mgra.csv', 
                       output_table='control_totals', 
                       schema='outputs',
-                      config=config)
+                      output_database=output_database)
     print('final_summary_mgra is loaded')
     etl_final_summary(engine=engine, 
                       run_id=run_id, 
@@ -265,7 +267,7 @@ def run_etl(year: int, engine: sqlalchemy.engine.base.Engine, config: Dict) -> N
                       input_path='final_summary_mgra_PUMA.csv', 
                       output_table='control_totals', 
                       schema='outputs',
-                      config=config)
+                      output_database=output_database)
     print('final_summary_mgra_PUMA is loaded')
     etl_final_summary(engine=engine, 
                       run_id=run_id, 
@@ -274,7 +276,7 @@ def run_etl(year: int, engine: sqlalchemy.engine.base.Engine, config: Dict) -> N
                       input_path='final_summary_region_1.csv', 
                       output_table='control_totals', 
                       schema='outputs',
-                      config=config)
+                      output_database=output_database)
     print('final_summary_region_1 is loaded')
     
     # Simple file ETL tasks
@@ -297,6 +299,6 @@ def run_etl(year: int, engine: sqlalchemy.engine.base.Engine, config: Dict) -> N
 
     # Update the 'loaded' status to 1 after all ETL tasks are complete
     with engine.connect() as conn:
-        sql_command = sql.text(f"UPDATE {config['sql']['output_database']}.[metadata].[run] SET loaded = 1 WHERE run_id = {run_id}")
+        sql_command = sql.text(f"UPDATE {output_database}.[metadata].[run] SET loaded = 1 WHERE run_id = {run_id}")
         conn.execute(sql_command)
         conn.commit()

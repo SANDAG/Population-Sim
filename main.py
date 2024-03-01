@@ -83,6 +83,11 @@ for year in config["years"]:
 
     if config["load_to_database"]:
         # Run the ETL process
-        run_etl(year, engine, config)
+        run_etl(year=year, 
+                engine=engine, 
+                output_database=config['sql']['output_database'],
+                version=config['version'],
+                comments=config['comments']
+                )
 
 logging.info("All years processed successfully.")
