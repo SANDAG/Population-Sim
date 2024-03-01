@@ -10,8 +10,7 @@ import yaml
 import csv
 
 def region_summary_transformations(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Transforms the region level summary file to fit within the outputs.control_totals table.
+    """Transforms the region level summary file to fit within the outputs.control_totals table.
     
     Parameters:
     - df (DataFrame): The input dataframe containing 'control_name', 'control_value', and 'mgra_integer_weight'.
@@ -26,8 +25,7 @@ def region_summary_transformations(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 def sub_geography_summary_manipulations(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Transforms non region level summary files to fit within the outputs.control_totals table.
+    """Transforms non region level summary files to fit within the outputs.control_totals table.
     
     Parameters:
     - df (DataFrame): The input dataframe with varying control and result columns.
@@ -53,8 +51,7 @@ def sub_geography_summary_manipulations(df: pd.DataFrame) -> pd.DataFrame:
     return pd.merge(df_control, df_result, on=['geography', 'id', 'target'])
 
 def get_next_run_id(engine: sqlalchemy.engine.base.Engine, output_database: str) -> int:
-    """
-    Retrieves the next available numeric run_id from the database based on the maximum existing run_id.
+    """Retrieves the next available numeric run_id from the database based on the maximum existing run_id.
     
     Parameters:
     - engine (Engine): SQLAlchemy engine instance connected to the database.
@@ -69,8 +66,7 @@ def get_next_run_id(engine: sqlalchemy.engine.base.Engine, output_database: str)
         return result + 1 if result else 1
 
 def generate_control_id_mapping(engine: sqlalchemy.engine.base.Engine, run_id: int, output_database: str) -> Dict[str, int]:
-    """
-    Generates a mapping of control_id to target based on a specified run_id's already outputed controls table (as controls may vary by run_id)
+    """Generates a mapping of control_id to target based on a specified run_id's already outputed controls table (as controls may vary by run_id)
     
     Parameters:
     - engine (Engine): SQLAlchemy engine instance connected to the database.
@@ -88,8 +84,7 @@ def generate_control_id_mapping(engine: sqlalchemy.engine.base.Engine, run_id: i
         return control_id_mapping
 
 def load_to_sql(df: pd.DataFrame, name: str, con: sqlalchemy.engine.base.Engine, schema: str) -> None:
-    """
-    Bulk Loads a DataFrame to a SQL table, handling NULL values.
+    """Bulk Loads a DataFrame to a SQL table, handling NULL values.
     
     Parameters:
     - df (DataFrame): The pandas DataFrame to be loaded.
@@ -118,8 +113,7 @@ def load_to_sql(df: pd.DataFrame, name: str, con: sqlalchemy.engine.base.Engine,
         session.commit()
 
 def etl_controls_csv(run_id: int, filepath: str, engine: sqlalchemy.engine.base.Engine, table_name: str, schema: str) -> None:
-    """
-    Reads the controls csv, adds a 'run_id' and generates 'control_id', then loads it into a SQL table.
+    """Reads the controls csv, adds a 'run_id' and generates 'control_id', then loads it into a SQL table.
     
     Parameters:
     - run_id (int): The run identifier to be added to the DataFrame.
@@ -134,8 +128,7 @@ def etl_controls_csv(run_id: int, filepath: str, engine: sqlalchemy.engine.base.
     load_to_sql(df=df, name=table_name, con=engine, schema=schema)
 
 def etl_final_summary(engine: sqlalchemy.engine.base.Engine, run_id: int, year: int, transformations_func: Callable[[pd.DataFrame], pd.DataFrame], input_path: str, output_table: str, schema: str, output_database: str) -> None:
-    """
-    Transforms summary data and loads it into a SQL table after applying transformations from the inputted transformation function and adding control IDs.
+    """Transforms summary data and loads it into a SQL table after applying transformations from the inputted transformation function and adding control IDs.
     
     Parameters:
     - engine (Engine): The SQLAlchemy engine connection.
@@ -158,8 +151,7 @@ def etl_final_summary(engine: sqlalchemy.engine.base.Engine, run_id: int, year: 
     load_to_sql(df=df, name=output_table, con=engine, schema=schema)
 
 def load_simple_files_to_sql(engine: sqlalchemy.engine.base.Engine, csv_path: str, run_id: int, schema: str, table_name: str) -> None:
-    """
-    Loads records from a CSV file to a SQL table with some preprocessing.
+    """Loads records from a CSV file to a SQL table with some preprocessing.
     
     Parameters:
     - engine (Engine): The SQLAlchemy engine connection.
@@ -193,8 +185,7 @@ def load_simple_files_to_sql(engine: sqlalchemy.engine.base.Engine, csv_path: st
         session.commit()
     
 def run_etl(year: int, engine: sqlalchemy.engine.base.Engine, output_database: str, version: str, comments: str) -> None:
-    """
-    Runs the ETL process for loading popsim data into the SQL database for a given year.
+    """Runs the ETL process for loading popsim data into the SQL database for a given year.
     
     Parameters:
     - year (int): The year for which data is being loaded.
