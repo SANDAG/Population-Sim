@@ -87,25 +87,6 @@ def generate_control_id_mapping(engine: sqlalchemy.engine.base.Engine, run_id: i
         control_id_mapping = {row[1]: row[0] for row in rows}
         return control_id_mapping
 
-def add_control_id(df: pd.DataFrame, engine: sqlalchemy.engine.base.Engine, run_id: int, output_database: str, control_column: str = 'target') -> pd.DataFrame:
-    """
-    Adds a 'control_id' column to the dataframe based on a mapping built from the controls table for this run_id.
-    
-    Parameters:
-    - df (DataFrame): The input dataframe to which 'control_id' will be added.
-    - engine (Engine): SQLAlchemy engine instance connected to the database.
-    - run_id (int): The run_id used to filter controls for mapping.
-    - output_database (str): The name of the database where popsim data is stored. 
-    - control_column (str): The column name in df that corresponds to 'target' in the control_id mapping.
-    
-    Returns:
-    - DataFrame: The input dataframe with a 'control_id' column added.
-    """
-    # Assign control_id based on the provided mapping
-    control_id_mapping = generate_control_id_mapping(engine, run_id, output_database)
-    df['control_id'] = df[control_column].map(control_id_mapping)
-    return df[df['control_id'].notnull()]
-
 def load_to_sql(df: pd.DataFrame, name: str, con: sqlalchemy.engine.base.Engine, schema: str) -> None:
     """
     Bulk Loads a DataFrame to a SQL table, handling NULL values.
@@ -169,7 +150,9 @@ def etl_final_summary(engine: sqlalchemy.engine.base.Engine, run_id: int, year: 
     df = pd.read_csv(f'output/{year}/{input_path}')
     df = transformations_func(df)
     df.insert(0, 'run_id', run_id)
-    df = add_control_id(df, engine, run_id, output_database, control_column='target')
+    control_id_mapping = generate_control_id_mapping(engine, run_id, output_database) # Adding the control ID 
+    df['control_id'] = df['target'].map(control_id_mapping)
+    df =  df[df['control_id'].notnull()]
     df = df.rename(columns={'id': 'geography_id', 'control':'control_value'})
     df = df[['run_id', 'geography', 'geography_id', 'control_id', 'control_value', 'result']]
     load_to_sql(df=df, name=output_table, con=engine, schema=schema)
