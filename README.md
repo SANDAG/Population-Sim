@@ -16,17 +16,18 @@ PopulationSim is well-suited for generating detailed household and person-level 
 
 ```yaml
 sql:
-  server: ""  # SQL instance containing seed and control data
-  schema: ""  # E&F team Series 15 UDM schema to use for control data
-  seed_households: "sql/seed_households.sql"  # household seed data query
-  seed_persons: "sql/seed_persons.sql"  # person seed data query
-  mgra_controls: "sql/mgra_controls.sql"  # mgra controls data query
-  region_controls: "sql/region_controls.sql"  # region controls data query
-  mgrabase: "sql/mgrabase.sql"  # mgrabase file generation data query
+  server: "" # SQL instance containing seed and control data
+  schema: "" # E&F team Series 15 UDM schema to use for control data
+  seed_households: "sql/seed_households.sql" # household seed data query
+  seed_persons: "sql/seed_persons.sql" # person seed data query
+  mgra_controls: "sql/mgra_controls.sql" # mgra controls data query
+  region_controls: "sql/region_controls.sql" # region controls data query
+  mgrabase: "sql/mgrabase.sql" # mgrabase file generation data query
+  output_database: "" # Database for populationsim data
 
-economic_controls: "data/Economic Team Region Controls.csv"  # region economic controls provided by SANDAG's Economics Team
+economic_controls: "data/Economic Team Region Controls.csv" # region economic controls provided by SANDAG's Economics Team
 
-years:  # years for which to generate controls and run populationsim
+years: # years for which to generate controls and run populationsim
   - 2022
   - 2026
   - 2029
@@ -37,6 +38,7 @@ years:  # years for which to generate controls and run populationsim
 ```
 
 3. **Update PopulationSim configuration files** (if necessary)
+
    - SANDAG commonly sets the `populationsim/conigs_mp/settings.yaml` file such that `multiprocess: True`, `num_processes: 22`, `multiprocess_steps: num_processes: 22` to enable the maximum level of multiprocessing using the 22 San Diego PUMAS as the `slice_geography: PUMA`. If at least 22 logical processors are not available (not advised due to long run times), it is suggested to set both `num_processes:` configurations to the number of logical processors.
    - See the PopulationSim [official documentation](https://activitysim.github.io/populationsim/)
 
@@ -46,15 +48,15 @@ years:  # years for which to generate controls and run populationsim
 
 Once completed, the output folder will contain subfolders for each year specified in the `config.yml` file. Each subfolder will contain the following files.
 
-| File | Description |
-| ---- | ----------- |
-| synthetic_persons_gq.csv | PopulationSim output synthetic group quarters persons |
-| synthetic_persons.csv | PopulationSim output synthetic persons (non-group quarters) |
-| synthetic_persons_`year`.csv | Combined synthetic persons file for use by the Activity-Based Model team |
-| synthetic_households_gq.csv | PopulationSim output synthetic group quarters households |
-| synthetic_households.csv | PopulationSim output synthetic households (non-group quarters) |
-| synthetic_households_`year`.csv | Combined synthetic households file for use by the Activity-Based Model team |
-| mgra15_based_input_`year`.csv | The mgrabase file for use by the Activity-Based Model team |
-| timing_log.csv | PopulationSim log of process runtimes |
+| File                            | Description                                                                 |
+| ------------------------------- | --------------------------------------------------------------------------- |
+| synthetic_persons_gq.csv        | PopulationSim output synthetic group quarters persons                       |
+| synthetic_persons.csv           | PopulationSim output synthetic persons (non-group quarters)                 |
+| synthetic*persons*`year`.csv    | Combined synthetic persons file for use by the Activity-Based Model team    |
+| synthetic_households_gq.csv     | PopulationSim output synthetic group quarters households                    |
+| synthetic_households.csv        | PopulationSim output synthetic households (non-group quarters)              |
+| synthetic*households*`year`.csv | Combined synthetic households file for use by the Activity-Based Model team |
+| mgra15*based_input*`year`.csv   | The mgrabase file for use by the Activity-Based Model team                  |
+| timing_log.csv                  | PopulationSim log of process runtimes                                       |
 
-If running PopulationSim as an *official run* for use by SANDAG's QA and/or Activity-Based Model teams, update the version tracker at: `sandag.org\\transdata\socioec\Current_Projects\SR15\S0\version_history.xlsx`
+If running PopulationSim as an _official run_ for use by SANDAG's QA and/or Activity-Based Model teams, update the version tracker at: `sandag.org\\transdata\socioec\Current_Projects\SR15\version_history.xlsx`
