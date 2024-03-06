@@ -88,6 +88,7 @@ for year in config["years"]:
             engine=engine,
             output_database=config["sql"]["output_database"],
             version=config["version"],
+            staging_schema=config["sql"]["schema"],
             comments=config["comments"],
         )
 

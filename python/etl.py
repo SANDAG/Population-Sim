@@ -241,6 +241,7 @@ def run_etl(
     engine: sqlalchemy.engine.base.Engine,
     output_database: str,
     version: str,
+    staging_schema: str,
     comments: str,
 ) -> None:
     """Runs the ETL process for loading popsim data into the SQL database for a given year.
@@ -266,6 +267,7 @@ def run_etl(
         "user": user,
         "date": pd.Timestamp.now(),
         "version": version,
+        "staging_schema": staging_schema,
         "comments": comments,
         "loaded": 0,
     }
