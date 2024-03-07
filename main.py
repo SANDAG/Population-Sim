@@ -36,6 +36,12 @@ logging.basicConfig(
 with open("config.yml", "r") as file:
     config = yaml.safe_load(file)
 engine = sql.create_engine("mssql+pymssql://" + config["sql"]["server"] + "/")
+etl_engine = sql.create_engine(
+    "mssql+pymssql://"
+    + config["sql"]["server"]
+    + "/"
+    + config["sql"]["output_database"]
+)
 folder = "populationsim/data/"
 
 # Create seed files and write for use in populationsim
@@ -85,7 +91,7 @@ for year in config["years"]:
         # Run the ETL process
         run_etl(
             year=year,
-            engine=engine,
+            engine=etl_engine,
             output_database=config["sql"]["output_database"],
             version=config["version"],
             staging_schema=config["sql"]["schema"],
