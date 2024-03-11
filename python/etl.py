@@ -225,7 +225,8 @@ def load_simple_files_to_sql(
         for row in csv_reader:
             # Create a dictionary for each row, removing ".0" from values and adding 'run_id'
             row_dict = {
-                header[i]: value.replace(".0", "") for i, value in enumerate(row)
+                header[i]: (None if value == "" else value.replace(".0", ""))
+                for i, value in enumerate(row)
             }
             row_dict["run_id"] = run_id
             insert_records.append(row_dict)
