@@ -89,7 +89,7 @@ for year in config["years"]:
 
     if config["load_to_database"]:
         # Run the ETL process
-        run_etl(
+        run_id = run_etl(
             year=year,
             engine=etl_engine,
             output_database=config["sql"]["output_database"],
@@ -97,5 +97,24 @@ for year in config["years"]:
             staging_schema=config["sql"]["schema"],
             comments=config["comments"],
         )
+
+        # Constructing the Quarto command
+        quarto_command = [
+            "quarto",
+            "render",
+            "reporting/popsim_one_pager_build.qmd",
+            "-P",
+            f"run_id:{run_id}",
+            "--output-dir",
+            f"../output/{year}",
+        ]
+
+        # Executing the Quarto command
+        try:
+            subprocess.run(quarto_command, check=True)
+            logging.info("Quarto render successful.")
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Quarto render failed: {e}")
+
 
 logging.info("All years processed successfully.")

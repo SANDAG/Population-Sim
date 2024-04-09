@@ -1,0 +1,483 @@
+---
+title: 'PopulationSim One Pager'
+format:
+  html:
+    embed-resources: true
+    code-fold: true
+jupyter: python3
+---
+
+```{python}
+# | echo: false
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import yaml
+import sqlalchemy as sql
+import plotly.express as px
+import plotly.io as pio
+from pandas.io.formats.style import Styler
+
+pio.renderers.default = "notebook"
+from IPython.display import display, HTML, Markdown
+```
+
+```{python}
+# | tags: [parameters]
+# | echo: false
+
+run_id = 11
+
+```
+
+```{python}
+# | echo: false
+category_map = {
+    # Age
+    "Age_LT5": "Age",
+    "Age_5to9": "Age",
+    "Age_10to14": "Age",
+    "Age_15to17": "Age",
+    "Age_18to24": "Age",
+    "Age_25to34": "Age",
+    "Age_35to44": "Age",
+    "Age_45to54": "Age",
+    "Age_55to64": "Age",
+    "Age_65to74": "Age",
+    "Age_75to84": "Age",
+    "Age_85Plus": "Age",
+    # Race/Ethnicity
+    "Asian": "Race/Ethnicity",
+    "Black": "Race/Ethnicity",
+    "Hispanic": "Race/Ethnicity",
+    "Two_or_more": "Race/Ethnicity",
+    "Other": "Race/Ethnicity",
+    "White": "Race/Ethnicity",
+    # Gender
+    "Female": "Gender",
+    "Male": "Gender",
+    # Household with Children
+    "HHChild_0": "Household Children",
+    "HHChild_1Plus": "Household Children",
+    # Household Income
+    "HHInc_0to14999": "Household Income",
+    "HHInc_15000to29999": "Household Income",
+    "HHInc_30000to59999": "Household Income",
+    "HHInc_60000to99999": "Household Income",
+    "HHInc_100000to149999": "Household Income",
+    "HHInc_150000to199999": "Household Income",
+    "HHInc_200000Plus": "Household Income",
+    "income": "Household Income",
+    # Household Size
+    "HHSize_1": "Household Size",
+    "HHSize_2": "Household Size",
+    "HHSize_3": "Household Size",
+    "HHSize_4Plus": "Household Size",
+    # Household Workers
+    "HHWork_0": "Household Workers",
+    "HHWork_1": "Household Workers",
+    "HHWork_2": "Household Workers",
+    "HHWork_3Plus": "Household Workers",
+    # Job (assuming these are specific Labor Force, not a general category)
+    "job_1": "Labor Force",
+    "job_2": "Labor Force",
+    "job_3": "Labor Force",
+    "job_4": "Labor Force",
+    "job_5": "Labor Force",
+    "job_6": "Labor Force",
+    "job_7": "Labor Force",
+    "job_8": "Labor Force",
+    "job_9": "Labor Force",
+    "job_10": "Labor Force",
+    "job_11": "Labor Force",
+    "job_12": "Labor Force",
+    "job_13": "Labor Force",
+    "job_14": "Labor Force",
+    # Labor Force Participation
+    "lfp_black": "Civilian Labor Force Participation",
+    "lfp_hispanic": "Civilian Labor Force Participation",
+    "lfp_other": "Civilian Labor Force Participation",
+    "lfp_white": "Civilian Labor Force Participation",
+    # Household Total (assuming this is a single value, not a category)
+    "Total_HH": "Household",
+}
+```
+
+```{python}
+#| echo: false
+with open("../config.yml", "r") as file:
+    config = yaml.safe_load(file)
+engine = sql.create_engine("mssql+pymssql://" + config["sql"]["server"] + "/")
+```
+
+```{python}
+# | echo: false
+query = f"""SELECT
+		[controls].control_field
+      ,SUM([control_value]) AS control_value
+      ,SUM([result]) AS result
+  FROM [PopulationSim_v1].[outputs].[control_totals]
+  LEFT JOIN [PopulationSim_v1].[inputs].[controls]
+  ON [control_totals].run_id = [controls].run_id AND [control_totals].control_id = [controls].control_id
+  WHERE [control_totals].run_id = {run_id} AND [control_totals].geography NOT IN ('mgra', 'PUMA')
+  GROUP BY [controls].control_field"""
+
+region_control_fields = pd.read_sql_query(query, engine)
+```
+
+```{python}
+# | echo: false
+query = f"""SELECT
+		[control_totals].geography
+		,[control_totals].geography_id
+		,[controls].control_field
+      ,[control_value] AS control_value
+      ,[result] AS result
+  FROM [PopulationSim_v1].[outputs].[control_totals]
+  LEFT JOIN [PopulationSim_v1].[inputs].[controls]
+  ON [control_totals].run_id = [controls].run_id AND [control_totals].control_id = [controls].control_id
+  WHERE [control_totals].run_id = {run_id} AND [control_totals].geography = 'mgra' """
+
+mgra_control_fields = pd.read_sql_query(query, engine)
+```
+
+
+```{python}
+# | echo: false
+def clean_data(df, category_map):
+    # Map control_field to General Category using the provided mapping
+    df["General Category"] = df["control_field"].map(category_map)
+
+    # Calculate Difference # and Difference % between control_value and result
+    df["Difference #"] = df["control_value"] - df["result"]
+    df["Difference %"] = round(
+        (df["control_value"] - df["result"]) / df["result"] * 100, 2
+    )
+
+    # Sort the DataFrame by General Category
+    df = df.sort_values("General Category")
+
+    # Rename columns to have consistent capitalization and naming
+    df = df.rename(
+        columns={
+            "control_field": "Control Field",
+            "control_value": "Control",
+            "result": "Result",
+        }
+    )
+
+    return df
+```
+
+```{python}
+# | echo: false
+region_control_fields = clean_data(region_control_fields, category_map)
+mgra_control_fields = clean_data(mgra_control_fields, category_map)
+mgra_control_fields = mgra_control_fields.rename(columns={"geography_id": "mgra"})
+```
+
+```{python}
+# | echo: false
+desired_control_field_order = [
+    "Total_HH",
+    "Male",
+    "Female",
+    "HHSize_1",
+    "HHSize_2",
+    "HHSize_3",
+    "HHSize_4Plus",
+    "HHInc_0to14999",
+    "HHInc_15000to29999",
+    "HHInc_30000to59999",
+    "HHInc_60000to99999",
+    "HHInc_100000to149999",
+    "HHInc_150000to199999",
+    "HHInc_200000Plus",
+    "HHWork_0",
+    "HHWork_1",
+    "HHWork_2",
+    "HHWork_3Plus",
+    "HHChild_0",
+    "HHChild_1Plus",
+    "Age_LT5",
+    "Age_5to9",
+    "Age_10to14",
+    "Age_15to17",
+    "Age_18to24",
+    "Age_25to34",
+    "Age_35to44",
+    "Age_45to54",
+    "Age_55to64",
+    "Age_65to74",
+    "Age_75to84",
+    "Age_85Plus",
+    "Asian",
+    "Black",
+    "Hispanic",
+    "Other",
+    "Two_or_more",
+    "White",
+    "job_1",
+    "job_2",
+    "job_3",
+    "job_4",
+    "job_5",
+    "job_6",
+    "job_7",
+    "job_8",
+    "job_9",
+    "job_10",
+    "job_11",
+    "job_12",
+    "job_13",
+    "job_14",
+    "lfp_white",
+    "lfp_black",
+    "lfp_other",
+    "lfp_hispanic",
+]
+```
+
+```{python}
+# | echo: false
+region_control_fields["Control Field"] = pd.Categorical(
+    region_control_fields["Control Field"],
+    categories=desired_control_field_order,
+    ordered=True,
+)
+region_control_fields = region_control_fields.sort_values("Control Field")
+```
+
+
+```{python}
+# | echo: false
+query = f"""SELECT [run_id]
+      ,[year]
+      ,[user]
+      ,[date]
+      ,[version]
+      ,[staging_schema]
+      ,[comments]
+      ,[loaded]
+  FROM [PopulationSim_v1].[metadata].[run]
+  WHERE run_id = {run_id}"""
+
+run_info = pd.read_sql_query(query, engine)
+```
+
+
+
+
+# Run ID - `{python} run_id`
+
+Enclosed is a summary evaluating the alignment of our PopulationSim model's outputs with the inputted Controls for run ID #`{python} run_id`. This PopulationSim run draws data from the staging table `{python} run_info['staging_schema'].iloc[0]`. Run ID #`{python} run_id` houses outputs for the year `{python} run_info['year'].iloc[0]`. Further comments on this run include: `{python} run_info['comments'].iloc[0]`. SANDAG sets control parameters at both regional and MGRA levels. Below, you will find interactive tabs that present a detailed analysis of our model's adherence to the set control benchmarks. These tabs enable a comprehensive comparison at both regional and MGRA levels.
+
+::: {.panel-tabset}
+### Region
+
+```{python}
+# | echo: false
+fig = px.scatter(
+    region_control_fields,
+    x="Control",
+    y="Difference #",
+    hover_data=["Control Field"],
+    title="Control Matching - Numeric Difference",
+)
+fig.update_traces(marker=dict(size=12))
+fig.add_hline(y=0, line_dash="dash", line_color="black")
+fig.show()
+```
+
+```{python}
+# | echo: false
+fig = px.scatter(
+    region_control_fields,
+    x="Control",
+    y="Difference %",
+    hover_data=["Control Field"],
+    title="Control Matching - Percent Difference",
+)
+fig.update_traces(marker=dict(size=12))
+fig.add_hline(y=0, line_dash="dash", line_color="black")
+fig.show()
+```
+
+```{python}
+# | echo: false
+def add_commas_to_dataframe(df: pd.DataFrame) -> Styler:
+    """
+    Applies thousands separator formatting to numeric columns in a pandas DataFrame,
+    with different formats for integer and floating-point columns. Integer columns
+    are formatted without decimal places ("{:,.0f}"), while floating-point columns
+    display two decimal places ("{:,.2f}").
+
+    Parameters:
+    df (pd.DataFrame): The DataFrame to which comma formatting will be applied.
+
+    Returns:
+    Styler: A pandas Styler object with comma formatting applied to numeric columns.
+    """
+
+    format_dict = {}
+    for col in df.columns:
+        if pd.api.types.is_integer_dtype(df[col]):
+            format_dict[col] = "{:,.0f}"  # Format for integer columns
+        elif pd.api.types.is_float_dtype(df[col]):
+            format_dict[col] = "{:,.2f}"  # Format for float columns
+
+    return df.style.format(format_dict)
+
+```
+
+
+
+
+
+
+```{python}
+# | echo: false
+display(HTML(add_commas_to_dataframe(region_control_fields).to_html(index=False)))
+```
+
+### MGRA
+
+::: {.panel-tabset}
+
+```{python}
+# | echo: false
+def build_scatter_plot(df, y_axis, title, x_range=None, y_range=None):
+    fig = px.scatter(
+        df,
+        x="Control",
+        y=y_axis,
+        hover_data=["Control Field", "mgra"],
+        title=title,
+    )
+    fig.update_traces(marker=dict(size=12))
+    fig.add_hline(y=0, line_dash="dash", line_color="black")
+
+    # Update x-axis and y-axis with provided ranges, if any
+    if x_range is not None:
+        fig.update_xaxes(range=x_range)
+    if y_range is not None:
+        fig.update_yaxes(range=y_range)
+
+    return display(fig)
+```
+
+```{python}
+# | echo: false
+def summary_statistics(df: pd.DataFrame) -> pd.DataFrame:
+    # Compute summary statistics including median for 'Difference #' and 'Difference %'
+    df1 = (
+        df.groupby("Control Field")
+        .agg(
+            average_difference_num=("Difference #", "mean"),  # Average of 'Difference #'
+            median_difference_num=("Difference #", "median"),  # Median of 'Difference #'
+            average_difference_pct=("Difference %", "mean"),  # Average of 'Difference %'
+            median_difference_pct=("Difference %", "median"),  # Median of 'Difference %'
+            std_dev_difference_num=("Difference #", "std"),  # Standard Deviation of 'Difference #'
+            max_difference_num=("Difference #", lambda x: x.abs().max()),  # Max 'Difference #' in absolute value
+            max_difference_pct=("Difference %", lambda x: x.abs().max()),  # Max 'Difference %' in absolute value
+        )
+        .round(2)
+        .reset_index()
+    )
+
+    df2 = (
+        df.groupby("General Category")
+        .agg(
+            average_difference_num=("Difference #", "mean"),  # Average of 'Difference #'
+            median_difference_num=("Difference #", "median"),  # Median of 'Difference #'
+            average_difference_pct=("Difference %", "mean"),  # Average of 'Difference %'
+            median_difference_pct=("Difference %", "median"),  # Median of 'Difference %'
+            std_dev_difference_num=("Difference #", "std"),  # Standard Deviation of 'Difference #'
+            max_difference_num=("Difference #", lambda x: x.abs().max()),  # Max 'Difference #' in absolute value
+            max_difference_pct=("Difference %", lambda x: x.abs().max()),  # Max 'Difference %' in absolute value
+        )
+        .round(2)
+        .reset_index()
+    )
+    
+    # Assign "All" to generalize the category in df2
+    df2["General Category"] = "All"
+    # Ensure df2 columns match df1
+    df2.columns = df1.columns
+    
+    # Concatenate df1 and df2
+    df = pd.concat([df1, df2], ignore_index=True)
+    # Rename columns to include medians
+    df.columns = [
+        "Control Field",
+        "Avg Diff #",
+        "Med Diff #",
+        "Avg Diff %",
+        "Med Diff %",
+        "Diff STD #",
+        "Max |Diff #|",
+        "Max |Diff %|",
+    ]
+    
+    return df
+
+```
+
+```{python}
+# | output: asis
+# | echo: false
+for x in mgra_control_fields["General Category"].unique():
+    display(Markdown(f"### {x}"))
+    mgra_control_fields["Difference %"] = mgra_control_fields["Difference %"].replace(
+        [np.inf, -np.inf], np.nan
+    )
+    tbl = mgra_control_fields[mgra_control_fields["General Category"] == x][
+        [
+            "mgra",
+            "General Category",
+            "Control Field",
+            "Control",
+            "Result",
+            "Difference #",
+            "Difference %",
+        ]
+    ]
+
+    build_scatter_plot(
+        df=tbl,
+        y_axis="Difference #",
+        title=f"{x} - Numeric Difference",
+        x_range=(
+            0,
+            mgra_control_fields["Control"].max(),
+        ),
+        y_range=(
+            mgra_control_fields["Difference #"].min(),
+            mgra_control_fields["Difference #"].max(),
+        ),
+    )
+    build_scatter_plot(
+        df=tbl,
+        y_axis="Difference %",
+        title=f"{x} - Percent Difference",
+        x_range=(
+            0,
+            mgra_control_fields["Control"].max(),
+        ),
+        y_range=(
+            mgra_control_fields["Difference %"].min(),
+            mgra_control_fields["Difference %"].max(),
+        ),
+    )
+    summary_stats_table = summary_statistics(tbl)
+
+    display(HTML(add_commas_to_dataframe(summary_stats_table).to_html(index=False)))
+
+    print("")
+```
+
+<!-- Closes MGRA -->
+:::
+::: 
+
+

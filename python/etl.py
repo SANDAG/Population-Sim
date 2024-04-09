@@ -349,3 +349,5 @@ def run_etl(
         )
         conn.execute(sql_command)
         conn.commit()
+
+    return run_id
