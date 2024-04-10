@@ -347,23 +347,25 @@ display(HTML(add_commas_to_dataframe(region_control_fields).to_html(index=False)
 ```{python}
 # | echo: false
 def build_scatter_plot(df, y_axis, title, x_range=None, y_range=None):
-    fig = px.scatter(
-        df,
-        x="Control",
-        y=y_axis,
-        hover_data=["Control Field", "mgra"],
-        title=title,
-    )
-    fig.update_traces(marker=dict(size=12))
-    fig.add_hline(y=0, line_dash="dash", line_color="black")
+    plt.figure(figsize=(8, 6))
+    scatter = plt.scatter(df["Control"], df[y_axis], s=75)
 
-    # Update x-axis and y-axis with provided ranges, if any
+    plt.title(title)
+    plt.xlabel("Control")
+    plt.ylabel(y_axis)
+
+    # Adding a horizontal line at y=0
+    plt.axhline(0, color="black", linewidth=1, linestyle="dashed")
+
+    # Update x-axis and y-axis with provided ranges
     if x_range is not None:
-        fig.update_xaxes(range=x_range)
+        plt.xlim(x_range)
     if y_range is not None:
-        fig.update_yaxes(range=y_range)
+        plt.ylim(y_range)
 
-    return display(fig)
+    plt.show()
+
+
 ```
 
 ```{python}
@@ -373,13 +375,34 @@ def summary_statistics(df: pd.DataFrame) -> pd.DataFrame:
     df1 = (
         df.groupby("Control Field")
         .agg(
-            average_difference_num=("Difference #", "mean"),  # Average of 'Difference #'
-            median_difference_num=("Difference #", "median"),  # Median of 'Difference #'
-            average_difference_pct=("Difference %", "mean"),  # Average of 'Difference %'
-            median_difference_pct=("Difference %", "median"),  # Median of 'Difference %'
-            std_dev_difference_num=("Difference #", "std"),  # Standard Deviation of 'Difference #'
-            max_difference_num=("Difference #", lambda x: x.abs().max()),  # Max 'Difference #' in absolute value
-            max_difference_pct=("Difference %", lambda x: x.abs().max()),  # Max 'Difference %' in absolute value
+            average_difference_num=(
+                "Difference #",
+                "mean",
+            ),  # Average of 'Difference #'
+            median_difference_num=(
+                "Difference #",
+                "median",
+            ),  # Median of 'Difference #'
+            average_difference_pct=(
+                "Difference %",
+                "mean",
+            ),  # Average of 'Difference %'
+            median_difference_pct=(
+                "Difference %",
+                "median",
+            ),  # Median of 'Difference %'
+            std_dev_difference_num=(
+                "Difference #",
+                "std",
+            ),  # Standard Deviation of 'Difference #'
+            max_difference_num=(
+                "Difference #",
+                lambda x: x.abs().max(),
+            ),  # Max 'Difference #' in absolute value
+            max_difference_pct=(
+                "Difference %",
+                lambda x: x.abs().max(),
+            ),  # Max 'Difference %' in absolute value
         )
         .round(2)
         .reset_index()
@@ -388,23 +411,44 @@ def summary_statistics(df: pd.DataFrame) -> pd.DataFrame:
     df2 = (
         df.groupby("General Category")
         .agg(
-            average_difference_num=("Difference #", "mean"),  # Average of 'Difference #'
-            median_difference_num=("Difference #", "median"),  # Median of 'Difference #'
-            average_difference_pct=("Difference %", "mean"),  # Average of 'Difference %'
-            median_difference_pct=("Difference %", "median"),  # Median of 'Difference %'
-            std_dev_difference_num=("Difference #", "std"),  # Standard Deviation of 'Difference #'
-            max_difference_num=("Difference #", lambda x: x.abs().max()),  # Max 'Difference #' in absolute value
-            max_difference_pct=("Difference %", lambda x: x.abs().max()),  # Max 'Difference %' in absolute value
+            average_difference_num=(
+                "Difference #",
+                "mean",
+            ),  # Average of 'Difference #'
+            median_difference_num=(
+                "Difference #",
+                "median",
+            ),  # Median of 'Difference #'
+            average_difference_pct=(
+                "Difference %",
+                "mean",
+            ),  # Average of 'Difference %'
+            median_difference_pct=(
+                "Difference %",
+                "median",
+            ),  # Median of 'Difference %'
+            std_dev_difference_num=(
+                "Difference #",
+                "std",
+            ),  # Standard Deviation of 'Difference #'
+            max_difference_num=(
+                "Difference #",
+                lambda x: x.abs().max(),
+            ),  # Max 'Difference #' in absolute value
+            max_difference_pct=(
+                "Difference %",
+                lambda x: x.abs().max(),
+            ),  # Max 'Difference %' in absolute value
         )
         .round(2)
         .reset_index()
     )
-    
+
     # Assign "All" to generalize the category in df2
     df2["General Category"] = "All"
     # Ensure df2 columns match df1
     df2.columns = df1.columns
-    
+
     # Concatenate df1 and df2
     df = pd.concat([df1, df2], ignore_index=True)
     # Rename columns to include medians
@@ -418,7 +462,7 @@ def summary_statistics(df: pd.DataFrame) -> pd.DataFrame:
         "Max |Diff #|",
         "Max |Diff %|",
     ]
-    
+
     return df
 
 ```
@@ -456,6 +500,7 @@ for x in mgra_control_fields["General Category"].unique():
             mgra_control_fields["Difference #"].max(),
         ),
     )
+
     build_scatter_plot(
         df=tbl,
         y_axis="Difference %",
