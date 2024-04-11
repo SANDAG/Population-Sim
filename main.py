@@ -1,6 +1,7 @@
 """Entry point."""
 
 import logging
+import shutil
 import os
 import subprocess
 import sqlalchemy as sql
@@ -112,6 +113,14 @@ for year in config["years"]:
         # Executing the Quarto command
         try:
             subprocess.run(quarto_command, check=True)
+
+            # Change the name of the Quarto html file
+            source_file = f"output/{year}/popsim_one_pager_build.html"
+            dest_file = (
+                f"output/{year}/PopulationSim_One_Pager_RunID_{run_id}_{year}.html"
+            )
+            shutil.move(source_file, dest_file)
+
             logging.info("Quarto render successful.")
         except subprocess.CalledProcessError as e:
             logging.error(f"Quarto render failed: {e}")
