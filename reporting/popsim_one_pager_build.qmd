@@ -270,7 +270,11 @@ run_info = pd.read_sql_query(query, engine)
 
 # Run ID - `{python} run_id`
 
-Enclosed is a summary evaluating the alignment of our PopulationSim model's outputs with the inputted Controls for run ID #`{python} run_id`. This PopulationSim run draws data from the staging table `{python} run_info['staging_schema'].iloc[0]`. Run ID #`{python} run_id` houses outputs for the year `{python} run_info['year'].iloc[0]`. Further comments on this run include: `{python} run_info['comments'].iloc[0]`. SANDAG sets control parameters at both regional and MGRA levels. Below, you will find interactive tabs that present a detailed analysis of our model's adherence to the set control benchmarks. These tabs enable a comprehensive comparison at both regional and MGRA levels.
+Enclosed is a summary evaluating the alignment of our PopulationSim model's outputs with the inputted Controls for run ID #`{python} run_id`. This PopulationSim run draws data from the staging table `{python} run_info['staging_schema'].iloc[0]`. Run ID #`{python} run_id` houses outputs for the year `{python} run_info['year'].iloc[0]`.  
+
+Further comments on this run include: `{python} run_info['comments'].iloc[0]`.   
+
+SANDAG sets control parameters at both regional and MGRA levels. Below, you will find interactive tabs that present a detailed analysis of our model's adherence to the set control benchmarks. These tabs enable a comprehensive comparison at both regional and MGRA levels.
 
 ::: {.panel-tabset}
 ### Region
@@ -337,7 +341,8 @@ def add_commas_to_dataframe(df: pd.DataFrame) -> Styler:
 
 ```{python}
 # | echo: false
-display(HTML(add_commas_to_dataframe(region_control_fields).to_html(index=False)))
+styled_df = add_commas_to_dataframe(region_control_fields).hide()
+display(HTML(styled_df.to_html()))
 ```
 
 ### MGRA
@@ -516,8 +521,8 @@ for x in mgra_control_fields["General Category"].unique():
     )
     summary_stats_table = summary_statistics(tbl)
 
-    display(HTML(add_commas_to_dataframe(summary_stats_table).to_html(index=False)))
-
+    styled_df = add_commas_to_dataframe(summary_stats_table).hide()
+    display(HTML(styled_df.to_html()))
     print("")
 ```
 
