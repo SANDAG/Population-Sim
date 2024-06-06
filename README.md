@@ -24,6 +24,7 @@ sql:
   region_controls: "sql/region_controls.sql" # region controls data query
   mgrabase: "sql/mgrabase.sql" # mgrabase file generation data query
   output_database: "" # Database for populationsim data
+  load_to_database: # Set True/False to Load/Not results to database 
 
 economic_controls: "data/Economic Team Region Controls.csv" # region economic controls provided by SANDAG's Economics Team
 

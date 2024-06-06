@@ -9,11 +9,11 @@ sql:
   mgra_controls: "sql/mgra_controls.sql"
   region_controls: "sql/region_controls.sql"
   mgrabase: "sql/mgrabase.sql"
-  output_database: ""
+  output_database: "PopulationSim_v1"
+  load_to_database:
 
 economic_controls: "data/Economic Team Region Controls.csv"
 
-load_to_database: False
 
 years:
   - 2022
