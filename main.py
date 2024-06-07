@@ -87,7 +87,7 @@ for year in config["years"]:
         schema=config["sql"]["schema"],
     )
 
-    if config["sql"]["load_to_database"]:
+    if config["load_to_database"]:
         # Run the ETL process
         run_etl(
             year=year,
