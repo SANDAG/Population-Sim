@@ -243,6 +243,7 @@ def run_etl(
     output_database: str,
     version: str,
     staging_schema: str,
+    seed_data: str,
     comments: str,
 ) -> None:
     """Runs the ETL process for loading popsim data into the SQL database for a given year.
@@ -253,6 +254,7 @@ def run_etl(
     - output_database (str): The name of the database where popsim data is stored.
     - version (str): The popsim version that is being ran.
     - staging_schema (str): The schema name of the staged UDM outputs used by popsim
+    - seed_data (str): ACS PUMS data used to create seed data
     - comments (str): Additional comments about the run.
     """
     run_id = get_next_run_id(engine, output_database)
@@ -270,6 +272,7 @@ def run_etl(
         "date": pd.Timestamp.now(),
         "version": version,
         "staging_schema": staging_schema,
+        "seed_data": seed_data,
         "comments": comments,
         "loaded": 0,
     }
