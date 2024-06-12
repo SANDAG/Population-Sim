@@ -1,8 +1,5 @@
--- Create the populationsim_user role when running the popualtion 
-USE [PopulationSim_v1]
-GO
-
+-- Create the populationsim_user role when running population sim
 CREATE ROLE populationsim_user;
 
-GRANT ALL TO populationsim_user;
+GRANT INSERT, SELECT TO populationsim_user;
 GO

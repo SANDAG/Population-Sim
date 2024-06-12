@@ -1,4 +1,4 @@
-version: "v1.0.0"
+version: "v1.0.1-prerelease"
 seed_data: "ACS PUMS 5 year 2021"
 comments: "No Comments"
 
@@ -14,10 +14,10 @@ economic_controls: "data/Economic Team Region Controls.csv"
 
 
 years:
-  # - 2022
-  # - 2026
-  # - 2029
-  # - 2032
-  # - 2035
-  # - 2040
+  - 2022
+  - 2026
+  - 2029
+  - 2032
+  - 2035
+  - 2040
   - 2050
