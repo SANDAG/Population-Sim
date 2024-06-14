@@ -7,9 +7,6 @@ This repository is dedicated to running PopulationSim, a powerful demographic si
 PopulationSim is well-suited for generating detailed household and person-level synthetic populations based on sample data and control totals. It is a important component in urban planning and transportation modeling. Learn more about PopulationSim in its [official documentation](https://activitysim.github.io/populationsim/).
 
 ## Getting Started
-Pre-requisites for running population sim for the first time OR move to nextsection (Running PopulationSim)
-1. Create Database Role in the production SQL server database using "role_creation.sql" in the sql folder in the repository
-2. Create Tables using "table_creation.sql" in the sql folder in the repository 
 
 ### Running PopulationSim
 
@@ -23,8 +20,8 @@ The secrets.yml should mirror the following structure.
 
 sql:
   server: "<SQLInstanceName>" # SQL instance containing seed and control data
-  schema: "<SQLSchemaName>" # E&F team Series 15 UDM schema to use for control data
-  output_database: "<SQLoutputDatabaseName>"
+  schema: "<[SQLSchemaName]>" # E&F team Series 15 UDM schema to use for control data
+  output_database: "<SQLoutputDatabaseName>" # Optional PopulationSim output SQL database
 ```
 3. **Update the `config.yml` configuration file** in the project root directory
 

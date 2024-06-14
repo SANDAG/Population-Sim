@@ -40,7 +40,7 @@ with open("secrets.yml", "r") as file:
     secrets = yaml.safe_load(file)
 
 
-dbname = secrets["sql"]["output_database"] if config["sql"]["load_to_database"] else 'master'
+dbname = secrets["sql"]["output_database"] if config["sql"]["load_to_database"] else "master"
 engine = sql.create_engine(
     "mssql+pyodbc://@" 
     + secrets["sql"]["server"] 
@@ -67,7 +67,7 @@ for year in config["years"]:
     get_mgra_controls(
         sql_engine=engine,
         query_file=config["sql"]["mgra_controls"],
-        schema=f'[{secrets["sql"]["schema"]}]',
+        schema=secrets["sql"]["schema"]',
         year=year,
     ).to_csv(folder + "mgra_controls.csv", index=False)
 
@@ -75,7 +75,7 @@ for year in config["years"]:
     get_region_controls(
         sql_engine=engine,
         query_file=config["sql"]["region_controls"],
-        schema=f'[{secrets["sql"]["schema"]}]',
+        schema=secrets["sql"]["schema"],
         econ_file=config["economic_controls"],
         year=year,
     ).to_csv(folder + "region_controls.csv", index=False)
@@ -103,7 +103,6 @@ for year in config["years"]:
             output_database=secrets["sql"]["output_database"],
             version=config["version"],
             staging_schema=secrets["sql"]["schema"],
-            #staging_schema=f'[{secrets["sql"]["schema"]}]',
             seed_data=config["seed_data"],
             comments=config["comments"]
         )

@@ -62,6 +62,6 @@ SELECT
     [effective_acres],
     [truckregiontype]
 FROM
-    [sr15_staging].[{staging_schema}].[mgrabase]
+    [sr15_staging].{staging_schema}.[mgrabase]
 WHERE
 	[increment] = {year}
