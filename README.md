@@ -12,12 +12,22 @@ PopulationSim is well-suited for generating detailed household and person-level 
 
 1. **Clone the Repository** and ensure an installation of [Miniconda/Anaconda](https://docs.conda.io/projects/miniconda/en/latest/) exists. Use the `environment.yml` file in the root directory of the project to [create the Python virtual environment](https://docs.conda.io/projects/conda/en/4.6.1/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file) needed to run the project.
 
-2. **Update the `config.yml` configuration file** in the project root directory
+2. **Configuration of Private Data in secrets.yml**
+In order to avoid exposing certain data to the public this repository uses a secrets file to store sensitive configurations in addition to a standard configuration file. This file is stored in the root directory of the repository as secrets.yml and is included in the .gitignore intentionally to avoid it ever being committed to the repository.
+
+The secrets.yml should mirror the following structure. 
+```yaml
+
+sql:
+  server: "<SQLInstanceName>" # SQL instance containing seed and control data
+  schema: "<[SQLSchemaName]>" # E&F team Series 15 UDM schema to use for control data
+  output_database: "<SQLoutputDatabaseName>" # Optional PopulationSim output SQL database
+```
+3. **Update the `config.yml` configuration file** in the project root directory
 
 ```yaml
 sql:
-  server: "" # SQL instance containing seed and control data
-  schema: "" # E&F team Series 15 UDM schema to use for control data
+
   seed_households: "sql/seed_households.sql" # household seed data query
   seed_persons: "sql/seed_persons.sql" # person seed data query
   mgra_controls: "sql/mgra_controls.sql" # mgra controls data query
@@ -38,12 +48,12 @@ years: # years for which to generate controls and run populationsim
   - 2050
 ```
 
-3. **Update PopulationSim configuration files** (if necessary)
+4. **Update PopulationSim configuration files** (if necessary)
 
    - SANDAG commonly sets the `populationsim/conigs_mp/settings.yaml` file such that `multiprocess: True`, `num_processes: 22`, `multiprocess_steps: num_processes: 22` to enable the maximum level of multiprocessing using the 22 San Diego PUMAS as the `slice_geography: PUMA`. If at least 22 logical processors are not available (not advised due to long run times), it is suggested to set both `num_processes:` configurations to the number of logical processors.
    - See the PopulationSim [official documentation](https://activitysim.github.io/populationsim/)
 
-4. **Run the `main.py` entry point file** from the project root directory
+5. **Run the `main.py` entry point file** from the project root directory
 
 ### Outputs of PopulationSim
 

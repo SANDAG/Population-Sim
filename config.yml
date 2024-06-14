@@ -1,19 +1,16 @@
 version: "v1.0.1-prerelease"
+seed_data: "ACS PUMS 5 year 2021"
 comments: "No Comments"
 
 sql:
-  server: ""
-  schema: ""
   seed_households: "sql/seed_households.sql"
   seed_persons: "sql/seed_persons.sql"
   mgra_controls: "sql/mgra_controls.sql"
   region_controls: "sql/region_controls.sql"
   mgrabase: "sql/mgrabase.sql"
-  output_database: ""
   load_to_database: False
 
 economic_controls: "data/Economic Team Region Controls.csv"
-
 
 
 years:

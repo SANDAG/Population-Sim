@@ -15,6 +15,7 @@ CREATE TABLE [metadata].[run] (
     [date] DATETIME NOT NULL,
     [version] NVARCHAR(50) NOT NULL,
     [staging_schema] NVARCHAR(50) NOT NULL,
+    [seed_data] NVARCHAR(200) NULL,
     [comments] NVARCHAR(200) NULL,
     [loaded] BIT NOT NULL,
     CONSTRAINT [pk_metadata_run] PRIMARY KEY ([run_id]))
