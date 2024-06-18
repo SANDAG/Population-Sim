@@ -1,7 +1,7 @@
 -- Get ACS PUMS seed households
 SELECT
     [households].[SERIALNO],
-    [PUMA],
+    [PUMA], -- Note the 2017-2021 ACS PUMS uses 2010 PUMAS
     [NP],
     [HINCP],
     -- Adjust HINCP using the San Diego Region CPI based on survey year to 2022 dollars
@@ -40,7 +40,7 @@ SELECT
          WHEN [TYPEHUGQ] IN (2,3) THEN [PWGTP]
          END AS [WGTP]
 FROM
-    [acs].[pums].[5y_2017_2021_households] AS [households]
+    [acs].[pums].[vi_5y_2017_2021_households_sd] AS [households]
     INNER JOIN (
 	SELECT
         [SERIALNO],
@@ -51,7 +51,7 @@ FROM
         MAX([PWGTP]) AS [PWGTP],
 		MAX([PINCP]) AS [PINCP]
     FROM
-        [acs].[pums].[5y_2017_2021_persons]
+        [acs].[pums].[vi_5y_2017_2021_persons_sd]
     GROUP BY
 		[SERIALNO]
 ) AS [hh_workers]
@@ -59,11 +59,5 @@ FROM
 	[households].[SERIALNO] = [hh_workers].[SERIALNO]
 WHERE
 	[NP] > 0 -- remove vacant households
-    -- Note the 2017-2021 ACS PUMS uses 2010 PUMAS
-    AND [households].[ST] = '06' AND [households].[PUMA] IN  (
-	'07301', '07302','07303','07304', '07305','07306',
-	'07307','07308','07309','07310','07311','07312',
-	'07313','07314','07315','07316','07317','07318',
-	'07319','07320','07321','07322')
 ORDER BY
 	[households].[SERIALNO]
