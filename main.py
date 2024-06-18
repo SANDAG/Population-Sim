@@ -67,7 +67,7 @@ for year in config["years"]:
     get_mgra_controls(
         sql_engine=engine,
         query_file=config["sql"]["mgra_controls"],
-        schema=secrets["sql"]["schema"]',
+        schema=secrets["sql"]["schema"],
         year=year,
     ).to_csv(folder + "mgra_controls.csv", index=False)
 
