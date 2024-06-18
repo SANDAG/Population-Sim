@@ -59,6 +59,5 @@ FROM
 	[households].[SERIALNO] = [hh_workers].[SERIALNO]
 WHERE
 	[NP] > 0 -- remove vacant households
-    AND [households].[ST] = '06'
 ORDER BY
 	[households].[SERIALNO]

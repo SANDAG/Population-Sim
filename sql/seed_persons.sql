@@ -46,7 +46,6 @@ FROM
 	[persons].[SERIALNO] = [households].[SERIALNO]
 WHERE
 	[NP] > 0 -- remove vacant households (not necessary for persons but here for documentation)
-    AND [persons].[ST] = '06' 
 ORDER BY
     [persons].[SERIALNO],
     [SPORDER]
