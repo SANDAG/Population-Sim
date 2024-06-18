@@ -2,7 +2,7 @@
 SELECT
     [persons].[SERIALNO],
     [SPORDER],
-    [persons].[PUMA],
+    [persons].[PUMA], -- Note the 2017-2021 ACS PUMS uses 2010 PUMAS
     [AGEP],
     [SEX],
     [ESR],
@@ -39,16 +39,14 @@ SELECT
 		 END AS [gq_type],
     [PINCP]
 FROM
-    [acs].[pums].[5y_2017_2021_persons] AS [persons]
+    [acs].[pums].[vi_5y_2017_2021_persons_sd] AS [persons]
     INNER JOIN
-    [acs].[pums].[5y_2017_2021_households] AS [households]
+    [acs].[pums].[vi_5y_2017_2021_households_sd] AS [households]
     ON
 	[persons].[SERIALNO] = [households].[SERIALNO]
 WHERE
 	[NP] > 0 -- remove vacant households (not necessary for persons but here for documentation)
-    -- Note the 2017-2021 ACS PUMS uses 2010 PUMAS
-    AND [persons].[ST] = '06' AND [persons].[PUMA] IN  (
-	SELECT DISTINCT(PUMA) FROM [acs].[pums].[vi_5y_2017_2021_persons_sd])
+    AND [persons].[ST] = '06' 
 ORDER BY
     [persons].[SERIALNO],
     [SPORDER]
