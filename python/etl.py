@@ -8,6 +8,8 @@ from sqlalchemy import insert
 import sqlalchemy.engine.base
 import yaml
 import csv
+import numpy as np
+from activitysim.core import config
 
 
 def region_summary_transformations(df: pd.DataFrame) -> pd.DataFrame:
@@ -151,6 +153,26 @@ def etl_controls_csv(
     - schema (str): The schema of the target SQL table.
     """
     df = pd.read_csv(filepath)
+    # adding gq control defs to the dataframe
+    settings_file = 'populationsim/configs/settings.yaml'
+    with open(settings_file, "r") as file:
+        settings = yaml.safe_load(file)
+    gq_options = settings['gq_options']
+    seed_col = gq_options['GQ_type_column']
+    code_map = gq_options['GQ_control_map']
+    code_vals = [v for item in code_map 
+                    for k, v in item.items() if k=='code']
+    control_cols = [v for item in code_map
+                        for k, v in item.items() if k=='control_column']
+    expression_list = [f'{seed_col} == {i}' for i in code_vals]
+
+    df_gq = pd.DataFrame(data = {'target': control_cols,
+                                 'geography': ['mgra']*3,
+                                 'seed_table': ['gq']*3,
+                                 'importance': [0]*3,
+                                 'control_field': control_cols,
+                                 'expression': expression_list})
+    df = pd.concat([df, df_gq])
     df.insert(0, "run_id", run_id)
     df["control_id"] = range(1, len(df) + 1)
     load_to_sql(df=df, name=table_name, con=engine, schema=schema)
@@ -301,7 +323,19 @@ def run_etl(
         schema="outputs",
         output_database=output_database,
     )
+
+    etl_final_summary(
+        engine=engine,
+        run_id=run_id,
+        year=year,
+        transformations_func=sub_geography_summary_manipulations,
+        input_path="final_summary_mgra_gq.csv",
+        output_table="control_totals",
+        schema="outputs",
+        output_database=output_database,
+    )
     print("final_summary_mgra is loaded")
+
     etl_final_summary(
         engine=engine,
         run_id=run_id,
