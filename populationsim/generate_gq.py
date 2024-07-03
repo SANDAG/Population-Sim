@@ -52,12 +52,18 @@ def draw_gqpopulation(gq_options, input_dfs):
     pergqseed_df = input_dfs['persons']
     controls_df = input_dfs['mgra_control_data']
     geo_df = input_dfs['geo_cross_walk']
+    summary_df = pd.DataFrame(data = {'mgra': controls_df['mgra'].to_list()}) # summary file to be written out
+    summary_df['geography'] = 'mgra'
+
 
     # Looping over gq types
     for gq in gq_map:
         gq_code, gq_control = gq['code'], gq['control_column']
         #print(f'+++ drawing GQ_type {gq_code}')
 
+        summary_df = summary_df.merge(controls_df[['mgra', gq_control]], on='mgra')
+        summary_df.rename(columns={gq_control: f'{gq_control}_control'}, inplace=True)
+        summary_df[f'{gq_control}_result'] = 0
 
         # getting the tazs with GQ controls
         gq_controls = controls_df.loc[controls_df[gq_control] > 0, ['mgra', gq_control]].copy()
@@ -91,6 +97,8 @@ def draw_gqpopulation(gq_options, input_dfs):
             else:
                 gq_hhs = pd.concat([gq_hhs, hhdraw])
 
+            summary_df.loc[summary_df['mgra']==mgra, f'{gq_control}_result'] = ndraws
+
 
     # Genrateing household_id and getting corresponding persons
     gq_hhs = gq_hhs.reset_index(drop = True)
@@ -103,8 +111,8 @@ def draw_gqpopulation(gq_options, input_dfs):
 
     synpop_dfs = {'households': gq_hhs,
                   'persons': gq_pers}
-
-    return synpop_dfs
+    summary_df.rename(columns={'mgra': 'id'}, inplace=True)
+    return synpop_dfs, summary_df
 
 #--------------------------------------------------------------------------------------------------
 
@@ -158,13 +166,13 @@ def adjust_controls(gq_options, input_dfs, synpop_dfs):
 
 #--------------------------------------------------------------------------------------------------
 
-def write_outputs(gq_options, synpop_dfs):
+def write_outputs(gq_options, synpop_dfs, summary_df):
 
     # # Writing out the adjusted controls
     # outcontrol_fname = gq_options.get('output_control_file')
     # outcontrols_df.to_csv(outcontrol_fname, index = False)
 
-    # Writing out synthetici poplulation
+    # Writing out synthetic gq population
     output_config = gq_options.get('output_gq_population')
     household_id = output_config['household_id']
 
@@ -179,6 +187,7 @@ def write_outputs(gq_options, synpop_dfs):
 
 
         synpop_dfs[tbl][cols].to_csv(tbl_config['filename'], index = False)
+        summary_df.to_csv(gq_options.get('summary_file'), index=False)
     
 
 
@@ -192,11 +201,11 @@ def run_gq(args):
 
     input_dfs = read_tables(gq_options)
 
-    synpop_dfs = draw_gqpopulation(gq_options, input_dfs)
+    synpop_dfs, summary_df = draw_gqpopulation(gq_options, input_dfs)
 
     #outcontrols_df = adjust_controls(gq_options, input_dfs, synpop_dfs)
 
-    write_outputs(gq_options, synpop_dfs)
+    write_outputs(gq_options, synpop_dfs, summary_df)
 
     print("+++ Finished writing out the GQ synpop ----------")
 

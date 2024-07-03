@@ -29,7 +29,7 @@ CREATE TABLE [inputs].[controls] (
     [target] NVARCHAR(255) NOT NULL,
     [geography] NVARCHAR(255) NOT NULL,
     [seed_table] NVARCHAR(255) NOT NULL,
-    [importance] INT NOT NULL,
+    [importance] INT NULL,
     [control_field] NVARCHAR(255) NOT NULL,
     [expression] NVARCHAR(255) NOT NULL,
     CONSTRAINT [pk_inputs_controls] PRIMARY KEY ([run_id], [control_id]),

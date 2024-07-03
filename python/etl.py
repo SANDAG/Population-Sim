@@ -169,7 +169,7 @@ def etl_controls_csv(
     df_gq = pd.DataFrame(data = {'target': control_cols,
                                  'geography': ['mgra']*3,
                                  'seed_table': ['gq']*3,
-                                 'importance': [0]*3,
+                                 'importance': [None]*3,
                                  'control_field': control_cols,
                                  'expression': expression_list})
     df = pd.concat([df, df_gq])

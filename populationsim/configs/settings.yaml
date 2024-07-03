@@ -194,5 +194,5 @@ gq_options:
         - SOCP 
         - SOC2
 
-
+  summary_file: 'output_gq/final_summary_mgra_gq.csv'
   random_seed: 1729
