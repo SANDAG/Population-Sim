@@ -52,48 +52,48 @@ engine = sql.create_engine(
 
 folder = "populationsim/data/"
 
-# # Create seed files and write for use in populationsim
-# seed_households = get_seed_households(engine, config["sql"]["seed_households"])
-# seed_persons = get_seed_persons(engine, config["sql"]["seed_persons"])
-# for k in ["gq", "hh"]:
-#     seed_households[k].to_csv(folder + "seed_households_" + k + ".csv", index=False)
-#     seed_persons[k].to_csv(folder + "seed_persons_" + k + ".csv", index=False)
+# Create seed files and write for use in populationsim
+seed_households = get_seed_households(engine, config["sql"]["seed_households"])
+seed_persons = get_seed_persons(engine, config["sql"]["seed_persons"])
+for k in ["gq", "hh"]:
+    seed_households[k].to_csv(folder + "seed_households_" + k + ".csv", index=False)
+    seed_persons[k].to_csv(folder + "seed_persons_" + k + ".csv", index=False)
 
-# # For each year of populationsim
+# For each year of populationsim
 for year in config["years"]:
     print(f"Building controls for {year}")
 
-#     # Build and write mgra-level controls for use in populationsim
-#     get_mgra_controls(
-#         sql_engine=engine,
-#         query_file=config["sql"]["mgra_controls"],
-#         schema=secrets["sql"]["schema"],
-#         year=year,
-#     ).to_csv(folder + "mgra_controls.csv", index=False)
+    # Build and write mgra-level controls for use in populationsim
+    get_mgra_controls(
+        sql_engine=engine,
+        query_file=config["sql"]["mgra_controls"],
+        schema=secrets["sql"]["schema"],
+        year=year,
+    ).to_csv(folder + "mgra_controls.csv", index=False)
 
-#     # Build and write region-level controls for use in populationsim
-#     get_region_controls(
-#         sql_engine=engine,
-#         query_file=config["sql"]["region_controls"],
-#         schema=secrets["sql"]["schema"],
-#         econ_file=config["economic_controls"],
-#         year=year,
-#     ).to_csv(folder + "region_controls.csv", index=False)
+    # Build and write region-level controls for use in populationsim
+    get_region_controls(
+        sql_engine=engine,
+        query_file=config["sql"]["region_controls"],
+        schema=secrets["sql"]["schema"],
+        econ_file=config["economic_controls"],
+        year=year,
+    ).to_csv(folder + "region_controls.csv", index=False)
 
-#     # Run populationsim
-#     print(f"Running populationsim for {year}")
-#     run_simulation()
+    # Run populationsim
+    print(f"Running populationsim for {year}")
+    run_simulation()
 
-#     # Organize outputs of populationsim
-#     organize_outputs(year=year)
+    # Organize outputs of populationsim
+    organize_outputs(year=year)
 
-#     # Create ABM-style outputs from populationsim
-#     create_abm_outputs(
-#         year=year,
-#         sql_engine=engine,
-#         query_file=config["sql"]["mgrabase"],
-#         schema=secrets["sql"]["schema"],
-#     ) 
+    # Create ABM-style outputs from populationsim
+    create_abm_outputs(
+        year=year,
+        sql_engine=engine,
+        query_file=config["sql"]["mgrabase"],
+        schema=secrets["sql"]["schema"],
+    ) 
 
     if config["sql"]["load_to_database"]:
         # Run the ETL process
