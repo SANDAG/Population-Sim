@@ -153,26 +153,26 @@ def etl_controls_csv(
     - schema (str): The schema of the target SQL table.
     """
     df = pd.read_csv(filepath)
-    # adding gq control defs to the dataframe
-    settings_file = 'populationsim/configs/settings.yaml'
+    # Adding gq control defs to the dataframe
+    # Open the PopulationSim settings file
+    settings_file = "populationsim/configs/settings.yaml"
     with open(settings_file, "r") as file:
         settings = yaml.safe_load(file)
-    gq_options = settings['gq_options']
-    seed_col = gq_options['GQ_type_column']
-    code_map = gq_options['GQ_control_map']
-    code_vals = [v for item in code_map 
-                    for k, v in item.items() if k=='code']
-    control_cols = [v for item in code_map
-                        for k, v in item.items() if k=='control_column']
-    expression_list = [f'{seed_col} == {i}' for i in code_vals]
-
-    df_gq = pd.DataFrame(data = {'target': control_cols,
-                                 'geography': ['mgra']*3,
-                                 'seed_table': ['gq']*3,
-                                 'importance': [None]*3,
-                                 'control_field': control_cols,
-                                 'expression': expression_list})
-    df = pd.concat([df, df_gq])
+    # Get GQ control columns and expressions
+    # And append to the controls DataFrame
+    for item in settings["gq_options"]["GQ_control_map"]:
+        result = {
+            "target": item["control_column"],
+            "geography": "mgra",
+            "seed_table": "persons",
+            "importance": None,
+            "control_field": item["control_column"],
+            "expression": settings["gq_options"]["GQ_type_column"]
+            + " == "
+            + str(item["code"]),
+        }
+        df_gq = pd.Series(result).to_frame().T
+        df = pd.concat([df, df_gq], ignore_index=True)
     df.insert(0, "run_id", run_id)
     df["control_id"] = range(1, len(df) + 1)
     load_to_sql(df=df, name=table_name, con=engine, schema=schema)
@@ -303,7 +303,8 @@ def run_etl(
     )
     print("metadata is loaded")
 
-    # Non-simple ETL Tasks
+    # Loading the final summary file with HH and person level controls along with the GQ controls.
+    # Since the GQ generation is done using generate GQ module -- the summary files for hh and GQ are appended for the final results.
     etl_controls_csv(
         run_id=run_id,
         filepath="populationsim/configs/controls.csv",
@@ -323,6 +324,7 @@ def run_etl(
         schema="outputs",
         output_database=output_database,
     )
+    print("final_summary_mgra is loaded")
 
     etl_final_summary(
         engine=engine,
@@ -334,7 +336,7 @@ def run_etl(
         schema="outputs",
         output_database=output_database,
     )
-    print("final_summary_mgra is loaded")
+    print("final_summary_mgra_gq is loaded")
 
     etl_final_summary(
         engine=engine,
