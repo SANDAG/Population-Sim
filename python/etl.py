@@ -8,8 +8,6 @@ from sqlalchemy import insert
 import sqlalchemy.engine.base
 import yaml
 import csv
-import numpy as np
-from activitysim.core import config
 
 
 def region_summary_transformations(df: pd.DataFrame) -> pd.DataFrame:
@@ -144,6 +142,12 @@ def etl_controls_csv(
     schema: str,
 ) -> None:
     """Reads the controls csv, adds a 'run_id' and generates 'control_id', then loads it into a SQL table.
+    The controls for the populationsim are configured in the .csv file (populationsim/configs/controls.csv) 
+    with household level and person level controls. For each control, the table has a level of geography,
+    importance (weights) and the expression to define the controls. 
+    The original populationsim from activitysim doesn’t have a separate module to process 
+    the GQ population which was an add-on customized for the San Diego region. 
+    The GQ controls are set in the settings.yaml file under the setting ‘gq_options’. 
 
     Parameters:
     - run_id (int): The run identifier to be added to the DataFrame.
@@ -313,7 +317,9 @@ def run_etl(
         schema="inputs",
     )
     print("controls is loaded")
-
+    #PopulationSim summary outputs has household, person and GQ level marginals 
+    # being written out separately. However, this method creates a unified summary 
+    #table as [outputs].[control_totals]and a unified controls table as [inputs].[controls] in the database.
     etl_final_summary(
         engine=engine,
         run_id=run_id,
