@@ -93,7 +93,7 @@ for year in config["years"]:
         sql_engine=engine,
         query_file=config["sql"]["mgrabase"],
         schema=secrets["sql"]["schema"],
-    )
+    ) 
 
     if config["sql"]["load_to_database"]:
         # Run the ETL process

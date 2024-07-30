@@ -141,7 +141,17 @@ def etl_controls_csv(
     table_name: str,
     schema: str,
 ) -> None:
-    """Reads the controls csv, adds a 'run_id' and generates 'control_id', then loads it into a SQL table.
+    """Takes controls from populationsim and loads into SQL database.
+
+    Controls are passed as configurations (populationsim/configs/controls.csv)
+    with household and person level controls. For each control, the table has
+    a level of geography, importance (weights) and an expression to define the
+    control.
+    
+    The original populationsim from activitysim did not have a separate
+    module to process the GQ population which was an add-on customized for the
+    San Diego region. The GQ controls from this add-on are included here.
+
 
     Parameters:
     - run_id (int): The run identifier to be added to the DataFrame.
@@ -151,6 +161,26 @@ def etl_controls_csv(
     - schema (str): The schema of the target SQL table.
     """
     df = pd.read_csv(filepath)
+    # Adding gq control defs to the dataframe
+    # Open the PopulationSim settings file
+    settings_file = "populationsim/configs/settings.yaml"
+    with open(settings_file, "r") as file:
+        settings = yaml.safe_load(file)
+    # Get GQ control columns and expressions
+    # And append to the controls DataFrame
+    for item in settings["gq_options"]["GQ_control_map"]:
+        result = {
+            "target": item["control_column"],
+            "geography": "mgra",
+            "seed_table": "persons",
+            "importance": None,
+            "control_field": item["control_column"],
+            "expression": settings["gq_options"]["GQ_type_column"]
+            + " == "
+            + str(item["code"]),
+        }
+        df_gq = pd.Series(result).to_frame().T
+        df = pd.concat([df, df_gq], ignore_index=True)
     df.insert(0, "run_id", run_id)
     df["control_id"] = range(1, len(df) + 1)
     load_to_sql(df=df, name=table_name, con=engine, schema=schema)
@@ -281,7 +311,8 @@ def run_etl(
     )
     print("metadata is loaded")
 
-    # Non-simple ETL Tasks
+    # Loading the final summary file with HH and person level controls along with the GQ controls.
+    # Since the GQ generation is done using generate GQ module -- the summary files for hh and GQ are appended for the final results.
     etl_controls_csv(
         run_id=run_id,
         filepath="populationsim/configs/controls.csv",
@@ -290,7 +321,9 @@ def run_etl(
         schema="inputs",
     )
     print("controls is loaded")
-
+    #PopulationSim summary outputs has household, person and GQ level marginals 
+    # being written out separately. However, this method creates a unified summary 
+    #table as [outputs].[control_totals]and a unified controls table as [inputs].[controls] in the database.
     etl_final_summary(
         engine=engine,
         run_id=run_id,
@@ -302,6 +335,19 @@ def run_etl(
         output_database=output_database,
     )
     print("final_summary_mgra is loaded")
+
+    etl_final_summary(
+        engine=engine,
+        run_id=run_id,
+        year=year,
+        transformations_func=sub_geography_summary_manipulations,
+        input_path="final_summary_mgra_gq.csv",
+        output_table="control_totals",
+        schema="outputs",
+        output_database=output_database,
+    )
+    print("final_summary_mgra_gq is loaded")
+
     etl_final_summary(
         engine=engine,
         run_id=run_id,

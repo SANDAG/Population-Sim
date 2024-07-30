@@ -86,7 +86,7 @@ def organize_outputs(year: int) -> None:
             "gq": {
                 "default_path": "populationsim/output_gq/",
                 "new_path": post_process_path,
-                "files": ["synthetic_households_gq.csv", "synthetic_persons_gq.csv"],
+                "files": ["synthetic_households_gq.csv", "synthetic_persons_gq.csv", "final_summary_mgra_gq.csv"],
             },
             "hh": {
                 "default_path": "populationsim/output/",
