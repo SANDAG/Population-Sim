@@ -40,15 +40,17 @@ with open("secrets.yml", "r") as file:
     secrets = yaml.safe_load(file)
 
 
-dbname = secrets["sql"]["output_database"] if config["sql"]["load_to_database"] else "master"
+dbname = (
+    secrets["sql"]["output_database"] if config["sql"]["load_to_database"] else "master"
+)
 engine = sql.create_engine(
-    "mssql+pyodbc://@" 
-    + secrets["sql"]["server"] 
+    "mssql+pyodbc://@"
+    + secrets["sql"]["server"]
     + "/"
     + dbname
     + "?trusted_connection=yes&driver=ODBC Driver 17 for SQL Server",
-    fast_executemany=True
-    )
+    fast_executemany=True,
+)
 
 folder = "populationsim/data/"
 
@@ -93,18 +95,32 @@ for year in config["years"]:
         sql_engine=engine,
         query_file=config["sql"]["mgrabase"],
         schema=secrets["sql"]["schema"],
-    ) 
+    )
 
     if config["sql"]["load_to_database"]:
         # Run the ETL process
-        run_etl(
+        run_id = run_etl(
             year=year,
             engine=engine,
             output_database=secrets["sql"]["output_database"],
             version=config["version"],
             staging_schema=secrets["sql"]["schema"],
             seed_data=config["seed_data"],
-            comments=config["comments"]
+            comments=config["comments"],
         )
+
+        # Run Quarto report
+        # Constructing the Quarto command
+        cmd = (
+            "quarto render 'report/Validation Report.qmd'"
+            + f" -P run_id:{run_id} --output-dir ../output/{year}"
+        )
+
+        # Executing the Quarto command
+        try:
+            subprocess.run(cmd, check=True)
+            logging.info("Quarto render successful.")
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Quarto render failed: {e}")
 
 logging.info("All years processed successfully.")

@@ -147,7 +147,7 @@ def etl_controls_csv(
     with household and person level controls. For each control, the table has
     a level of geography, importance (weights) and an expression to define the
     control.
-    
+
     The original populationsim from activitysim did not have a separate
     module to process the GQ population which was an add-on customized for the
     San Diego region. The GQ controls from this add-on are included here.
@@ -275,7 +275,7 @@ def run_etl(
     staging_schema: str,
     seed_data: str,
     comments: str,
-) -> None:
+) -> int:
     """Runs the ETL process for loading popsim data into the SQL database for a given year.
 
     Parameters:
@@ -286,6 +286,9 @@ def run_etl(
     - staging_schema (str): The schema name of the staged UDM outputs used by popsim
     - seed_data (str): ACS PUMS data used to create seed data
     - comments (str): Additional comments about the run.
+
+    Returns:
+    - int: The loaded [run_id] in the output database.
     """
     run_id = get_next_run_id(engine, output_database)
 
@@ -321,9 +324,9 @@ def run_etl(
         schema="inputs",
     )
     print("controls is loaded")
-    #PopulationSim summary outputs has household, person and GQ level marginals 
-    # being written out separately. However, this method creates a unified summary 
-    #table as [outputs].[control_totals]and a unified controls table as [inputs].[controls] in the database.
+    # PopulationSim summary outputs has household, person and GQ level marginals
+    # being written out separately. However, this method creates a unified summary
+    # table as [outputs].[control_totals]and a unified controls table as [inputs].[controls] in the database.
     etl_final_summary(
         engine=engine,
         run_id=run_id,
@@ -398,3 +401,5 @@ def run_etl(
         )
         conn.execute(sql_command)
         conn.commit()
+
+    return run_id
