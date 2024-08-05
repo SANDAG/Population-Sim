@@ -1,6 +1,7 @@
 import logging
 import os
 import pandas as pd
+import re
 import shutil
 import sqlalchemy as sql
 
@@ -19,6 +20,10 @@ def create_abm_outputs(
     Returns:
         None
     """
+    # Ensure input schema is contained by brackets
+    if re.fullmatch(r"^\[.+\]", schema) is None:
+        schema = "[" + schema + "]"
+
     try:
         folder = f"output/{year}/"
 
@@ -86,7 +91,11 @@ def organize_outputs(year: int) -> None:
             "gq": {
                 "default_path": "populationsim/output_gq/",
                 "new_path": post_process_path,
-                "files": ["synthetic_households_gq.csv", "synthetic_persons_gq.csv", "final_summary_mgra_gq.csv"],
+                "files": [
+                    "synthetic_households_gq.csv",
+                    "synthetic_persons_gq.csv",
+                    "final_summary_mgra_gq.csv",
+                ],
             },
             "hh": {
                 "default_path": "populationsim/output/",
@@ -113,7 +122,7 @@ def organize_outputs(year: int) -> None:
                     "final_summary_mgra_PUMA.csv",
                     "final_summary_region_1.csv",
                 ],
-            }
+            },
         }
 
         for k, v in files.items():
