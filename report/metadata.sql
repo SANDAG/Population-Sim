@@ -7,5 +7,5 @@ SELECT
     , [staging_schema]
     , [comments]
     , [loaded]
-FROM [PopulationSim_v1].[metadata].[run]
+FROM [metadata].[run]
 WHERE run_id = {run_id}

@@ -65,7 +65,7 @@ for k in ["gq", "hh"]:
 for year in config["years"]:
     print(f"Building controls for {year}")
 
-    # Build and write mgra-level controls for use in populationsim
+    # # Build and write mgra-level controls for use in populationsim
     get_mgra_controls(
         sql_engine=engine,
         query_file=config["sql"]["mgra_controls"],
@@ -111,9 +111,8 @@ for year in config["years"]:
 
         # Run Quarto report
         # Constructing the Quarto command
-        cmd = (
-            "quarto render 'report/Validation Report.qmd'"
-            + f" -P run_id:{run_id} --output-dir ../output/{year}"
+        cmd = ('''quarto render "./report/Validation Report.qmd" '''
+            f'''-P run_id:{run_id} --output-dir ./output/{year}'''
         )
 
         # Executing the Quarto command
