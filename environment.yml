@@ -50,7 +50,9 @@ dependencies:
     - greenlet==3.0.3
     - idna==3.6
     - importlib-metadata==7.0.1
+    - jupyter==1.0.0
     - llvmlite==0.41.1
+    - matplotlib==3.7.2
     - msgpack==1.0.7
     - numba==0.58.0
     - openmatrix==0.3.5.0
@@ -58,6 +60,8 @@ dependencies:
     - orca==1.8
     - ortools==9.8.3296
     - pandas==2.0.3
+    - papermill==2.6.0
+    - plotly==5.22.0
     - populationsim==0.5.1
     - protobuf==4.25.2
     - psutil==5.9.7
@@ -67,6 +71,7 @@ dependencies:
     - python-dateutil==2.8.2
     - pytz==2023.3.post1
     - pyyaml==6.0.1
+    - quarto==1.5.55
     - requests==2.31.0
     - simwrapper==1.8.5
     - six==1.16.0

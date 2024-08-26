@@ -1,6 +1,7 @@
 """ This module creates control files for use in populationsim."""
 
 import pandas as pd
+import re
 import sqlalchemy as sql
 
 
@@ -18,6 +19,10 @@ def get_mgra_controls(
     Returns:
         pd.DataFrame: mgra-level controls
     """
+    # Ensure input schema is contained by brackets
+    if re.fullmatch(r"^\[.+\]", schema) is None:
+        schema = "[" + schema + "]"
+
     # Get control data
     with sql_engine.connect() as connection:
         with open(query_file, "r") as query:
@@ -44,6 +49,10 @@ def get_region_controls(
     Returns:
         pd.DataFrame: region-level controls
     """
+    # Ensure input schema is contained by brackets
+    if re.fullmatch(r"^\[.+\]", schema) is None:
+        schema = "[" + schema + "]"
+
     # Get SQL control data
     with sql_engine.connect() as connection:
         with open(query_file, "r") as query:
