@@ -71,3 +71,6 @@ Once completed, the output folder will contain subfolders for each year specifie
 If running PopulationSim as an _official run_ for use by SANDAG's QA and/or Activity-Based Model teams, update the version tracker at: `sandag.org\\transdata\socioec\Current_Projects\SR15\version_history.xlsx`
 
 *Note: This is temporary until ABM team feels comfortable with use of production SQL database*
+
+### Production Database Schema
+![input](./documentation/Database%20Diagram.png)
