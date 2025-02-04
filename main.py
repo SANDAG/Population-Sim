@@ -96,7 +96,7 @@ for year in config["years"]:
         query_file=config["sql"]["mgrabase"],
         schema=secrets["sql"]["schema"],
     )
-
+    
     if config["sql"]["load_to_database"]:
         # Run the ETL process
         run_id = run_etl(
@@ -109,17 +109,16 @@ for year in config["years"]:
             comments=config["comments"],
         )
 
-        # Run Quarto report
-        # Constructing the Quarto command
-        cmd = ('''quarto render "./report/Validation Report.qmd" '''
-            f'''-P run_id:{run_id} --output-dir ./output/{year}'''
+        # Run streamlit report
+        # Constructing the Streamlit command
+        cmd = (f'''streamlit run "./report/report.py" {run_id}'''
         )
 
-        # Executing the Quarto command
+        # Executing the Streamlit command
         try:
-            subprocess.run(cmd, check=True)
-            logging.info("Quarto render successful.")
+            subprocess.run(cmd, check=True, shell=True)
+            logging.info("Streamlit app executed successfully.")
         except subprocess.CalledProcessError as e:
-            logging.error(f"Quarto render failed: {e}")
+            logging.error(f"Streamlit execution failed: {e}")
 
 logging.info("All years processed successfully.")
