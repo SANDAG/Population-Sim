@@ -68,18 +68,20 @@ Once completed, the output folder will contain subfolders for each year specifie
 | mgra15*based_input*`year`.csv   | The mgrabase file for use by the Activity-Based Model team                  |
 | timing_log.csv                  | PopulationSim log of process runtimes                                       |
 
-# Streamlit Report App
-This repository contains a Streamlit app that generates reports. You can use it to visualize and analyze data interactively using Streamlit's easy-to-use interface.
+### Streamlit Report App
+This repository contains a Streamlit app that generates reports. You can use it to visualize the results of the run interactively using Streamlit's easy-to-use interface. The documentation can be found here https://docs.streamlit.io/.
 
-## Prerequisites
 
-Before running the app, ensure that you have the following:
-
-- run_id from the metadata table 
+#### Prerequisites
+Before generating the report, ensure that you have the following:
+- Choose the <run_id> of interest from the metadata table from the output_database
 - All required dependencies listed in `environment.yaml` installed.
 
-## Generate validation reports
-Run the Streamlit app with the following command: streamlit run ./report/report.py <run_id>
+#### Generate validation reports
+Run the Streamlit app with the following command:
+```yaml
+streamlit run ./report/report.py <run_id>
+```
 
 
 
