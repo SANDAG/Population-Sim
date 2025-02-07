@@ -74,7 +74,7 @@ This repository contains a Streamlit app that generates reports. You can use it 
 
 #### Prerequisites
 Before generating the report, ensure that you have the following:
-- Choose the <run_id> of interest from the metadata table from the output_database
+- Choose the <run_id> of interest from the `[metadata].[run]` table
 - All required dependencies listed in `environment.yaml` installed.
 
 #### Generate validation reports
