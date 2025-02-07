@@ -52,6 +52,7 @@ years: # years for which to generate controls and run populationsim
 
 5. **Run the `main.py` entry point file** from the project root directory
 
+
 ### Outputs of PopulationSim
 
 Once completed, the output folder will contain subfolders for each year specified in the `config.yml` file. Each subfolder will contain the following files.
@@ -66,7 +67,21 @@ Once completed, the output folder will contain subfolders for each year specifie
 | synthetic*households*`year`.csv | Combined synthetic households file for use by the Activity-Based Model team |
 | mgra15*based_input*`year`.csv   | The mgrabase file for use by the Activity-Based Model team                  |
 | timing_log.csv                  | PopulationSim log of process runtimes                                       |
-| Validation Report.html          | Optional HTML validation report, only appears if data loaded to database    |
+
+# Streamlit Report App
+This repository contains a Streamlit app that generates reports. You can use it to visualize and analyze data interactively using Streamlit's easy-to-use interface.
+
+## Prerequisites
+
+Before running the app, ensure that you have the following:
+
+- run_id from the metadata table 
+- All required dependencies listed in `environment.yaml` installed.
+
+## Generate validation reports
+Run the Streamlit app with the following command: streamlit run ./report/report.py <run_id>
+
+
 
 If running PopulationSim as an _official run_ for use by SANDAG's QA and/or Activity-Based Model teams, update the version tracker at: `sandag.org\\transdata\socioec\Current_Projects\SR15\version_history.xlsx`
 

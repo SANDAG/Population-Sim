@@ -109,16 +109,4 @@ for year in config["years"]:
             comments=config["comments"],
         )
 
-        # Run streamlit report
-        # Constructing the Streamlit command
-        cmd = (f'''streamlit run "./report/report.py" {run_id}'''
-        )
-
-        # Executing the Streamlit command
-        try:
-            subprocess.run(cmd, check=True, shell=True)
-            logging.info("Streamlit app executed successfully.")
-        except subprocess.CalledProcessError as e:
-            logging.error(f"Streamlit execution failed: {e}")
-
 logging.info("All years processed successfully.")

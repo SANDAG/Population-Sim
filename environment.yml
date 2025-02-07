@@ -61,7 +61,7 @@ dependencies:
     - ortools==9.8.3296
     - pandas==2.0.3
     - papermill==2.6.0
-    - plotly=5.23.0
+    - plotly==5.23.0
     - populationsim==0.5.1
     - protobuf==4.25.2
     - psutil==5.9.7
@@ -75,7 +75,7 @@ dependencies:
     - simwrapper==1.8.5
     - six==1.16.0
     - sqlalchemy==2.0.25
-    - streamlit=1.40.1 
+    - streamlit==1.40.1 
     - tables==3.8.0
     - toolz==0.12.0
     - typing_extensions==4.9.0
