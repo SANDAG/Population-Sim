@@ -1,11 +1,10 @@
 SELECT
     [run_id]
-    , [year]
-    , [user]
-    , [date]
-    , [version]
     , [staging_schema]
+    , [year]
+    , [date]
+    , [user]
+    , [version]
     , [comments]
-    , [loaded]
 FROM [metadata].[run]
-WHERE run_id = {run_id}
+WHERE [loaded] = 1
