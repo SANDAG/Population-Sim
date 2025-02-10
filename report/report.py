@@ -63,7 +63,7 @@ def summarize_controls(df: pd.DataFrame) -> pd.DataFrame:
 
 # run_id to be used in creating reports
 run_id = int(sys.argv[1])
-with open("../secrets.yml", "r") as file:
+with open("./secrets.yml", "r") as file:
     secrets = yaml.safe_load(file)
 
 # Build SQL engine from configuration
