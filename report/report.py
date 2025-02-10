@@ -5,27 +5,24 @@ from IPython.display import display
 import yaml
 import streamlit as st
 import sqlalchemy as sql
-import sys
 
 
-def build_scatter_plot(df, y_var, title, x_range=None, y_range=None) -> None:
+def build_scatter_plot(
+    df: pd.DataFrame, y_var: str, hover_data: str, title: str
+) -> px.scatter:
     """Build Control Scatter plot for a given control."""
-    plt.figure(figsize=(8, 6))
-    scatter = plt.scatter(df["Control"], df[y_var], s=75)
-    plt.title(title)
-    plt.xlabel("Control")
-    plt.ylabel(y_var)
+    fig = px.scatter(
+        data_frame=df,
+        x="Control",
+        y=y_var,
+        hover_data=hover_data,
+        title=title,
+    )
 
-    # Add horizontal line at y=0
-    plt.axhline(0, color="black", linewidth=1, linestyle="dashed")
+    fig.update_traces(marker=dict(size=12))
+    fig.add_hline(y=0, line_dash="dash", line_color="black")
 
-    # Update x-axis and y-axis with provided ranges
-    if x_range is not None:
-        plt.xlim(x_range)
-    if y_range is not None:
-        plt.ylim(y_range)
-
-    plt.show()
+    return fig
 
 
 def summarize_controls(df: pd.DataFrame) -> pd.DataFrame:
@@ -128,28 +125,24 @@ with tab1:
     st.markdown("### Region")
 
     # Numeric Difference Plot
-    fig = px.scatter(
-        controls_df[controls_df["geography"] == "region"],
-        x="Control",
-        y="Diff",
-        hover_data=["Control Field"],
-        title="Control Matching - Numeric Difference",
+    st.plotly_chart(
+        build_scatter_plot(
+            df=controls_df[controls_df["geography"] == "region"],
+            y_var="Diff",
+            hover_data="Control Field",
+            title="Control Matching - Numeric Difference",
+        )
     )
-    fig.update_traces(marker=dict(size=12))
-    fig.add_hline(y=0, line_dash="dash", line_color="black")
-    st.plotly_chart(fig)
 
     # Percent Difference Plot
-    fig = px.scatter(
-        controls_df[controls_df["geography"] == "region"],
-        x="Control",
-        y="Diff %",
-        hover_data=["Control Field"],
-        title="Control Matching - Percent Difference",
+    st.plotly_chart(
+        build_scatter_plot(
+            df=controls_df[controls_df["geography"] == "region"],
+            y_var="Diff %",
+            hover_data="Control Field",
+            title="Control Matching - Percent Difference",
+        )
     )
-    fig.update_traces(marker=dict(size=12))
-    fig.add_hline(y=0, line_dash="dash", line_color="black")
-    st.plotly_chart(fig)
 
     # Summary Table for Region
     show_fields = [
@@ -195,30 +188,24 @@ with tab2:
     tbl = puma_df.query("Category == @category")[control_cols]
 
     # Numeric Difference Plot for PUMA
-    fig = px.scatter(
-        tbl,
-        x="Control",
-        y="Diff",
-        color="Control Field",
-        hover_data=["geography_id"],
-        title=f"{category} - Numeric Difference",
+    st.plotly_chart(
+        build_scatter_plot(
+            df=tbl,
+            y_var="Diff",
+            hover_data="geography_id",
+            title=f"{category} - Numeric Difference",
+        )
     )
-    fig.update_traces(marker=dict(size=12))
-    fig.add_hline(y=0, line_dash="dash", line_color="black")
-    st.plotly_chart(fig)
 
     # Percent Difference Plot for PUMA
-    fig = px.scatter(
-        tbl,
-        x="Control",
-        y="Diff %",
-        color="Control Field",
-        hover_data=["geography_id"],
-        title=f"{category} - Percent Difference",
+    st.plotly_chart(
+        build_scatter_plot(
+            df=tbl,
+            y_var="Diff %",
+            hover_data="geography_id",
+            title=f"{category} - Percent Difference",
+        )
     )
-    fig.update_traces(marker=dict(size=12))
-    fig.add_hline(y=0, line_dash="dash", line_color="black")
-    st.plotly_chart(fig)
 
     # Summary table
     summary = summarize_controls(tbl)
@@ -267,30 +254,24 @@ with tab3:
     st.markdown(f"#### {category}")
 
     # Numeric Difference Plot for MGRA
-    fig = px.scatter(
-        tbl,
-        x="Control",
-        y="Diff",
-        color="Control Field",
-        hover_data=["geography_id"],
-        title=f"{category} - Numeric Difference",
+    st.plotly_chart(
+        build_scatter_plot(
+            df=tbl,
+            y_var="Diff",
+            hover_data="geography_id",
+            title=f"{category} - Numeric Difference",
+        )
     )
-    fig.update_traces(marker=dict(size=12))
-    fig.add_hline(y=0, line_dash="dash", line_color="black")
-    st.plotly_chart(fig)
 
     # Percent Difference Plot for MGRA
-    fig = px.scatter(
-        tbl,
-        x="Control",
-        y="Diff %",
-        color="Control Field",
-        hover_data=["geography_id"],
-        title=f"{category} - Percent Difference",
+    st.plotly_chart(
+        build_scatter_plot(
+            df=tbl,
+            y_var="Diff %",
+            hover_data="geography_id",
+            title=f"{category} - Percent Difference",
+        )
     )
-    fig.update_traces(marker=dict(size=12))
-    fig.add_hline(y=0, line_dash="dash", line_color="black")
-    st.plotly_chart(fig)
 
     # Summary table
     st.write(f"Summary Statistics for {category}")
