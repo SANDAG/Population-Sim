@@ -53,7 +53,7 @@ years: # years for which to generate controls and run populationsim
 5. **Run the `main.py` entry point file** from the project root directory
 
 
-### Outputs of PopulationSim
+## Outputs of PopulationSim
 
 Once completed, the output folder will contain subfolders for each year specified in the `config.yml` file. Each subfolder will contain the following files.
 
@@ -74,12 +74,11 @@ If running PopulationSim as an _official run_ for use by SANDAG's QA and/or Acti
 *Note: This is temporary until ABM team feels comfortable with use of production SQL database*
 
 ### Production Database
-This repository contains the option in the config.yml to load PopulationSim outputs into a production database. The schema for the database is shown below.
+This repository contains the option in the `config.yml` to load PopulationSim outputs into a production database. The schema for the database is shown below.
 ![input](./documentation/Database%20Diagram.png)
 
 ### Streamlit Report App
-This repository contains a Streamlit app that generates reports for PopulationSim outputs stored in SANDAG's production database. You can use it to visualize the results of the run interactively using Streamlit's easy-to-use interface. The documentation can be found here https://docs.streamlit.io/.
-
+This repository contains a Streamlit app that generates validation reports for PopulationSim outputs stored in SANDAG's production database. You can use it to visualize the results of the run interactively using Streamlit's easy-to-use interface. The documentation can be found here https://docs.streamlit.io/.
 
 #### Prerequisites
 Before generating the report, ensure that you have the following:
@@ -87,7 +86,7 @@ Before generating the report, ensure that you have the following:
 - Are running in a Python virtual environment with all required dependencies listed in the `environment.yml`.
 
 #### Generate validation reports
-Run the Streamlit app in the base project directory with the following command where the <run_id> is present in the production database [metadata].[run] table.
+Run the Streamlit app in the base project directory with the following command.
 ```yaml
-streamlit run report/report.py <run_id>
+streamlit run report/report.py
 ```
