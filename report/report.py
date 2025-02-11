@@ -54,6 +54,7 @@ def summarize_controls(df: pd.DataFrame) -> pd.DataFrame:
         summary = (
             df.groupby(field)
             .agg(
+                id=("id", "min"),
                 Avg_Diff=("Diff", "mean"),
                 Med_Diff=("Diff", "median"),
                 Avg_Diff_Pct=("Diff %", "mean"),
@@ -63,6 +64,8 @@ def summarize_controls(df: pd.DataFrame) -> pd.DataFrame:
             )
             .round(2)
             .reset_index()
+            .set_index("id")
+            .sort_index()
             .rename(
                 columns={
                     field: "Control Field",
@@ -186,6 +189,7 @@ with tab2:
     st.markdown(f"#### {category}")
     tbl = controls_df.query("geography == 'PUMA' & Category == @category")[
         [
+            "id",
             "Category",
             "geography_id",
             "Control Field",
@@ -249,6 +253,7 @@ with tab3:
     st.markdown(f"#### {category}")
     tbl = controls_df.query("geography == 'mgra' & Category == @category")[
         [
+            "id",
             "Category",
             "geography_id",
             "Control Field",
