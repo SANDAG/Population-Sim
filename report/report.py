@@ -101,10 +101,6 @@ engine = sql.create_engine(
 # Load run metadata
 run_df = get_run_metadata(_sql_engine=engine)
 
-# Set a default run_id and associated comments
-run_id = run_df["run_id"].min()
-comments = run_df[run_df["run_id"] == run_id]["comments"].values[0]
-
 # Allow user to select a single run from the metadata table
 st.sidebar.markdown("Select a PopulationSim run to view validation results.")
 selection = st.sidebar.dataframe(
@@ -117,186 +113,184 @@ selection = st.sidebar.dataframe(
 
 # Set the user selection if provided
 if not selection["selection"]["rows"]:
-    pass  # Empty list implies no selection made
+    pass  # Do nothing if no selection is made
 else:
     idx = selection["selection"]["rows"][0]
     run_id = run_df.iloc[idx]["run_id"]
     comments = run_df.iloc[idx]["comments"]
 
-# Load control values and results for selected run
-controls_df = get_control_data(run_id=run_id, _sql_engine=engine)
+    # Load control values and results for selected run
+    controls_df = get_control_data(run_id=run_id, _sql_engine=engine)
 
-# Display report title and run selected
-st.markdown("<h1>PopulationSim Validation</h1>", unsafe_allow_html=True)
-st.markdown(f"## [run_id] = {run_id}")
-st.markdown("Comments: " + comments)
+    # Display report title and run selected
+    st.markdown("<h1>PopulationSim Validation</h1>", unsafe_allow_html=True)
+    st.markdown(f"## [run_id] = {run_id}")
+    st.markdown("Comments: " + comments)
 
-# Setting up tabs
-tab1, tab2, tab3 = st.tabs(["Region", "PUMA", "MGRA"])
+    # Setting up tabs
+    tab1, tab2, tab3 = st.tabs(["Region", "PUMA", "MGRA"])
 
-# Region section
-with tab1:
-    st.markdown("### Region Controls")
+    # Region section
+    with tab1:
+        st.markdown("### Region Controls")
 
-    # Numeric Difference Plot
-    st.plotly_chart(
-        build_scatter_plot(
-            df=controls_df[controls_df["geography"] == "region"],
-            y_var="Diff",
-            hover_data="Control Field",
-            title="Control Matching - Numeric Difference",
+        # Numeric Difference Plot
+        st.plotly_chart(
+            build_scatter_plot(
+                df=controls_df[controls_df["geography"] == "region"],
+                y_var="Diff",
+                hover_data="Control Field",
+                title="Region Controls - Numeric Difference",
+            )
         )
-    )
 
-    # Percent Difference Plot
-    st.plotly_chart(
-        build_scatter_plot(
-            df=controls_df[controls_df["geography"] == "region"],
-            y_var="Diff %",
-            hover_data="Control Field",
-            title="Control Matching - Percent Difference",
+        # Percent Difference Plot
+        st.plotly_chart(
+            build_scatter_plot(
+                df=controls_df[controls_df["geography"] == "region"],
+                y_var="Diff %",
+                hover_data="Control Field",
+                title="Region Controls - Percent Difference",
+            )
         )
-    )
 
-    # Summary table
-    st.write(f"**Summary Table for Region Controls**")
-    st.dataframe(
-        controls_df[controls_df["geography"] == "region"][
+        # Summary table
+        st.write(f"**Summary Table for Region Controls**")
+        st.dataframe(
+            controls_df[controls_df["geography"] == "region"][
+                [
+                    "Category",
+                    "Control Field",
+                    "Control",
+                    "Result",
+                    "Diff",
+                    "Diff %",
+                ]
+            ],
+            hide_index=True,
+        )
+
+    # PUMA Section
+    with tab2:
+        st.markdown("### PUMA Controls")
+
+        # Allow user to select unique control category
+        category = st.selectbox(
+            "Pick a category to analyze",
+            controls_df[controls_df["geography"] == "PUMA"]["Category"].unique(),
+        )
+
+        # For the selected category
+        st.markdown(f"#### {category}")
+        tbl = controls_df.query("geography == 'PUMA' & Category == @category")[
             [
+                "id",
                 "Category",
+                "geography_id",
                 "Control Field",
                 "Control",
                 "Result",
                 "Diff",
                 "Diff %",
             ]
-        ],
-        hide_index=True,
-    )
-
-
-# PUMA Section
-with tab2:
-    st.markdown("### PUMA Controls")
-
-    # Allow user to select unique control category
-    category = st.selectbox(
-        "Pick a category to analyze",
-        controls_df[controls_df["geography"] == "PUMA"]["Category"].unique(),
-    )
-
-    # For the selected category
-    st.markdown(f"#### {category}")
-    tbl = controls_df.query("geography == 'PUMA' & Category == @category")[
-        [
-            "id",
-            "Category",
-            "geography_id",
-            "Control Field",
-            "Control",
-            "Result",
-            "Diff",
-            "Diff %",
         ]
-    ]
 
-    # Numeric Difference Plot
-    st.plotly_chart(
-        build_scatter_plot(
-            df=tbl,
-            y_var="Diff",
-            hover_data="geography_id",
-            title=f"{category} - Numeric Difference",
+        # Numeric Difference Plot
+        st.plotly_chart(
+            build_scatter_plot(
+                df=tbl,
+                y_var="Diff",
+                hover_data="geography_id",
+                title=f"{category} - Numeric Difference",
+            )
         )
-    )
 
-    # Percent Difference Plot
-    st.plotly_chart(
-        build_scatter_plot(
-            df=tbl,
-            y_var="Diff %",
-            hover_data="geography_id",
-            title=f"{category} - Percent Difference",
+        # Percent Difference Plot
+        st.plotly_chart(
+            build_scatter_plot(
+                df=tbl,
+                y_var="Diff %",
+                hover_data="geography_id",
+                title=f"{category} - Percent Difference",
+            )
         )
-    )
 
-    # Summary table
-    st.write(f"**Summary Statistics for {category}**")
-    summary = summarize_controls(tbl)
-    summary_html = summary.to_html(
-        index=False,
-        formatters={
-            "Avg Diff": lambda x: f"{x:,.0f}",
-            "Med Diff": lambda x: f"{x:,.0f}",
-            "Avg Diff %": lambda x: f"{x:,.0f}",
-            "Med Diff %": lambda x: f"{x:,.0f}",
-            "Max |Diff|": lambda x: f"{x:,.0f}",
-            "Max |Diff %|": lambda x: f"{x:,.0f}",
-        },
-    )
+        # Summary table
+        st.write(f"**Summary Statistics for {category}**")
+        summary = summarize_controls(tbl)
+        summary_html = summary.to_html(
+            index=False,
+            formatters={
+                "Avg Diff": lambda x: f"{x:,.0f}",
+                "Med Diff": lambda x: f"{x:,.0f}",
+                "Avg Diff %": lambda x: f"{x:,.0f}",
+                "Med Diff %": lambda x: f"{x:,.0f}",
+                "Max |Diff|": lambda x: f"{x:,.0f}",
+                "Max |Diff %|": lambda x: f"{x:,.0f}",
+            },
+        )
 
-    st.markdown(summary_html, unsafe_allow_html=True)
+        st.markdown(summary_html, unsafe_allow_html=True)
 
+    # MGRA Section
+    with tab3:
 
-# MGRA Section
-with tab3:
+        st.markdown("### MGRA Controls")
 
-    st.markdown("### MGRA Controls")
+        # Allow user to select unique control category
+        category = st.selectbox(
+            "Pick a category to analyze",
+            controls_df[controls_df["geography"] == "mgra"]["Category"].unique(),
+        )
 
-    # Allow user to select unique control category
-    category = st.selectbox(
-        "Pick a category to analyze",
-        controls_df[controls_df["geography"] == "mgra"]["Category"].unique(),
-    )
-
-    # For the selected category
-    st.markdown(f"#### {category}")
-    tbl = controls_df.query("geography == 'mgra' & Category == @category")[
-        [
-            "id",
-            "Category",
-            "geography_id",
-            "Control Field",
-            "Control",
-            "Result",
-            "Diff",
-            "Diff %",
+        # For the selected category
+        st.markdown(f"#### {category}")
+        tbl = controls_df.query("geography == 'mgra' & Category == @category")[
+            [
+                "id",
+                "Category",
+                "geography_id",
+                "Control Field",
+                "Control",
+                "Result",
+                "Diff",
+                "Diff %",
+            ]
         ]
-    ]
 
-    # Numeric Difference Plot
-    st.plotly_chart(
-        build_scatter_plot(
-            df=tbl,
-            y_var="Diff",
-            hover_data="geography_id",
-            title=f"{category} - Numeric Difference",
+        # Numeric Difference Plot
+        st.plotly_chart(
+            build_scatter_plot(
+                df=tbl,
+                y_var="Diff",
+                hover_data="geography_id",
+                title=f"{category} - Numeric Difference",
+            )
         )
-    )
 
-    # Percent Difference Plot
-    st.plotly_chart(
-        build_scatter_plot(
-            df=tbl,
-            y_var="Diff %",
-            hover_data="geography_id",
-            title=f"{category} - Percent Difference",
+        # Percent Difference Plot
+        st.plotly_chart(
+            build_scatter_plot(
+                df=tbl,
+                y_var="Diff %",
+                hover_data="geography_id",
+                title=f"{category} - Percent Difference",
+            )
         )
-    )
 
-    # Summary table
-    st.write(f"**Summary Statistics for {category}**")
-    summary = summarize_controls(tbl)
-    summary_html = summary.to_html(
-        index=False,
-        formatters={
-            "Avg Diff": lambda x: f"{x:,.0f}",
-            "Med Diff": lambda x: f"{x:,.0f}",
-            "Avg Diff %": lambda x: f"{x:,.0f}",
-            "Med Diff %": lambda x: f"{x:,.0f}",
-            "Max |Diff|": lambda x: f"{x:,.0f}",
-            "Max |Diff %|": lambda x: f"{x:,.0f}",
-        },
-    )
+        # Summary table
+        st.write(f"**Summary Statistics for {category}**")
+        summary = summarize_controls(tbl)
+        summary_html = summary.to_html(
+            index=False,
+            formatters={
+                "Avg Diff": lambda x: f"{x:,.0f}",
+                "Med Diff": lambda x: f"{x:,.0f}",
+                "Avg Diff %": lambda x: f"{x:,.0f}",
+                "Med Diff %": lambda x: f"{x:,.0f}",
+                "Max |Diff|": lambda x: f"{x:,.0f}",
+                "Max |Diff %|": lambda x: f"{x:,.0f}",
+            },
+        )
 
-    st.markdown(summary_html, unsafe_allow_html=True)
+        st.markdown(summary_html, unsafe_allow_html=True)
