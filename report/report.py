@@ -7,6 +7,7 @@ import streamlit as st
 import sqlalchemy as sql
 
 
+@st.cache_data
 def build_scatter_plot(
     df: pd.DataFrame, y_var: str, hover_data: str, title: str
 ) -> px.scatter:
@@ -25,6 +26,27 @@ def build_scatter_plot(
     return fig
 
 
+@st.cache_data
+def get_control_data(run_id: str, _sql_engine: sql.engine) -> pd.DataFrame:
+    with _sql_engine.connect() as connection:
+        with open("./report/controls.sql", "r") as query:
+            return pd.read_sql_query(
+                sql.text(query.read().format(run_id=run_id)),
+                connection,
+            )
+
+
+@st.cache_data
+def get_run_metadata(_sql_engine: sql.engine) -> pd.DataFrame:
+    with _sql_engine.connect() as connection:
+        with open("./report/metadata.sql", "r") as query:
+            return pd.read_sql_query(
+                sql.text(query.read()),
+                connection,
+            )
+
+
+@st.cache_data
 def summarize_controls(df: pd.DataFrame) -> pd.DataFrame:
     """Compute summary statistics for Controls."""
     result = pd.DataFrame()
@@ -32,6 +54,7 @@ def summarize_controls(df: pd.DataFrame) -> pd.DataFrame:
         summary = (
             df.groupby(field)
             .agg(
+                id=("id", "min"),
                 Avg_Diff=("Diff", "mean"),
                 Med_Diff=("Diff", "median"),
                 Avg_Diff_Pct=("Diff %", "mean"),
@@ -41,6 +64,8 @@ def summarize_controls(df: pd.DataFrame) -> pd.DataFrame:
             )
             .round(2)
             .reset_index()
+            .set_index("id")
+            .sort_index()
             .rename(
                 columns={
                     field: "Control Field",
@@ -74,12 +99,7 @@ engine = sql.create_engine(
 
 
 # Load run metadata
-with engine.connect() as connection:
-    with open("./report/metadata.sql", "r") as query:
-        run_df = pd.read_sql_query(
-            sql.text(query.read()),
-            connection,
-        )
+run_df = get_run_metadata(_sql_engine=engine)
 
 # Set a default run_id and associated comments
 run_id = run_df["run_id"].min()
@@ -104,12 +124,7 @@ else:
     comments = run_df.iloc[idx]["comments"]
 
 # Load control values and results for selected run
-with engine.connect() as connection:
-    with open("./report/controls.sql", "r") as query:
-        controls_df = pd.read_sql_query(
-            sql.text(query.read().format(run_id=run_id)),
-            connection,
-        )
+controls_df = get_control_data(run_id=run_id, _sql_engine=engine)
 
 # Display report title and run selected
 st.markdown("<h1>PopulationSim Validation</h1>", unsafe_allow_html=True)
@@ -121,8 +136,7 @@ tab1, tab2, tab3 = st.tabs(["Region", "PUMA", "MGRA"])
 
 # Region section
 with tab1:
-
-    st.markdown("### Region")
+    st.markdown("### Region Controls")
 
     # Numeric Difference Plot
     st.plotly_chart(
@@ -144,50 +158,49 @@ with tab1:
         )
     )
 
-    # Summary Table for Region
-    show_fields = [
-        "id",
-        "Category",
-        "Control Field",
-        "Control",
-        "Result",
-        "Diff",
-        "Diff %",
-    ]
-    region_controls_df = controls_df[controls_df["geography"] == "region"][
-        show_fields
-    ].copy()
-
-    st.write("Regional Control values")
-    st.dataframe(region_controls_df, hide_index=True)
+    # Summary table
+    st.write(f"**Summary Table for Region Controls**")
+    st.dataframe(
+        controls_df[controls_df["geography"] == "region"][
+            [
+                "Category",
+                "Control Field",
+                "Control",
+                "Result",
+                "Diff",
+                "Diff %",
+            ]
+        ],
+        hide_index=True,
+    )
 
 
 # PUMA Section
 with tab2:
+    st.markdown("### PUMA Controls")
 
-    st.markdown("### PUMA")
-
-    # puma_df
-    puma_df = controls_df[controls_df["geography"] == "PUMA"]
-    # For each category
-    categories = puma_df["Category"].unique()
-    # Chosse a category
+    # Allow user to select unique control category
     category = st.selectbox(
-        "Pick a category to analyze", categories, key="puma_category"
+        "Pick a category to analyze",
+        controls_df[controls_df["geography"] == "PUMA"]["Category"].unique(),
     )
-    st.markdown(f"#### {category}")
-    control_cols = [
-        "Category",
-        "geography_id",
-        "Control Field",
-        "Control",
-        "Result",
-        "Diff",
-        "Diff %",
-    ]
-    tbl = puma_df.query("Category == @category")[control_cols]
 
-    # Numeric Difference Plot for PUMA
+    # For the selected category
+    st.markdown(f"#### {category}")
+    tbl = controls_df.query("geography == 'PUMA' & Category == @category")[
+        [
+            "id",
+            "Category",
+            "geography_id",
+            "Control Field",
+            "Control",
+            "Result",
+            "Diff",
+            "Diff %",
+        ]
+    ]
+
+    # Numeric Difference Plot
     st.plotly_chart(
         build_scatter_plot(
             df=tbl,
@@ -197,7 +210,7 @@ with tab2:
         )
     )
 
-    # Percent Difference Plot for PUMA
+    # Percent Difference Plot
     st.plotly_chart(
         build_scatter_plot(
             df=tbl,
@@ -208,6 +221,7 @@ with tab2:
     )
 
     # Summary table
+    st.write(f"**Summary Statistics for {category}**")
     summary = summarize_controls(tbl)
     summary_html = summary.to_html(
         index=False,
@@ -227,33 +241,30 @@ with tab2:
 # MGRA Section
 with tab3:
 
-    st.markdown("### MGRA")
+    st.markdown("### MGRA Controls")
 
-    # mgra df
-    mgra_df = controls_df[controls_df["geography"] == "mgra"]
-
-    # For each Category of MGRA controls
-    categories = mgra_df["Category"].unique()
-
-    # Chosse a category
+    # Allow user to select unique control category
     category = st.selectbox(
-        "Pick a category to analyze", categories, key="mgra_category"
+        "Pick a category to analyze",
+        controls_df[controls_df["geography"] == "mgra"]["Category"].unique(),
     )
 
-    control_cols = [
-        "Category",
-        "geography_id",
-        "Control Field",
-        "Control",
-        "Result",
-        "Diff",
-        "Diff %",
-    ]
-    tbl = mgra_df.query("Category == @category")[control_cols]
-
+    # For the selected category
     st.markdown(f"#### {category}")
+    tbl = controls_df.query("geography == 'mgra' & Category == @category")[
+        [
+            "id",
+            "Category",
+            "geography_id",
+            "Control Field",
+            "Control",
+            "Result",
+            "Diff",
+            "Diff %",
+        ]
+    ]
 
-    # Numeric Difference Plot for MGRA
+    # Numeric Difference Plot
     st.plotly_chart(
         build_scatter_plot(
             df=tbl,
@@ -263,7 +274,7 @@ with tab3:
         )
     )
 
-    # Percent Difference Plot for MGRA
+    # Percent Difference Plot
     st.plotly_chart(
         build_scatter_plot(
             df=tbl,
@@ -274,7 +285,7 @@ with tab3:
     )
 
     # Summary table
-    st.write(f"Summary Statistics for {category}")
+    st.write(f"**Summary Statistics for {category}**")
     summary = summarize_controls(tbl)
     summary_html = summary.to_html(
         index=False,
