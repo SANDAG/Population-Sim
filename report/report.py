@@ -144,7 +144,7 @@ with tab1:
             df=controls_df[controls_df["geography"] == "region"],
             y_var="Diff",
             hover_data="Control Field",
-            title="Control Matching - Numeric Difference",
+            title="Region Controls - Numeric Difference",
         )
     )
 
@@ -154,7 +154,7 @@ with tab1:
             df=controls_df[controls_df["geography"] == "region"],
             y_var="Diff %",
             hover_data="Control Field",
-            title="Control Matching - Percent Difference",
+            title="Region Controls - Percent Difference",
         )
     )
 
