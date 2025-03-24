@@ -1,4 +1,4 @@
-version: "v1.0.2-prerelease"
+version: "v1.0.2"
 seed_data: "ACS PUMS 5 year 2021"
 comments: "No Comments"
 
@@ -11,7 +11,6 @@ sql:
   load_to_database: False
 
 economic_controls: "data/Economic Team Region Controls.csv"
-
 
 years:
   - 2022
