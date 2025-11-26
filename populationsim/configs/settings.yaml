@@ -7,11 +7,13 @@
 # ------------------------------------------------------------------
 INTEGERIZE_WITH_BACKSTOPPED_CONTROLS: True
 SUB_BALANCE_WITH_FLOAT_SEED_WEIGHTS: False
-GROUP_BY_INCIDENCE_SIGNATURE: True
+#GROUP_BY_INCIDENCE_SIGNATURE: True
 USE_SIMUL_INTEGERIZER: True
 USE_CVXPY: False
 max_expansion_factor: 30
 
+NO_INTEGERIZATION_EVER: False
+GROUP_BY_INCIDENCE_SIGNATURE: False
 
 # Geographic Settings
 # ------------------------------------------------------------------
@@ -116,21 +118,43 @@ output_synthetic_population:
 # Model steps for base mode
 # ------------------------------------------------------------------
 models:
-    - input_pre_processor
-    - setup_data_structures
-    - initial_seed_balancing
-    - meta_control_factoring
-    - final_seed_balancing
-    - integerize_final_seed_weights
-    - sub_balancing.geography=mgra
-    - expand_households
-    - write_data_dictionary
-    - summarize
-    - write_tables
-    - write_synthetic_population
+  ### mp_seed_balancing step
+  - input_pre_processor
+  - setup_data_structures
+  - initial_seed_balancing
+  - meta_control_factoring
+  - final_seed_balancing
+  - integerize_final_seed_weights
+  ### mp_sub_balancing_mgra step
+  - sub_balancing.geography=mgra
+  ### mp_summarize step
+  - expand_households
+  - summarize
+  - write_synthetic_population
+  - write_data_dictionary
+  - write_tables
 
 #resume_after:
 
+multiprocess_steps:
+  - name: mp_seed_balancing
+    begin: input_pre_processor
+  - name: mp_sub_balancing_mgra
+    begin: sub_balancing.geography=mgra
+    num_processes: 22  # Maximum with San Diego PUMAS
+    slice:
+      tables:
+        - slice_crosswalk
+        - crosswalk
+      # don't slice any tables not explicitly listed above in slice.tables
+      except: True
+      # the following tables are added by sub_balancer and should be coalesced
+      coalesce:
+        - mgra_weights
+        - mgra_weights_sparse
+        - trace_mgra_weights
+  - name: mp_summarize
+    begin: expand_households
 
 #--------------------------------------------------------------------
 
