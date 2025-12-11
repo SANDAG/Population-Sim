@@ -5,6 +5,9 @@ from IPython.display import display
 import yaml
 import streamlit as st
 import sqlalchemy as sql
+import os
+from pathlib import Path
+from datetime import datetime
 
 
 @st.cache_data
@@ -44,6 +47,42 @@ def get_run_metadata(_sql_engine: sql.engine) -> pd.DataFrame:
                 sql.text(query.read()),
                 connection,
             )
+
+
+@st.cache_data
+def get_local_run_metadata(output_dir: str = "./output") -> pd.DataFrame:
+    """Scan output directory for local runs and build metadata DataFrame."""
+    local_runs = []
+    
+    if not os.path.exists(output_dir):
+        return pd.DataFrame(columns=["run_id", "year", "date", "version", "source"])
+    
+    # Scan output directory for year folders
+    for folder in sorted(os.listdir(output_dir)):
+        folder_path = os.path.join(output_dir, folder)
+        
+        if not os.path.isdir(folder_path):
+            continue
+        
+        # Check for required files
+        timing_log = os.path.join(folder_path, "timing_log.csv")
+        synthetic_hh = os.path.join(folder_path, f"synthetic_households_{folder}.csv")
+        synthetic_persons = os.path.join(folder_path, f"synthetic_persons_{folder}.csv")
+        
+        # Only include if all required files exist
+        if all(os.path.exists(f) for f in [timing_log, synthetic_hh, synthetic_persons]):
+            # Get modification time from timing_log
+            mod_time = datetime.fromtimestamp(os.path.getmtime(timing_log))
+            
+            local_runs.append({
+                "run_id": f"{folder}_local",
+                "year": folder,
+                "date": mod_time.strftime("%Y-%m-%d %H:%M"),
+                "version": "local",
+                "source": "local"
+            })
+    
+    return pd.DataFrame(local_runs)
 
 
 @st.cache_data
@@ -100,24 +139,58 @@ engine = sql.create_engine(
 
 # Load run metadata
 run_df = get_run_metadata(_sql_engine=engine)
+local_run_df = get_local_run_metadata()
 
-# Allow user to select a single run from the metadata table
+# Sidebar - Database Runs
+st.sidebar.markdown("### 📊 Database Runs")
 st.sidebar.markdown("Select a PopulationSim run to view validation results.")
-selection = st.sidebar.dataframe(
+db_selection = st.sidebar.dataframe(
     data=run_df[["run_id", "staging_schema", "year", "date", "user", "version"]],
     hide_index=True,
     column_config={"year": st.column_config.TextColumn("year", max_chars=4)},
     on_select="rerun",
     selection_mode="single-row",
+    key="db_runs"
 )
 
-# Set the user selection if provided
-if not selection["selection"]["rows"]:
-    pass  # Do nothing if no selection is made
+# Sidebar - Local Runs (if any exist)
+if not local_run_df.empty:
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("### 📁 Local Output Runs")
+    local_selection = st.sidebar.dataframe(
+        data=local_run_df[["run_id", "year", "date", "version"]],
+        hide_index=True,
+        column_config={"year": st.column_config.TextColumn("year", max_chars=4)},
+        on_select="rerun",
+        selection_mode="single-row",
+        key="local_runs"
+    )
 else:
+    local_selection = {"selection": {"rows": []}}
+
+# Determine which selection was made
+selection = None
+source_type = None
+
+if db_selection["selection"]["rows"]:
+    selection = db_selection
+    source_type = "database"
+elif local_selection["selection"]["rows"]:
+    selection = local_selection
+    source_type = "local"
+
+# Set the user selection if provided
+if selection and selection["selection"]["rows"]:
     idx = selection["selection"]["rows"][0]
-    run_id = run_df.iloc[idx]["run_id"]
-    comments = run_df.iloc[idx]["comments"]
+    
+    # Get run details based on source type
+    if source_type == "database":
+        run_id = run_df.iloc[idx]["run_id"]
+        comments = run_df.iloc[idx]["comments"]
+    else:  # local
+        run_id = local_run_df.iloc[idx]["run_id"]
+        year = local_run_df.iloc[idx]["year"]
+        comments = f"Local run from output/{year}/"
 
     # Load control values and results for selected run
     controls_df = get_control_data(run_id=run_id, _sql_engine=engine)
