@@ -51,12 +51,10 @@ years: # years for which to generate controls and run populationsim
    - See the PopulationSim [official documentation](https://activitysim.github.io/populationsim/)
 
 5. **Run the `main.py` entry point file** from the project root directory:
+  **On Windows:**
   ```bash
   .venv\Scripts\activate
   python main.py
-  ```
-
-
 ## Outputs of PopulationSim
 
 Once completed, the output folder will contain subfolders for each year specified in the `config.yml` file. Each subfolder will contain the following files.
