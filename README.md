@@ -10,7 +10,7 @@ PopulationSim is well-suited for generating detailed household and person-level 
 
 ### Running PopulationSim
 
-1. **Clone the Repository** and ensure an installation of [Miniconda/Anaconda](https://docs.conda.io/projects/miniconda/en/latest/) exists. Use the `environment.yml` file in the root directory of the project to [create the Python virtual environment](https://docs.conda.io/projects/conda/en/4.6.1/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file) needed to run the project.
+1. **Clone the Repository** and ensure an installation of [uv](https://docs.astral.sh/uv/) exists. Use the `pyproject.toml` file in the root directory of the project to create the Python virtual environment needed to run the project with `uv sync`.
 
 2. **Configuration of Private Data in secrets.yml**
 In order to avoid exposing certain data to the public this repository uses a secrets file to store sensitive configurations in addition to a standard configuration file. This file is stored in the root directory of the repository as `secrets.yml` and is included in the `.gitignore` intentionally to avoid it ever being committed to the repository.
@@ -50,9 +50,11 @@ years: # years for which to generate controls and run populationsim
    - SANDAG commonly sets the `populationsim/conigs_mp/settings.yaml` file such that `multiprocess: True`, `num_processes: 22`, `multiprocess_steps: num_processes: 22` to enable the maximum level of multiprocessing using the 22 San Diego PUMAS as the `slice_geography: PUMA`. If at least 22 logical processors are not available (not advised due to long run times), it is suggested to set both `num_processes:` configurations to the number of logical processors.
    - See the PopulationSim [official documentation](https://activitysim.github.io/populationsim/)
 
-5. **Run the `main.py` entry point file** from the project root directory
-
-
+5. **Run the `main.py` entry point file** from the project root directory:
+  **On Windows:**
+  ```bash
+  .venv\Scripts\activate
+  python main.py
 ## Outputs of PopulationSim
 
 Once completed, the output folder will contain subfolders for each year specified in the `config.yml` file. Each subfolder will contain the following files.
