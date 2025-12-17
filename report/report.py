@@ -5,6 +5,9 @@ from IPython.display import display
 import yaml
 import streamlit as st
 import sqlalchemy as sql
+import os
+from pathlib import Path
+from datetime import datetime
 
 
 @st.cache_data
@@ -44,6 +47,243 @@ def get_run_metadata(_sql_engine: sql.engine) -> pd.DataFrame:
                 sql.text(query.read()),
                 connection,
             )
+
+
+@st.cache_data
+def get_local_run_metadata(output_dir: str = "./output") -> pd.DataFrame:
+    """
+    Scan output directory for local runs and build metadata DataFrame.
+
+    Parameters
+    ----------
+    output_dir : str, optional
+        Path to the output directory. This directory should contain subdirectories
+        named by year (e.g., '2023', '2024'), each of which must contain the files:
+        'timing_log.csv', 'synthetic_households_{year}.csv', and
+        'synthetic_persons_{year}.csv'. Only subdirectories with all required files
+        are included in the metadata DataFrame.
+    """
+    local_runs = []
+    
+    if not os.path.exists(output_dir):
+        return pd.DataFrame(columns=["run_id", "year", "date", "version", "source"])
+    
+    # Scan output directory for year folders
+    for folder in sorted(os.listdir(output_dir)):
+        folder_path = os.path.join(output_dir, folder)
+        
+        if not os.path.isdir(folder_path):
+            continue
+        
+        # Check for required files
+        timing_log = os.path.join(folder_path, "timing_log.csv")
+        synthetic_hh = os.path.join(folder_path, f"synthetic_households_{folder}.csv")
+        synthetic_persons = os.path.join(folder_path, f"synthetic_persons_{folder}.csv")
+        
+        # Only include if all required files exist
+        if all(os.path.exists(f) for f in [timing_log, synthetic_hh, synthetic_persons]):
+            # Get modification time from timing_log
+            mod_time = datetime.fromtimestamp(os.path.getmtime(timing_log))
+            
+            local_runs.append({
+                "run_id": f"{folder}_local",
+                "year": folder,
+                "date": mod_time.strftime("%Y-%m-%d %H:%M"),
+                "version": "local",
+                "source": "local"
+            })
+    
+    return pd.DataFrame(local_runs)
+
+
+@st.cache_data
+def get_control_data_from_local(year: str) -> pd.DataFrame:
+    """
+    Load control data from local CSV files and replicate database query logic.
+
+    Parameters
+    ----------
+    year : str
+        The year for which to load control data, as a four-digit string (e.g., "2023").
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame containing control data for the specified year. The DataFrame includes columns such as:
+        - control_id: int, unique identifier for each control
+        - target: str, control target column name
+        - geography: str, geography level (e.g., "mgra")
+        - seed_table: str, name of the seed table (e.g., "persons")
+        - importance: object, importance value (may be None)
+        - control_field: str, control field name
+        - expression: str, expression used for the control
+        - [additional columns from the summary files, depending on implementation]
+    """
+    # Load controls definition
+    controls_df = pd.read_csv("./populationsim/configs/controls.csv")
+    
+    # Add GQ controls from settings (mirrors etl_controls_csv behavior)
+    SETTINGS_FILE = Path("populationsim/configs/settings.yaml")
+    with open(SETTINGS_FILE, "r") as file:
+        settings = yaml.safe_load(file)
+    
+    # Get GQ control columns and expressions and append to controls DataFrame
+    try:
+        gq_options = settings["gq_options"]
+        gq_control_map = gq_options["GQ_control_map"]
+        gq_type_column = gq_options["GQ_type_column"]
+    except KeyError as e:
+        st.error(
+            f"Missing key in settings.yaml: {e}. Please ensure 'gq_options' and 'GQ_control_map' are present."
+        )
+        return controls_df
+
+    for item in gq_control_map:
+        result = {
+            "target": item["control_column"],
+            "geography": "mgra",
+            "seed_table": "persons",
+            "importance": None,
+            "control_field": item["control_column"],
+            "expression": gq_type_column + " == " + str(item["code"]),
+        }
+        df_gq = pd.Series(result).to_frame().T
+        controls_df = pd.concat([controls_df, df_gq], ignore_index=True)
+    
+    controls_df["control_id"] = range(1, len(controls_df) + 1)
+    
+    # Load summary files
+    summary_files = {
+        "mgra": f"./output/{year}/final_summary_mgra.csv",
+        "mgra_gq": f"./output/{year}/final_summary_mgra_gq.csv",
+        "PUMA": f"./output/{year}/final_summary_mgra_PUMA.csv",
+        "region": f"./output/{year}/final_summary_region_1.csv",
+    }
+    
+    all_control_totals = []
+    
+    # Process MGRA summaries
+    for key in ["mgra", "mgra_gq", "PUMA"]:
+        if os.path.exists(summary_files[key]):
+            df = pd.read_csv(summary_files[key])
+            control_cols = [col for col in df.columns if col.endswith("_control")]
+            result_cols = [col for col in df.columns if col.endswith("_result")]
+            
+            df_control = df.melt(
+                id_vars=["geography", "id"],
+                value_vars=control_cols,
+                var_name="target",
+                value_name="control_value",
+            )
+            df_result = df.melt(
+                id_vars=["geography", "id"],
+                value_vars=result_cols,
+                var_name="target",
+                value_name="result",
+            )
+            
+            df_control["target"] = df_control["target"].str.replace("_control", "")
+            df_result["target"] = df_result["target"].str.replace("_result", "")
+            
+            merged = pd.merge(df_control, df_result, on=["geography", "id", "target"])
+            # Normalize geography to lowercase for consistency
+            merged["geography"] = merged["geography"].str.lower()
+            all_control_totals.append(merged)
+    
+    # Process region summary
+    if os.path.exists(summary_files["region"]):
+        df = pd.read_csv(summary_files["region"])
+        df = df[["control_name", "control_value", "mgra_integer_weight"]]
+        df.insert(0, "geography", "region")
+        df.insert(1, "id", 1)
+        df.columns = ["geography", "id", "target", "control_value", "result"]
+        all_control_totals.append(df)
+    
+    # Combine all control totals
+    control_totals = pd.concat(all_control_totals, ignore_index=True)
+    
+    # Merge with controls definition
+    control_totals = control_totals.merge(
+        controls_df[["control_id", "target", "control_field"]],
+        on="target",
+        how="left"
+    )
+    
+    # Group and aggregate (replicating SQL GROUP BY and SUM)
+    result = control_totals.groupby(
+        ["control_id", "control_field", "geography", "id"], dropna=False
+    ).agg(
+        control_value=("control_value", "sum"),
+        result=("result", "sum")
+    ).reset_index()
+    
+    # Calculate differences
+    result["Diff"] = result["result"] - result["control_value"]
+    result["Diff %"] = result.apply(
+        lambda row: 0 if row["result"] == row["control_value"]
+        else None if row["control_value"] == 0
+        else round(100.0 * (row["result"] - row["control_value"]) / row["control_value"], 2),
+        axis=1
+    )
+    
+    # Add Category column (replicating CASE statement)
+    def categorize_control(control_field):
+        """
+        Categorizes a control field string into a broader category.
+
+        Args:
+            control_field (str): The control field to categorize.
+
+        Returns:
+            str or None: The category name if matched, otherwise None.
+        """
+        if control_field == "Total_HH":
+            return "Households"
+        elif control_field.startswith("HHSize_"):
+            return "Household Size"
+        elif control_field.startswith("HHInc_"):
+            return "Household Income"
+        elif control_field.startswith("HHWork_"):
+            return "Household Workers"
+        elif control_field.startswith("HHChild_"):
+            return "Household Children"
+        elif control_field in ["Male", "Female"]:
+            return "Sex"
+        elif control_field.startswith("Age_"):
+            return "Age"
+        elif control_field in ["Asian", "Black", "Hispanic", "Other", "Two_or_more", "White"]:
+            return "Race/Ethnicity"
+        elif control_field.startswith("job_"):
+            return "Labor Force"
+        elif control_field.startswith("lfp_"):
+            return "Civilian Labor Force"
+        elif control_field.startswith("gq_"):
+            return "Group Quarters"
+        return None
+    
+    result["Category"] = result["control_field"].apply(categorize_control)
+    
+    # Rename columns to match database output
+    result = result.rename(columns={
+        "control_id": "id",
+        "control_field": "Control Field",
+        "id": "geography_id",
+        "control_value": "Control",
+        "result": "Result"
+    })
+    
+    # Select and order columns to match database output
+    result = result[[
+        "id", "Category", "Control Field", "geography", "geography_id",
+        "Control", "Result", "Diff", "Diff %"
+    ]]
+    
+    # Sort like the SQL query
+    result = result.sort_values(
+        by=["id", "Control Field", "geography", "geography_id"]
+    ).reset_index(drop=True)
+    
+    return result
 
 
 @st.cache_data
@@ -100,27 +340,63 @@ engine = sql.create_engine(
 
 # Load run metadata
 run_df = get_run_metadata(_sql_engine=engine)
+local_run_df = get_local_run_metadata()
 
-# Allow user to select a single run from the metadata table
-st.sidebar.markdown("Select a PopulationSim run to view validation results.")
-selection = st.sidebar.dataframe(
-    data=run_df[["run_id", "staging_schema", "year", "date", "user", "version"]],
-    hide_index=True,
-    column_config={"year": st.column_config.TextColumn("year", max_chars=4)},
-    on_select="rerun",
-    selection_mode="single-row",
-)
+
+# --- Source Toggle ---
+source_options = ["Database"]
+if not local_run_df.empty:
+    source_options.append("Local Output")
+source_choice = st.sidebar.radio("Choose data source:", source_options, index=0)
+
+# --- Show only the relevant table and selection ---
+selection = None
+source_type = None
+
+if source_choice == "Database":
+    st.sidebar.markdown("### 📊 Database Runs")
+    st.sidebar.markdown("Select a PopulationSim run to view validation results.")
+    db_selection = st.sidebar.dataframe(
+        data=run_df[["run_id", "staging_schema", "year", "date", "user", "version"]],
+        hide_index=True,
+        column_config={"year": st.column_config.TextColumn("year", max_chars=4)},
+        on_select="rerun",
+        selection_mode="single-row",
+        key="db_runs"
+    )
+    if db_selection["selection"]["rows"]:
+        selection = db_selection
+        source_type = "database"
+elif source_choice == "Local Output":
+    st.sidebar.markdown("### 📁 Local Output Runs")
+    local_selection = st.sidebar.dataframe(
+        data=local_run_df[["run_id", "year", "date", "version"]],
+        hide_index=True,
+        column_config={"year": st.column_config.TextColumn("year", max_chars=4)},
+        on_select="rerun",
+        selection_mode="single-row",
+        key="local_runs"
+    )
+    if local_selection["selection"]["rows"]:
+        selection = local_selection
+        source_type = "local"
 
 # Set the user selection if provided
-if not selection["selection"]["rows"]:
-    pass  # Do nothing if no selection is made
-else:
+if selection and selection["selection"]["rows"]:
     idx = selection["selection"]["rows"][0]
-    run_id = run_df.iloc[idx]["run_id"]
-    comments = run_df.iloc[idx]["comments"]
-
-    # Load control values and results for selected run
-    controls_df = get_control_data(run_id=run_id, _sql_engine=engine)
+    
+    # Get run details based on source type
+    if source_type == "database":
+        run_id = run_df.iloc[idx]["run_id"]
+        comments = run_df.iloc[idx]["comments"]
+        controls_df = get_control_data(run_id=run_id, _sql_engine=engine)
+        # Normalize geography to lowercase for consistency
+        controls_df["geography"] = controls_df["geography"].str.lower()
+    else:
+        run_id = local_run_df.iloc[idx]["run_id"]
+        year = local_run_df.iloc[idx]["year"]
+        comments = f"Local run from output/{year}/"
+        controls_df = get_control_data_from_local(year=year)
 
     # Display report title and run selected
     st.markdown("<h1>PopulationSim Validation</h1>", unsafe_allow_html=True)
@@ -177,12 +453,12 @@ else:
         # Allow user to select unique control category
         category = st.selectbox(
             "Pick a category to analyze",
-            controls_df[controls_df["geography"] == "PUMA"]["Category"].unique(),
+            controls_df[controls_df["geography"] == "puma"]["Category"].unique(),
         )
 
         # For the selected category
         st.markdown(f"#### {category}")
-        tbl = controls_df.query("geography == 'PUMA' & Category == @category")[
+        tbl = controls_df.query("geography == 'puma' & Category == @category")[
             [
                 "id",
                 "Category",
