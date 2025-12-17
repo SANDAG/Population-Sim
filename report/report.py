@@ -51,7 +51,18 @@ def get_run_metadata(_sql_engine: sql.engine) -> pd.DataFrame:
 
 @st.cache_data
 def get_local_run_metadata(output_dir: str = "./output") -> pd.DataFrame:
-    """Scan output directory for local runs and build metadata DataFrame."""
+    """
+    Scan output directory for local runs and build metadata DataFrame.
+
+    Parameters
+    ----------
+    output_dir : str, optional
+        Path to the output directory. This directory should contain subdirectories
+        named by year (e.g., '2023', '2024'), each of which must contain the files:
+        'timing_log.csv', 'synthetic_households_{year}.csv', and
+        'synthetic_persons_{year}.csv'. Only subdirectories with all required files
+        are included in the metadata DataFrame.
+    """
     local_runs = []
     
     if not os.path.exists(output_dir):
