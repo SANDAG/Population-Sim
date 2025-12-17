@@ -228,6 +228,15 @@ def get_control_data_from_local(year: str) -> pd.DataFrame:
     
     # Add Category column (replicating CASE statement)
     def categorize_control(control_field):
+        """
+        Categorizes a control field string into a broader category.
+
+        Args:
+            control_field (str): The control field to categorize.
+
+        Returns:
+            str or None: The category name if matched, otherwise None.
+        """
         if control_field == "Total_HH":
             return "Households"
         elif control_field.startswith("HHSize_"):
