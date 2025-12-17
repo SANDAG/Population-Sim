@@ -123,8 +123,8 @@ def get_control_data_from_local(year: str) -> pd.DataFrame:
     controls_df = pd.read_csv("./populationsim/configs/controls.csv")
     
     # Add GQ controls from settings (mirrors etl_controls_csv behavior)
-    settings_file = "populationsim/configs/settings.yaml"
-    with open(settings_file, "r") as file:
+    SETTINGS_FILE = Path("populationsim/configs/settings.yaml")
+    with open(SETTINGS_FILE, "r") as file:
         settings = yaml.safe_load(file)
     
     # Get GQ control columns and expressions and append to controls DataFrame
