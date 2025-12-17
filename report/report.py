@@ -128,14 +128,24 @@ def get_control_data_from_local(year: str) -> pd.DataFrame:
         settings = yaml.safe_load(file)
     
     # Get GQ control columns and expressions and append to controls DataFrame
-    for item in settings["gq_options"]["GQ_control_map"]:
+    try:
+        gq_options = settings["gq_options"]
+        gq_control_map = gq_options["GQ_control_map"]
+        gq_type_column = gq_options["GQ_type_column"]
+    except KeyError as e:
+        st.error(
+            f"Missing key in settings.yaml: {e}. Please ensure 'gq_options' and 'GQ_control_map' are present."
+        )
+        return controls_df
+
+    for item in gq_control_map:
         result = {
             "target": item["control_column"],
             "geography": "mgra",
             "seed_table": "persons",
             "importance": None,
             "control_field": item["control_column"],
-            "expression": settings["gq_options"]["GQ_type_column"] + " == " + str(item["code"]),
+            "expression": gq_type_column + " == " + str(item["code"]),
         }
         df_gq = pd.Series(result).to_frame().T
         controls_df = pd.concat([controls_df, df_gq], ignore_index=True)
