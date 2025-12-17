@@ -98,8 +98,27 @@ def get_local_run_metadata(output_dir: str = "./output") -> pd.DataFrame:
 
 @st.cache_data
 def get_control_data_from_local(year: str) -> pd.DataFrame:
-    """Load control data from local CSV files and replicate database query logic."""
-    
+    """
+    Load control data from local CSV files and replicate database query logic.
+
+    Parameters
+    ----------
+    year : str
+        The year for which to load control data, as a four-digit string (e.g., "2023").
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame containing control data for the specified year. The DataFrame includes columns such as:
+        - control_id: int, unique identifier for each control
+        - target: str, control target column name
+        - geography: str, geography level (e.g., "mgra")
+        - seed_table: str, name of the seed table (e.g., "persons")
+        - importance: object, importance value (may be None)
+        - control_field: str, control field name
+        - expression: str, expression used for the control
+        - [additional columns from the summary files, depending on implementation]
+    """
     # Load controls definition
     controls_df = pd.read_csv("./populationsim/configs/controls.csv")
     
