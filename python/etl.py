@@ -332,12 +332,12 @@ def run_etl(
         run_id=run_id,
         year=year,
         transformations_func=sub_geography_summary_manipulations,
-        input_path="final_summary_mgra.csv",
+        input_path="summary_mgra.csv",
         output_table="control_totals",
         schema="outputs",
         output_database=output_database,
     )
-    print("final_summary_mgra is loaded")
+    print("summary_mgra is loaded")
 
     etl_final_summary(
         engine=engine,
@@ -356,12 +356,12 @@ def run_etl(
         run_id=run_id,
         year=year,
         transformations_func=sub_geography_summary_manipulations,
-        input_path="final_summary_mgra_PUMA.csv",
+        input_path="summary_mgra_PUMA.csv",
         output_table="control_totals",
         schema="outputs",
         output_database=output_database,
     )
-    print("final_summary_mgra_PUMA is loaded")
+    print("summary_mgra_PUMA is loaded")
     etl_final_summary(
         engine=engine,
         run_id=run_id,
