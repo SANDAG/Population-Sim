@@ -35,7 +35,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     populationsim.add_run_args(parser)
     args = parser.parse_args()
-    args.working_dir = os.path.dirname(__file__)                                            
+    args.working_dir = os.path.dirname(__file__)
 
     #print(args)
 
