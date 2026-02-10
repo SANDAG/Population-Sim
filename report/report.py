@@ -154,10 +154,10 @@ def get_control_data_from_local(year: str) -> pd.DataFrame:
     
     # Load summary files
     summary_files = {
-        "mgra": f"./output/{year}/final_summary_mgra.csv",
+        "mgra": f"./output/{year}/summary_mgra.csv",
         "mgra_gq": f"./output/{year}/final_summary_mgra_gq.csv",
-        "PUMA": f"./output/{year}/final_summary_mgra_PUMA.csv",
-        "region": f"./output/{year}/final_summary_region_1.csv",
+        "PUMA": f"./output/{year}/summary_mgra_PUMA.csv",
+        "region": f"./output/{year}/summary_region_1.csv",
     }
     
     all_control_totals = []

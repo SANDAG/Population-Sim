@@ -19,7 +19,7 @@ def run_simulation():
         os.chdir("populationsim")  # Change to populationsim directory
         # Run populationsim
         subprocess.call(
-            "python run_populationsim.py -c configs_mp -c configs", shell=True
+            "python run_populationsim.py -c ./configs -m 22", shell=True
         )
         os.chdir("..")  # Change back to root directory
         logging.info("Simulation run successful")

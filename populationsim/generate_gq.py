@@ -1,12 +1,9 @@
 import pandas as pd
 
 
-from activitysim.core import inject
-from activitysim.core import config
-from activitysim.core import input
-
-
-from activitysim.cli.run import handle_standard_args
+from populationsim.core import inject
+from populationsim.core import config
+from populationsim.core import input
 
 """
     Reads the GQ seed and control totals 
@@ -195,7 +192,6 @@ def write_outputs(gq_options, synpop_dfs, summary_df):
 
 def run_gq(args):
 
-    handle_standard_args(args)  # possibly update injectables
     gq_options = config.setting('gq_options', None)
     #print("gq_options: ", gq_options)
 

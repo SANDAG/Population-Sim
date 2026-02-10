@@ -1,91 +1,51 @@
 [project]
-name = "population-sim"
-version = "0.1.0"
-description = "Population Simulation Project"
+name = "sandag-population-sim"
+version = "0.10.0"
+description = "SANDAG Population Synthesis (for ActivitySim)"
+authors = [
+    { name = "Ben Stabler", email = "ben.stabler@rsginc.com" }
+    ]
 readme = "README.md"
-requires-python = ">=3.8,<3.9"
+requires-python = ">=3.9,<3.13"
 dependencies = [
-    "absl-py",
-    "activitysim==1.1.0",
-    "altair",
-    "asttokens",
-    "attrs",
-    "backcall",
-    "blinker",
-    "cachetools",
-    "certifi",
-    "charset-normalizer",
-    "click",
-    "colorama",
-    "cython",
-    "cytoolz",
-    "decorator",
-    "executing",
-    "gitdb",
-    "gitpython",
-    "idna",
-    "immutabledict",
-    "importlib_metadata",
-    "ipython",
-    "jedi",
-    "jinja2",
-    "jsonschema",
-    "jsonschema-specifications",
-    "llvmlite",
-    "markdown-it-py",
-    "markupsafe",
-    "matplotlib",
-    "matplotlib-inline",
-    "mdurl",
-    "msgpack",
-    "narwhals",
-    "numba",
-    "numpy",
-    "numexpr",
-    "openmatrix==0.3.5.0",
-    "orca==1.8",
-    "ortools",
-    "pandas",
-    "parso",
-    "pickleshare",
-    "pillow",
-    "pkgutil_resolve_name",
-    "plotly",
-    "populationsim==0.5.1",
-    "prompt_toolkit",
-    "protobuf",
-    "psutil",
-    "pure_eval",
-    "pyarrow",
-    "pydeck",
-    "pygments",
-    "pyodbc",
-    "python-dateutil",
-    "pytz",
-    "pyyaml",
-    "referencing",
-    "requests",
-    "rich",
-    "rpds-py",
-    "setuptools",
-    "simwrapper",
-    "smmap",
-    "sqlalchemy",
-    "stack-data",
-    "streamlit",
-    "tables",
-    "toml",
-    "toolz",
-    "traitlets",
-    "tzdata",
-    "urllib3",
-    "watchdog",
-    "wcwidth",
+    "ortools>=9.14.6206,<10.0.0",
+    "pyinstrument>=5.0.1,<6.0.0",
+    "pyyaml>=6.0.2",
+    "psutil>=7.0.0,<8.0.0",
+    "pandas>=2.2.0,<3.0.0",
+    "numpy>=1.16.1,<2.0.0",
+    "tables>=3.9.0,<4.0.0",
+    "orca>=1.8,<2.0.0",
+    "blosc2>=2.5.1,<3.0.0",
+    "cvxpy[glpk]>=1.6.5,<2.0.0",
+    "numba>=0.60.0,<1.0.0",
+    "pyarrow>=20.0.0,<21.0.0",
+	"pyodbc>=5.0.1,<6.0.0",
+	"sqlalchemy>=2.0.25,<3.0.0",
+	"populationsim==0.10.0",
 ]
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+[dependency-groups]
+dev = [
+    "black>=25.1.0,<26.0.0",
+    "pre-commit>=4.2.0,<5.0.0",
+    "pytest>=8.3.5,<9.0.0",
+    "pytest-cov>=5.0.0,<6.0.0",
+    "ruff>=0.9.9,<1.0.0",
+]
 
-[tool.hatch.build.targets.wheel]
-packages = ["populationsim", "python", "report"]
+[pytest.ini]
+python_paths = [
+    "populationsim",
+    "tests",
+    "examples",
+]
+testpaths = [
+    "tests",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[project.scripts]
+populationsim = "populationsim.__main__:main"

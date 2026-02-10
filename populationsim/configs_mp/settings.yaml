@@ -2,9 +2,11 @@ inherit_settings: True
 
 multiprocess: True
 num_processes: 22  # Maximum with San Diego PUMAS
-cleanup_pipeline_after_run: True
-
+#cleanup_pipeline_after_run: True
 slice_geography: PUMA
+
+NO_INTEGERIZATION_EVER: False
+GROUP_BY_INCIDENCE_SIGNATURE: False
 
 # Steps for base mode
 # ------------------------------------------------------------------
@@ -48,28 +50,9 @@ multiprocess_steps:
   - name: mp_summarize
     begin: expand_households
 
-# Rather than using the 'except: True' wildcard, we could explicitly list the tables that shold not be sliced
-# and let activitysim.mp_tasks deduce which created tables should be coalesced, but that requires a pathalogical
-# knowledge of the names of esisting internal tables, whereas the coalesce directive allows us to simply specify
-# the names of the new tables we expect mp_sub_balancing_TAZ to create, which seems less error-prone
-# (especially since mp_tasks.coalesce_pipelines will complain if the tables int het coalesce list are not found.)
-
-# multiprocess_steps:
-#   - name: mp_seed_balancing
-#     begin: input_pre_processor
-#   - name: mp_sub_balancing_TAZ
-#     begin: sub_balancing.geography=TAZ
-#     num_processes: 8 # This used to be 2 
-#     slice:
-#       tables:
-#         - slice_crosswalk
-#         - crosswalk
-#       except:
-#         - geo_cross_walk
-#         - TRACT_control_data
-#         - TRACT_controls
-#         - TRACT_weights
-#         - TRACT_weights_sparse
-#         - trace_TRACT_weights
-#   - name: mp_summarize
-#     begin: expand_households
+output_tables:
+  action: skip
+  prefix: ''
+  tables:
+    - households
+    - persons

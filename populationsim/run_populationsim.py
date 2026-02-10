@@ -1,14 +1,13 @@
 # ActivitySim
 # See full license in LICENSE.txt.
 
+import os
 import sys
 import argparse
 
-from activitysim.core.config import setting
-from activitysim.core import inject
+import populationsim
+from populationsim.core import inject
 
-from activitysim.cli.run import add_run_args, run
-from populationsim import steps
 
 from generate_gq import run_gq
 
@@ -18,30 +17,29 @@ from generate_gq import run_gq
 def log_settings():
 
     return [
-        'multiprocess',
-        'num_processes',
-        'resume_after',
-        'GROUP_BY_INCIDENCE_SIGNATURE',
-        'INTEGERIZE_WITH_BACKSTOPPED_CONTROLS',
-        'SUB_BALANCE_WITH_FLOAT_SEED_WEIGHTS',
-        'meta_control_data',
-        'control_file_name',
-        'USE_CVXPY',
-        'USE_SIMUL_INTEGERIZER'
+        "multiprocess",
+        "num_processes",
+        "resume_after",
+        "GROUP_BY_INCIDENCE_SIGNATURE",
+        "INTEGERIZE_WITH_BACKSTOPPED_CONTROLS",
+        "SUB_BALANCE_WITH_FLOAT_SEED_WEIGHTS",
+        "meta_control_data",
+        "control_file_name",
+        "USE_CVXPY",
+        "USE_SIMUL_INTEGERIZER",
     ]
 
 
-if __name__ == '__main__':
-
-    assert inject.get_injectable('preload_injectables', None)
+if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    add_run_args(parser)
+    populationsim.add_run_args(parser)
     args = parser.parse_args()
+    args.working_dir = os.path.dirname(__file__)
 
     #print(args)
 
     # running GQ
     run_gq(args)
     # running non GQ or main popsim
-    sys.exit(run(args))
+    sys.exit(populationsim.run(args))
