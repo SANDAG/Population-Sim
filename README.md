@@ -53,8 +53,8 @@ years: # years for which to generate controls and run populationsim
 5. **Run the `main.py` entry point file** from the project root directory:
   **On Windows:**
   ```bash
-  .venv\Scripts\activate
-  python main.py
+  uv run main.py
+  ```
 ## Outputs of PopulationSim
 
 Once completed, the output folder will contain subfolders for each year specified in the `config.yml` file. Each subfolder will contain the following files.
@@ -89,6 +89,6 @@ Before generating the report, ensure that you have the following:
 
 #### Generate validation reports
 Run the Streamlit app in the base project directory with the following command.
-```yaml
-streamlit run report/report.py
+```bash
+uv run -- streamlit run report/report.py
 ```
