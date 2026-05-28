@@ -20,13 +20,10 @@ from azure.storage.blob import ContainerClient
 # -----------------------------------------------------------------------
 # HOW TO RUN
 # -----------------------------------------------------------------------
-# Step 1 — Activate the uv environment in command prompt:
-#   C:\uv_env\asim_140\.venv\Scripts\activate
-#
-# Step 2 — Run the script:
-#   Usage:          python datalake_exporter_popsim.py <output_path> <env>
-#   Example (dev):  python datalake_exporter_popsim.py C:\abm_runs\popsim_new\output\2022 dev
-#   Example (prod): python datalake_exporter_popsim.py C:\abm_runs\popsim_new\output\2022 prod
+#   Activate the sandag-population-sim venv
+#   Usage:          python datalake_exporter.py <output_path> <env>
+#   Example (dev):  python datalake_exporter.py C:\abm_runs\popsim_new\output\2022 dev
+#   Example (prod): python datalake_exporter.py C:\abm_runs\popsim_new\output\2022 prod
 #
 # Notes:
 #   - env must be 'dev' or 'prod'
