@@ -13,7 +13,7 @@ import yaml
 from python.build_controls import get_mgra_controls, get_region_controls
 from python.build_seed_data import get_seed_households, get_seed_persons
 from python.outputs import create_abm_outputs, organize_outputs
-from python.etl import run_etl
+from python.datalake_exporter import write_to_datalake
 from python.db import get_engine
 
 # Paths — anchored to this file so the pipeline can be run from any directory
@@ -148,14 +148,15 @@ def process_year(year: int, engine, config: dict, secrets: dict) -> None:
     )
 
     if config["sql"]["load_to_database"]:
-        run_id = run_etl(
-            year=year,
-            engine=engine,
-            output_database=secrets["sql"]["output_database"],
-            version=config["version"],
-            staging_schema=secrets["sql"]["schema"],
-            seed_data=config["seed_data"],
-            comments=config["comments"],
+        write_to_datalake(
+            output_path=f"output/{year}",
+            env=config["datalake"]["env"],
+            metadata={
+                "year": year,
+                "version": config["version"],
+                "seed_data": config["seed_data"],
+                "comments": config["comments"],
+            },
         )
 
 def main() -> None:

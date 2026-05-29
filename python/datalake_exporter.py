@@ -61,7 +61,6 @@ def export_csv_as_parquet(file, blob_path, container):
     table.to_parquet(parquet_file, engine="pyarrow")
     parquet_file.seek(0)
     t0 = datetime.datetime.now()
-    
     try:
         container.upload_blob(name=lake_file_name, data=parquet_file)
         elapsed = (datetime.datetime.now() - t0).total_seconds()
@@ -73,9 +72,9 @@ def export_csv_as_parquet(file, blob_path, container):
     except Exception as e:
         print(f"Failed to upload {name}: {e}", file=sys.stderr)
         return False
-    
 
-def write_to_datalake(output_path, env):
+
+def write_to_datalake(output_path, env, metadata=None):
     if not os.path.isdir(output_path):
         print(f"Output path does not exist or is not a directory: {output_path}", file=sys.stderr)
         return
@@ -107,6 +106,23 @@ def write_to_datalake(output_path, env):
     for file in files:
         ok = export_csv_as_parquet(file, blob_path, container)
         (succeeded if ok else failed).append(os.path.basename(file))
+
+    if metadata is not None:
+        meta_df = pd.DataFrame([metadata])
+        meta_blob = build_blob_path(blob_path, "run_metadata.parquet")
+        parquet_file = BytesIO()
+        meta_df.to_parquet(parquet_file, engine="pyarrow")
+        parquet_file.seek(0)
+        try:
+            container.upload_blob(name=meta_blob, data=parquet_file)
+            succeeded.append("run_metadata.parquet")
+            print("run_metadata.parquet written to Azure")
+        except ResourceExistsError:
+            print(f"{meta_blob} already exists in Azure, skipping", file=sys.stderr)
+            failed.append("run_metadata.parquet")
+        except Exception as e:
+            print(f"Failed to upload run_metadata: {e}", file=sys.stderr)
+            failed.append("run_metadata.parquet")
 
     print(f"\nExport complete: {len(succeeded)} succeeded, {len(failed)} failed")
     if failed:

@@ -10,6 +10,9 @@ sql:
   mgrabase: "sql/mgrabase.sql"
   load_to_database: False
 
+datalake:
+  env: dev
+
 economic_controls: "data/Economic Team Region Controls.csv"
 
 synthesis_runs:
