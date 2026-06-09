@@ -37,8 +37,12 @@ uv pip install -e .
 ### Step 3: Verify Installation
 
 ```powershell
-python -c "import populationsim; print(populationsim.__version__)"
-# Should print: 0.10.0
+# Check if populationsim can be imported
+python -c "import populationsim; print('PopulationSim imported successfully')"
+
+# Check installed version
+uv pip show populationsim
+# Should show: Version: 0.10.0
 ```
 
 ### Step 4: Review Configuration
