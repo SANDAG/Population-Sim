@@ -116,7 +116,7 @@ flowchart TD
 - Sub-balance at MGRA level
 - Generate synthetic population
 
-**Output files** in `populationsim/output/` and `populationsim/output_gq/`:
+**Output files** in `populationsim/output/`:
 - `synthetic_households.csv`
 - `synthetic_persons.csv`
 - `synthetic_households_gq.csv`

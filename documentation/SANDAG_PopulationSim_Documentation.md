@@ -226,7 +226,7 @@ The system recognizes that group quarters (GQ) populations require different han
 **Regular Households (Weight-Based):**
 - Full IPF balancing and integerization process
 - Satisfies 42 MGRA-level controls
-- Handles ~97% of total population
+- Handles ~91% of total households (remainder is GQ)
 - Output: `synthetic_households.csv`, `synthetic_persons.csv`
 
 **Group Quarters (Sampling-Based):**
@@ -555,7 +555,7 @@ The seed data provides the sample population that will be reweighted and expande
 Four household seed files are created by `python/build_seed_data.py`:
 
 **seed_households_hh.csv** (Regular Households)
-- ~350,000 records
+- ~52,000 records
 - TYPEHUGQ = 1 (housing units)
 - Key fields:
   - `hhid`: Unique household identifier (assigned sequentially)
@@ -569,18 +569,19 @@ Four household seed files are created by `python/build_seed_data.py`:
   - `gq_type`: Set to 0 for regular households
 
 **seed_households_gq.csv** (Group Quarters)
-- ~50,000 records
+- ~7,750 records (sample pool)
 - TYPEHUGQ = 2 (institutionalized GQ) or 3 (non-institutionalized GQ)
 - Key fields same as above, except:
   - `gq_type`: 1=military, 2=college, 3=other
   - `WGTP`: Uses PWGTP (person weight) since GQ "households" are individuals
+- **Note:** This is the sample pool, not the final output. Synthetic output (~116,000+ for 2022) is created by sampling with replacement from these ~7,750 seed records to match control totals. Each seed record may appear multiple times in the synthetic population
 
 #### 2.4.3 Person Seed Files
 
 Four person seed files created simultaneously:
 
 **seed_persons_hh.csv** (Regular Household Members)
-- ~950,000 records
+- ~136,000 records
 - TYPEHUGQ = 1
 - Links to households via `hhid` and `SERIALNO`
 - Key fields:
@@ -598,10 +599,11 @@ Four person seed files created simultaneously:
   - `laborforce`, `worker`: Derived employment flags
 
 **seed_persons_gq.csv** (Group Quarters Persons)
-- ~50,000 records
+- ~7,750 records (sample pool, matches household count since GQ "households" are individuals)
 - TYPEHUGQ = 2 or 3
 - Same structure as regular persons
 - Typically younger (college students, military recruits) or older (nursing home residents)
+- **Note:** These seed persons are linked to GQ households via `hhid`. When households are sampled with replacement during synthesis, the corresponding persons are retrieved to create the synthetic GQ population
 
 #### 2.4.4 Key Derived Variables
 
@@ -922,7 +924,7 @@ Group quarters populations (military barracks, college dormitories, nursing home
 #### 2.6.1 Why Separate GQ Processing?
 
 **Characteristics of Group Quarters:**
-- **Small populations:** ~3% of total population (50,000 GQ vs. 1M+ household population)
+- **Small but significant populations:** ~9-13% of total population (2022 synthetic: 116,411 GQ vs. 1,160,472 regular households = 9.1%; seed sample: 7,752 GQ vs. 52,105 regular households = 13.0%)
 - **Geographically concentrated:** Specific MGRAs have military bases, colleges, or institutions
 - **Homogeneous:** Within each GQ type, individuals are demographically similar
 - **Sparse controls:** Only 3 control totals (military, college, other) vs. 42 for households
@@ -979,14 +981,14 @@ gq_controls = mgra_controls.csv  # gq_mil_pop, gq_college_pop, gq_other_pop colu
 **Step 2: Loop Over GQ Types** (military, college, other)
 ```python
 For each gq_type in [1, 2, 3]:
-    # Filter seed to this GQ type
+    # Filter seed to this GQ type (~2,500 records per type from ~7,750 total seed)
     gq_sample = gq_households_seed[gq_type_column == gq_type]
     
     # Find MGRAs with non-zero GQ controls
     mgras_with_gq = controls[gq_control > 0]
     
     For each mgra in mgras_with_gq:
-        ndraws = gq_control[mgra]  # Number of GQ persons needed
+        ndraws = gq_control[mgra]  # Number of GQ persons needed (e.g., 150 for a military base)
         puma = geo_crosswalk[mgra].PUMA
         
         # Preferentially sample from same PUMA
@@ -1024,6 +1026,8 @@ synthetic_gq_persons = gq_persons_seed.merge(
 **Step 4: Write GQ Outputs**
 ```python
 # Separate files for GQ
+# Note: Output size (e.g., 116,411 for 2022) is much larger than seed size (~7,750)
+# due to sampling with replacement. Each seed record can appear multiple times.
 synthetic_households_gq.csv
 synthetic_persons_gq.csv
 final_summary_mgra_gq.csv  # Control vs. result comparison

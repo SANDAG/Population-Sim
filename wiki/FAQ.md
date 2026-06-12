@@ -152,13 +152,6 @@ PopulationSim runs 22 parallel processes, one per PUMA:
 
 ## Output Questions
 
-### What's the difference between final_*.csv and abm/*.csv?
-
-- **final_*.csv:** Raw PopulationSim output with all PUMS attributes
-- **abm/*.csv:** Cleaned, formatted specifically for ABM team with selected columns
-
-Both contain the same households/persons, just different columns and formatting.
-
 ### What is mgra_based_input_YYYY.csv?
 
 MGRA-level summary file with demographic totals (households, population, group quarters, employment). The ABM reads this file for zonal data.
@@ -295,9 +288,9 @@ Not without code modifications. The ETL code (`python/etl.py`) is specific to SQ
 ### What format does ABM expect?
 
 ABM reads:
-- `abm/households.csv` - household attributes
-- `abm/persons.csv` - person attributes  
-- `abm/mgra_based_input_YYYY.csv` - zonal summaries
+- `households.csv` - household attributes
+- `persons.csv` - person attributes  
+- `mgra_based_input_YYYY.csv` - zonal summaries
 
 These are created automatically by `python/outputs.py` after synthesis.
 
