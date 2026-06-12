@@ -48,7 +48,8 @@ engine = sql.create_engine(
     + secrets["sql"]["server"]
     + "/"
     + dbname
-    + "?trusted_connection=yes&driver=ODBC Driver 17 for SQL Server",
+    + "?trusted_connection=yes&driver=ODBC Driver 18 for SQL Server"
+    + "&TrustServerCertificate=yes",
     fast_executemany=True,
 )
 
