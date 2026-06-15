@@ -9,6 +9,11 @@ import os
 from pathlib import Path
 from datetime import datetime
 
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent))
+
+from python.db import get_engine
 
 @st.cache_data
 def build_scatter_plot(
@@ -324,18 +329,8 @@ def summarize_controls(df: pd.DataFrame) -> pd.DataFrame:
     return result
 
 
-# Build SQL engine from secrets file
-with open("./secrets.yml", "r") as file:
-    secrets = yaml.safe_load(file)
-
-engine = sql.create_engine(
-    "mssql+pyodbc://@"
-    + secrets["sql"]["server"]
-    + "/"
-    + secrets["sql"]["output_database"]
-    + "?trusted_connection=yes&driver=ODBC Driver 17 for SQL Server",
-    fast_executemany=True,
-)
+# Get SQL engine
+engine = get_engine()
 
 
 # Load run metadata

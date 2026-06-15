@@ -11,6 +11,7 @@ from python.build_controls import get_mgra_controls, get_region_controls
 from python.build_seed_data import get_seed_households, get_seed_persons
 from python.outputs import create_abm_outputs, organize_outputs
 from python.etl import run_etl
+from python.db import get_engine
 
 
 # Method used to run populationsim from entry point
@@ -40,18 +41,8 @@ with open("secrets.yml", "r") as file:
     secrets = yaml.safe_load(file)
 
 
-dbname = (
-    secrets["sql"]["output_database"] if config["sql"]["load_to_database"] else "master"
-)
-engine = sql.create_engine(
-    "mssql+pyodbc://@"
-    + secrets["sql"]["server"]
-    + "/"
-    + dbname
-    + "?trusted_connection=yes&driver=ODBC Driver 18 for SQL Server"
-    + "&TrustServerCertificate=yes",
-    fast_executemany=True,
-)
+dbname = secrets["sql"]["output_database"] if config["sql"]["load_to_database"] else "master"
+engine = get_engine(database=dbname)
 
 folder = "populationsim/data/"
 
