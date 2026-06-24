@@ -44,9 +44,7 @@ with
     SUM([hhworkers0]) AS [HHWork_0],
     SUM([hhworkers1]) AS [HHWork_1],
     SUM([hhworkers2]) AS [HHWork_2],
-    SUM([hhworkers3]) AS [HHWork_3Plus],
-    SUM([hhwoc]) AS [HHChild_0],
-    SUM([hhwc]) AS [HHChild_1Plus]
+    SUM([hhworkers3]) AS [HHWork_3Plus]
 FROM
     [sr15_staging].{staging_schema}.[hh_characteristics_mgra]
 	WHERE
@@ -103,8 +101,6 @@ SELECT
     [HHWork_1],
     [HHWork_2],
     [HHWork_3Plus],
-    [HHChild_0],
-    [HHChild_1Plus],
     [HHInc_0to14999],
     [HHInc_15000to29999],
     [HHInc_30000to59999],
