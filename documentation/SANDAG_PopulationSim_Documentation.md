@@ -924,7 +924,7 @@ Group quarters populations (military barracks, college dormitories, nursing home
 #### 2.6.1 Why Separate GQ Processing?
 
 **Characteristics of Group Quarters:**
-- **Small but significant populations:** ~9-13% of total population (2022 synthetic: 116,411 GQ vs. 1,160,472 regular households = 9.1%; seed sample: 7,752 GQ vs. 52,105 regular households = 13.0%)
+- **Significant populations:** ~9-13% of total population (2022 synthetic: 116,411 GQ vs. 1,160,472 regular households = 9.1%; seed sample: 7,752 GQ vs. 52,105 regular households = 13.0%)
 - **Geographically concentrated:** Specific MGRAs have military bases, colleges, or institutions
 - **Homogeneous:** Within each GQ type, individuals are demographically similar
 - **Sparse controls:** Only 3 control totals (military, college, other) vs. 42 for households
