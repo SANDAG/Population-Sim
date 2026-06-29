@@ -250,8 +250,6 @@ def get_control_data_from_local(year: str) -> pd.DataFrame:
             return "Household Income"
         elif control_field.startswith("HHWork_"):
             return "Household Workers"
-        elif control_field.startswith("HHChild_"):
-            return "Household Children"
         elif control_field in ["Male", "Female"]:
             return "Sex"
         elif control_field.startswith("Age_"):

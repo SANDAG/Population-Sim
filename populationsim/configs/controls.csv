@@ -15,8 +15,6 @@ HHWork_0,mgra,households,100000,HHWork_0,households.workers == 0
 HHWork_1,mgra,households,100000,HHWork_1,households.workers == 1
 HHWork_2,mgra,households,100000,HHWork_2,households.workers == 2
 HHWork_3Plus,mgra,households,100000,HHWork_3Plus,households.workers >= 3
-HHChild_0,mgra,households,100000,HHChild_0,households.HUPAC == 4
-HHChild_1Plus,mgra,households,100000,HHChild_1Plus,(households.HUPAC == 1) | (households.HUPAC == 2) | (households.HUPAC == 3)
 Male,mgra,persons,1000000,Male,(persons.SEX == 1)
 Female,mgra,persons,1000000,Female,(persons.SEX == 2)
 Age_LT5,mgra,persons,100000,Age_LT5,(persons.AGEP >= 0) & (persons.AGEP <= 4)

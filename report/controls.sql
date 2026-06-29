@@ -4,7 +4,6 @@ SELECT
          WHEN [controls].[control_field] LIKE 'HHSize_%' THEN 'Household Size'
          WHEN [controls].[control_field] LIKE 'HHInc_%' THEN 'Household Income'
          WHEN [controls].[control_field] LIKE 'HHWork__%' THEN 'Household Workers'
-         WHEN [controls].[control_field] LIKE 'HHChild__%' THEN 'Household Children'
          WHEN [controls].[control_field] IN ('Male', 'Female') THEN 'Sex'
          WHEN [controls].[control_field] LIKE 'Age_%' THEN 'Age'
          WHEN [controls].[control_field] IN ('Asian', 'Black', 'Hispanic', 'Other', 'Two_or_more', 'White') THEN 'Race/Ethnicity'
