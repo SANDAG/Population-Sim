@@ -3,7 +3,8 @@
 import logging
 import os
 import subprocess
-import sqlalchemy as sql
+import sys
+
 import yaml
 
 # User-defined modules
@@ -13,9 +14,38 @@ from python.outputs import create_abm_outputs, organize_outputs
 from python.etl import run_etl
 from python.db import get_engine
 
+def load_configs() -> tuple[dict, dict]:
+    with open("config.yml", "r") as file:
+        config = yaml.safe_load(file)
+    with open("secrets.yml", "r") as file:
+        secrets = yaml.safe_load(file)
+    return config, secrets
 
-# Method used to run populationsim from entry point
-def run_simulation():
+def write_seed_files(engine, config: dict) -> None:
+    folder = "populationsim/data/"
+    seed_households = get_seed_households(engine, config["sql"]["seed_households"])
+    seed_persons = get_seed_persons(engine, config["sql"]["seed_persons"])
+    for k in ["gq", "hh"]:
+        seed_households[k].to_csv(folder + "seed_households_" + k + ".csv", index=False)
+        seed_persons[k].to_csv(folder + "seed_persons_" + k + ".csv", index=False)
+
+def write_control_files(engine, config: dict, secrets: dict, year: int) -> None:
+    folder = "populationsim/data/"
+    get_mgra_controls(
+        sql_engine=engine,
+        query_file=config["sql"]["mgra_controls"],
+        schema=secrets["sql"]["schema"],
+        year=year,
+    ).to_csv(folder + "mgra_controls.csv", index=False)
+    get_region_controls(
+        sql_engine=engine,
+        query_file=config["sql"]["region_controls"],
+        schema=secrets["sql"]["schema"],
+        econ_file=config["economic_controls"],
+        year=year,
+    ).to_csv(folder + "region_controls.csv", index=False)
+
+def run_simulation() -> None:
     try:
         os.chdir("populationsim")  # Change to populationsim directory
         # Run populationsim
@@ -27,70 +57,25 @@ def run_simulation():
     except Exception as e:
         logging.error(f"Error running simulation: {e}")
 
+def process_year(year: int, engine, config: dict, secrets: dict) -> None:
+    folder = "populationsim/data/"
 
-# Set up basic logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
-
-# Get configurations and initialize SQL engine
-with open("config.yml", "r") as file:
-    config = yaml.safe_load(file)
-
-with open("secrets.yml", "r") as file:
-    secrets = yaml.safe_load(file)
-
-
-dbname = secrets["sql"]["output_database"] if config["sql"]["load_to_database"] else "master"
-engine = get_engine(database=dbname)
-
-folder = "populationsim/data/"
-
-# Create seed files and write for use in populationsim
-seed_households = get_seed_households(engine, config["sql"]["seed_households"])
-seed_persons = get_seed_persons(engine, config["sql"]["seed_persons"])
-for k in ["gq", "hh"]:
-    seed_households[k].to_csv(folder + "seed_households_" + k + ".csv", index=False)
-    seed_persons[k].to_csv(folder + "seed_persons_" + k + ".csv", index=False)
-
-# For each year of populationsim
-for year in config["years"]:
     print(f"Building controls for {year}")
+    write_control_files(engine, config, secrets, year)
 
-    # # Build and write mgra-level controls for use in populationsim
-    get_mgra_controls(
-        sql_engine=engine,
-        query_file=config["sql"]["mgra_controls"],
-        schema=secrets["sql"]["schema"],
-        year=year,
-    ).to_csv(folder + "mgra_controls.csv", index=False)
-
-    # Build and write region-level controls for use in populationsim
-    get_region_controls(
-        sql_engine=engine,
-        query_file=config["sql"]["region_controls"],
-        schema=secrets["sql"]["schema"],
-        econ_file=config["economic_controls"],
-        year=year,
-    ).to_csv(folder + "region_controls.csv", index=False)
-
-    # Run populationsim
     print(f"Running populationsim for {year}")
     run_simulation()
 
-    # Organize outputs of populationsim
     organize_outputs(year=year)
 
-    # Create ABM-style outputs from populationsim
     create_abm_outputs(
         year=year,
         sql_engine=engine,
         query_file=config["sql"]["mgrabase"],
         schema=secrets["sql"]["schema"],
     )
-    
+
     if config["sql"]["load_to_database"]:
-        # Run the ETL process
         run_id = run_etl(
             year=year,
             engine=engine,
@@ -101,4 +86,23 @@ for year in config["years"]:
             comments=config["comments"],
         )
 
-logging.info("All years processed successfully.")
+def main() -> None:
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+    )
+
+    config, secrets = load_configs()
+
+    dbname = secrets["sql"]["output_database"] if config["sql"]["load_to_database"] else "master"
+    engine = get_engine(database=dbname)
+
+    write_seed_files(engine, config)
+
+    for year in config["years"]:
+        process_year(year, engine, config, secrets)
+
+    logging.info("All years processed successfully.")
+
+
+if __name__ == "__main__":
+    sys.exit(main())
