@@ -12,6 +12,8 @@ sql:
 
 economic_controls: "data/Economic Team Region Controls.csv"
 
+num_processes: 22
+
 years:
   - 2022
   - 2026
