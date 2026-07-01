@@ -4,6 +4,7 @@ import logging
 import os
 import subprocess
 import sys
+from pathlib import Path
 
 import yaml
 
@@ -13,6 +14,14 @@ from python.build_seed_data import get_seed_households, get_seed_persons
 from python.outputs import create_abm_outputs, organize_outputs
 from python.etl import run_etl
 from python.db import get_engine
+
+# Paths — anchored to this file so the pipeline can be run from any directory
+ROOT_DIR    = Path(__file__).parent
+POPSIM_DIR  = ROOT_DIR / "populationsim"
+DATA_DIR    = POPSIM_DIR / "data"
+CONFIGS_DIR = POPSIM_DIR / "configs"
+CONFIGS_MP_DIR = POPSIM_DIR / "configs_mp"
+OUTPUT_DIR  = POPSIM_DIR / "output"
 
 def load_configs() -> tuple[dict, dict]:
     with open("config.yml", "r") as file:
@@ -45,17 +54,23 @@ def write_control_files(engine, config: dict, secrets: dict, year: int) -> None:
         year=year,
     ).to_csv(folder + "region_controls.csv", index=False)
 
-def run_simulation() -> None:
-    try:
-        os.chdir("populationsim")  # Change to populationsim directory
-        # Run populationsim
-        subprocess.call(
-            "python run_populationsim.py -c ./configs -m 22", shell=True
-        )
-        os.chdir("..")  # Change back to root directory
-        logging.info("Simulation run successful")
-    except Exception as e:
-        logging.error(f"Error running simulation: {e}")
+def run_simulation(num_processes: int) -> None:
+    cmd = [
+        sys.executable,
+        str(POPSIM_DIR / "run_populationsim.py"),
+        "-c", str(CONFIGS_MP_DIR),
+        "-c", str(CONFIGS_DIR),
+        "-d", str(DATA_DIR),
+        "-o", str(OUTPUT_DIR),
+    ]
+    if num_processes > 1:
+        cmd += ["-m", str(num_processes)]
+ 
+    logging.info("Running: %s", " ".join(cmd))
+    # check=True raises CalledProcessError on non-zero exit, stopping the year
+    # loop immediately rather than continuing on missing or corrupt output data
+    subprocess.run(cmd, check=True, cwd=POPSIM_DIR)
+    logging.info("Simulation run successful")
 
 def process_year(year: int, engine, config: dict, secrets: dict) -> None:
     folder = "populationsim/data/"
@@ -64,7 +79,7 @@ def process_year(year: int, engine, config: dict, secrets: dict) -> None:
     write_control_files(engine, config, secrets, year)
 
     print(f"Running populationsim for {year}")
-    run_simulation()
+    run_simulation(num_processes=config.get("num_processes", 1))
 
     organize_outputs(year=year)
 
