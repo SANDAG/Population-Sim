@@ -12,7 +12,27 @@ sql:
 
 economic_controls: "data/Economic Team Region Controls.csv"
 
-num_processes: 22
+synthesis_runs:
+  - name: household
+    configs: [configs_mp, configs, configs_common]
+    data: data
+    output: output
+    num_processes: 22
+  - name: gq_col
+    configs: [configs_gq_col, configs_common]
+    data: data
+    output: output_gq_col
+    num_processes: 1
+  - name: gq_mil
+    configs: [configs_gq_mil, configs_common]
+    data: data
+    output: output_gq_mil
+    num_processes: 1
+  - name: gq_oth
+    configs: [configs_gq_oth, configs_common]
+    data: data
+    output: output_gq_oth
+    num_processes: 1
 
 years:
   - 2022

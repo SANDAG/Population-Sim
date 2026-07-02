@@ -1,0 +1,161 @@
+####################################################################
+# PopulationSim Properties - GQ ONLY Test Configuration
+####################################################################
+# This configuration runs populationsim with GQ (Group Quarters) Military
+# households only, processing them through the full IPF algorithm
+# instead of the sampling approach.
+#
+# SIMPLIFIED CONTROL STRUCTURE:
+# Uses only 1 GQ-specific controls (GQ_Military) to test if GQ type distribution alone 
+# is sufficient for reasonable synthetic population generation.
+# Demographic distributions emerge naturally from seed weights.
+
+# Algorithm/Software Configuration
+# ------------------------------------------------------------------
+INTEGERIZE_WITH_BACKSTOPPED_CONTROLS: True
+SUB_BALANCE_WITH_FLOAT_SEED_WEIGHTS: False
+USE_SIMUL_INTEGERIZER: True
+USE_CVXPY: False
+max_expansion_factor: 30
+
+NO_INTEGERIZATION_EVER: False
+GROUP_BY_INCIDENCE_SIGNATURE: False
+
+# Geographic Settings
+# ------------------------------------------------------------------
+geographies: [region, PUMA, mgra]
+seed_geography: PUMA
+
+
+# Tracing
+# ------------------------------------------------------------------
+trace_geography:
+  mgra: 6163
+
+  
+# Data Directory
+# ------------------------------------------------------------------
+data_dir: data
+
+
+# Input Data Tables
+# ------------------------------------------------------------------
+# input_pre_processor input_table_list
+input_table_list:
+  - tablename: households
+    filename : seed_households_gq_oth.csv
+    index_col: hhid
+  - tablename: persons
+    filename : seed_persons_gq_oth.csv
+  - tablename: geo_cross_walk
+    filename : geo_cross_walk.csv
+  - tablename: mgra_control_data
+    filename : mgra_controls_gq_oth.csv
+
+
+# Reserved Column Names
+# ------------------------------------------------------------------
+household_weight_col: WGTP
+household_id_col: hhid
+total_hh_control: Total_GQ
+
+
+# Control Specification File Name
+# ------------------------------------------------------------------
+control_file_name: controls.csv
+
+
+# Output Tables
+# ------------------------------------------------------------------
+# output_tables can specify either a list of output tables to include or to skip
+# if neither is specified, then no tables will be written
+
+output_tables:
+  action: include
+  tables:
+    - summary_mgra
+    - summary_mgra_PUMA
+    - summary_region_1
+
+
+# Synthetic Population Output Specification
+# ------------------------------------------------------------------
+#
+
+output_synthetic_population:
+  household_id: household_id
+  households:
+    filename: synthetic_households_gq.csv
+    columns:
+      - SERIALNO
+      - NP
+      - HHADJINC
+      - HHT
+      - HUPAC
+      - VEH
+      - BLD
+      - gq_type
+      - workers
+  persons:
+    filename: synthetic_persons_gq.csv
+    columns:
+      - SERIALNO
+      - SPORDER
+      - AGEP
+      - SEX
+      - ESR
+      - COW
+      - WKHP
+      - SCHG
+      - RAC1P
+      - HISP
+      - MIL
+      - SCHL
+      - OCCP
+      - WKW
+      - NAICSP
+      - NAICS2
+      - SOCP 
+      - SOC2
+
+
+# Model steps for base mode
+# ------------------------------------------------------------------
+models:
+  ### mp_seed_balancing step
+  - input_pre_processor
+  - setup_data_structures
+  - initial_seed_balancing
+  - meta_control_factoring
+  - final_seed_balancing
+  - integerize_final_seed_weights
+  ### mp_sub_balancing_mgra step
+  - sub_balancing.geography=mgra
+  ### mp_summarize step
+  - expand_households
+  - summarize
+  - write_synthetic_population
+  - write_data_dictionary
+  - write_tables
+
+#resume_after:
+
+multiprocess_steps:
+  - name: mp_seed_balancing
+    begin: input_pre_processor
+  - name: mp_sub_balancing_mgra
+    begin: sub_balancing.geography=mgra
+    num_processes: 22  # Maximum with San Diego PUMAS
+    slice:
+      tables:
+        - slice_crosswalk
+        - crosswalk
+      # don't slice any tables not explicitly listed above in slice.tables
+      except: True
+      # the following tables are added by sub_balancer and should be coalesced
+      coalesce:
+        - mgra_weights
+        - mgra_weights_sparse
+        - trace_mgra_weights
+  - name: mp_summarize
+    begin: expand_households

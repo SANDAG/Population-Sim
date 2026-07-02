@@ -39,7 +39,4 @@ if __name__ == "__main__":
 
     #print(args)
 
-    # running GQ
-    run_gq(args)
-    # running non GQ or main popsim
     sys.exit(populationsim.run(args))

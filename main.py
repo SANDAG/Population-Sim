@@ -21,6 +21,7 @@ POPSIM_DIR  = ROOT_DIR / "populationsim"
 DATA_DIR    = POPSIM_DIR / "data"
 CONFIGS_DIR = POPSIM_DIR / "configs"
 CONFIGS_MP_DIR = POPSIM_DIR / "configs_mp"
+CONFIGS_COMMON_DIR = POPSIM_DIR / "configs_common"
 OUTPUT_DIR  = POPSIM_DIR / "output"
 
 def load_configs() -> tuple[dict, dict]:
@@ -54,23 +55,17 @@ def write_control_files(engine, config: dict, secrets: dict, year: int) -> None:
         year=year,
     ).to_csv(folder + "region_controls.csv", index=False)
 
-def run_simulation(num_processes: int) -> None:
-    cmd = [
-        sys.executable,
-        str(POPSIM_DIR / "run_populationsim.py"),
-        "-c", str(CONFIGS_MP_DIR),
-        "-c", str(CONFIGS_DIR),
-        "-d", str(DATA_DIR),
-        "-o", str(OUTPUT_DIR),
-    ]
+def run_simulation(configs_dirs: list[Path], data_dir: Path, output_dir: Path, num_processes: int = 1) -> None:
+    cmd = [sys.executable, str(POPSIM_DIR / "run_populationsim.py")]
+    for c in configs_dirs:
+        cmd += ["-c", str(c)]
+    cmd += ["-d", str(data_dir), "-o", str(output_dir)]
     if num_processes > 1:
         cmd += ["-m", str(num_processes)]
- 
+
     logging.info("Running: %s", " ".join(cmd))
-    # check=True raises CalledProcessError on non-zero exit, stopping the year
-    # loop immediately rather than continuing on missing or corrupt output data
     subprocess.run(cmd, check=True, cwd=POPSIM_DIR)
-    logging.info("Simulation run successful")
+    logging.info("Simulation run successful: %s", output_dir.name)
 
 def process_year(year: int, engine, config: dict, secrets: dict) -> None:
     folder = "populationsim/data/"
@@ -78,8 +73,14 @@ def process_year(year: int, engine, config: dict, secrets: dict) -> None:
     print(f"Building controls for {year}")
     write_control_files(engine, config, secrets, year)
 
-    print(f"Running populationsim for {year}")
-    run_simulation(num_processes=config.get("num_processes", 1))
+    for run in config["synthesis_runs"]:
+        print(f"Running populationsim: {run['name']} ({year})")
+        run_simulation(
+            configs_dirs=[POPSIM_DIR / c for c in run["configs"]],
+            data_dir=POPSIM_DIR / run["data"],
+            output_dir=POPSIM_DIR / run["output"],
+            num_processes=run.get("num_processes", 1)
+        )
 
     organize_outputs(year=year)
 
