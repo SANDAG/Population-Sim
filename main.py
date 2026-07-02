@@ -24,6 +24,14 @@ CONFIGS_MP_DIR = POPSIM_DIR / "configs_mp"
 CONFIGS_COMMON_DIR = POPSIM_DIR / "configs_common"
 OUTPUT_DIR  = POPSIM_DIR / "output"
 
+# GQ type codes, matching the control expressions in controls.csv
+# (households.gq_type == 1 -> military, == 2 -> college, == 3 -> other)
+GQ_TYPES = {
+    "gq_mil": 1,
+    "gq_col": 2,
+    "gq_oth": 3,
+}
+
 def load_configs() -> tuple[dict, dict]:
     with open("config.yml", "r") as file:
         config = yaml.safe_load(file)
@@ -32,12 +40,27 @@ def load_configs() -> tuple[dict, dict]:
     return config, secrets
 
 def write_seed_files(engine, config: dict) -> None:
-    folder = "populationsim/data/"
     seed_households = get_seed_households(engine, config["sql"]["seed_households"])
     seed_persons = get_seed_persons(engine, config["sql"]["seed_persons"])
-    for k in ["gq", "hh"]:
-        seed_households[k].to_csv(folder + "seed_households_" + k + ".csv", index=False)
-        seed_persons[k].to_csv(folder + "seed_persons_" + k + ".csv", index=False)
+
+    # Household seed
+    seed_households["hh"].to_csv(DATA_DIR / "seed_households_hh.csv", index=False)
+    seed_persons["hh"].to_csv(DATA_DIR / "seed_persons_hh.csv", index=False)
+
+    # GQ seed — split the combined extract into one file per type, so each
+    # configs_gq_*/ run only ever sees its own type's records.
+    gq_households = seed_households["gq"]
+    gq_persons = seed_persons["gq"]
+
+    for name, gq_type in GQ_TYPES.items():
+        hh_subset = gq_households[gq_households["gq_type"] == gq_type]
+        persons_subset = gq_persons[gq_persons["hhid"].isin(hh_subset["hhid"])]
+
+        if hh_subset.empty:
+            logging.warning("No seed households found for %s (gq_type=%s)", name, gq_type)
+
+        hh_subset.to_csv(DATA_DIR / f"seed_households_{name}.csv", index=False)
+        persons_subset.to_csv(DATA_DIR / f"seed_persons_{name}.csv", index=False)
 
 def write_control_files(engine, config: dict, secrets: dict, year: int) -> None:
     folder = "populationsim/data/"
