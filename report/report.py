@@ -8,6 +8,7 @@ import sqlalchemy as sql
 import os
 from pathlib import Path
 from datetime import datetime
+import re
 
 import sys
 from pathlib import Path
@@ -59,160 +60,128 @@ def get_local_run_metadata(output_dir: str = "./output") -> pd.DataFrame:
     """
     Scan output directory for local runs and build metadata DataFrame.
 
-    Parameters
-    ----------
-    output_dir : str, optional
-        Path to the output directory. This directory should contain subdirectories
-        named by year (e.g., '2023', '2024'), each of which must contain the files:
-        'timing_log.csv', 'synthetic_households_{year}.csv', and
-        'synthetic_persons_{year}.csv'. Only subdirectories with all required files
-        are included in the metadata DataFrame.
+    Each subdirectory of output_dir is one run — the directory name is used
+    directly as the run identifier and does not need to be a bare year
+    (e.g. "2022", "2022_sc1", "2022_scn2" are all valid), so multiple
+    scenario runs for the same year can coexist and be browsed separately.
     """
     local_runs = []
-    
+
     if not os.path.exists(output_dir):
-        return pd.DataFrame(columns=["run_id", "year", "date", "version", "source"])
-    
-    # Scan output directory for year folders
+        return pd.DataFrame(columns=["run_id", "folder", "year", "date", "version", "source"])
+
     for folder in sorted(os.listdir(output_dir)):
         folder_path = os.path.join(output_dir, folder)
-        
         if not os.path.isdir(folder_path):
             continue
-        
-        # Check for required files
+
         timing_log = os.path.join(folder_path, "timing_log.csv")
-        synthetic_hh = os.path.join(folder_path, f"synthetic_households_{folder}.csv")
-        synthetic_persons = os.path.join(folder_path, f"synthetic_persons_{folder}.csv")
-        
-        # Only include if all required files exist
+        synthetic_hh = os.path.join(folder_path, "synthetic_households.csv")
+        synthetic_persons = os.path.join(folder_path, "synthetic_persons.csv")
+
         if all(os.path.exists(f) for f in [timing_log, synthetic_hh, synthetic_persons]):
-            # Get modification time from timing_log
             mod_time = datetime.fromtimestamp(os.path.getmtime(timing_log))
-            
+
+            # Pull a leading 4-digit year for display/sorting if present
+            # ("2022_sc1" -> "2022"); fall back to the raw folder name.
+            year_match = re.match(r"^(\d{4})", folder)
+            year_display = year_match.group(1) if year_match else folder
+
             local_runs.append({
                 "run_id": f"{folder}_local",
-                "year": folder,
+                "folder": folder,       # actual path segment, used downstream
+                "year": year_display,   # display only
                 "date": mod_time.strftime("%Y-%m-%d %H:%M"),
                 "version": "local",
-                "source": "local"
+                "source": "local",
             })
-    
+
     return pd.DataFrame(local_runs)
 
+def _melt_summary(df: pd.DataFrame) -> pd.DataFrame:
+    """Reshape a PopulationSim summary file (wide, one _control/_result
+    column pair per target) into long form: one row per geography/id/target."""
+    control_cols = [c for c in df.columns if c.endswith("_control")]
+    result_cols = [c for c in df.columns if c.endswith("_result")]
+    df_control = df.melt(id_vars=["geography", "id"], value_vars=control_cols,
+                          var_name="target", value_name="control_value")
+    df_result = df.melt(id_vars=["geography", "id"], value_vars=result_cols,
+                         var_name="target", value_name="result")
+    df_control["target"] = df_control["target"].str.replace("_control", "")
+    df_result["target"] = df_result["target"].str.replace("_result", "")
+    merged = pd.merge(df_control, df_result, on=["geography", "id", "target"])
+    merged["geography"] = merged["geography"].str.lower()
+    return merged
 
 @st.cache_data
-def get_control_data_from_local(year: str) -> pd.DataFrame:
+def get_control_data_from_local(run_folder: str) -> pd.DataFrame:
     """
-    Load control data from local CSV files and replicate database query logic.
+    Load control data from local CSV files.
 
     Parameters
     ----------
-    year : str
-        The year for which to load control data, as a four-digit string (e.g., "2023").
-
-    Returns
-    -------
-    pd.DataFrame
-        DataFrame containing control data for the specified year. The DataFrame includes columns such as:
-        - control_id: int, unique identifier for each control
-        - target: str, control target column name
-        - geography: str, geography level (e.g., "mgra")
-        - seed_table: str, name of the seed table (e.g., "persons")
-        - importance: object, importance value (may be None)
-        - control_field: str, control field name
-        - expression: str, expression used for the control
-        - [additional columns from the summary files, depending on implementation]
+    run_folder : str
+        The output subdirectory name for this run (e.g. "2022", "2022_sc1"),
+        used directly as the path segment under ./output/.
     """
-    # Load controls definition
+    # Household controls — target names here are assumed unique to household
     controls_df = pd.read_csv("./populationsim/configs/controls.csv")
-    
-    # Add GQ controls from settings (mirrors etl_controls_csv behavior)
-    SETTINGS_FILE = Path("populationsim/configs/settings.yaml")
-    with open(SETTINGS_FILE, "r") as file:
-        settings = yaml.safe_load(file)
-    
-    # Get GQ control columns and expressions and append to controls DataFrame
-    try:
-        gq_options = settings["gq_options"]
-        gq_control_map = gq_options["GQ_control_map"]
-        gq_type_column = gq_options["GQ_type_column"]
-    except KeyError as e:
-        st.error(
-            f"Missing key in settings.yaml: {e}. Please ensure 'gq_options' and 'GQ_control_map' are present."
-        )
-        return controls_df
-
-    for item in gq_control_map:
-        result = {
-            "target": item["control_column"],
-            "geography": "mgra",
-            "seed_table": "persons",
-            "importance": None,
-            "control_field": item["control_column"],
-            "expression": gq_type_column + " == " + str(item["code"]),
-        }
-        df_gq = pd.Series(result).to_frame().T
-        controls_df = pd.concat([controls_df, df_gq], ignore_index=True)
-    
     controls_df["control_id"] = range(1, len(controls_df) + 1)
-    
-    # Load summary files
-    summary_files = {
-        "mgra": f"./output/{year}/summary_mgra.csv",
-        "mgra_gq": f"./output/{year}/final_summary_mgra_gq.csv",
-        "PUMA": f"./output/{year}/summary_mgra_PUMA.csv",
-        "region": f"./output/{year}/summary_region_1.csv",
+    next_id = len(controls_df) + 1
+
+    all_rows = []
+
+    # --- Household: mgra / PUMA ---
+    household_summary_files = {
+        "mgra": f"./output/{run_folder}/final_summary_mgra.csv",
+        "PUMA": f"./output/{run_folder}/final_summary_mgra_PUMA.csv",
     }
-    
-    all_control_totals = []
-    
-    # Process MGRA summaries
-    for key in ["mgra", "mgra_gq", "PUMA"]:
-        if os.path.exists(summary_files[key]):
-            df = pd.read_csv(summary_files[key])
-            control_cols = [col for col in df.columns if col.endswith("_control")]
-            result_cols = [col for col in df.columns if col.endswith("_result")]
-            
-            df_control = df.melt(
-                id_vars=["geography", "id"],
-                value_vars=control_cols,
-                var_name="target",
-                value_name="control_value",
+    for path in household_summary_files.values():
+        if os.path.exists(path):
+            melted = _melt_summary(pd.read_csv(path))
+            melted = melted.merge(
+                controls_df[["control_id", "target", "control_field"]],
+                on="target", how="left",
             )
-            df_result = df.melt(
-                id_vars=["geography", "id"],
-                value_vars=result_cols,
-                var_name="target",
-                value_name="result",
-            )
-            
-            df_control["target"] = df_control["target"].str.replace("_control", "")
-            df_result["target"] = df_result["target"].str.replace("_result", "")
-            
-            merged = pd.merge(df_control, df_result, on=["geography", "id", "target"])
-            # Normalize geography to lowercase for consistency
-            merged["geography"] = merged["geography"].str.lower()
-            all_control_totals.append(merged)
-    
-    # Process region summary
-    if os.path.exists(summary_files["region"]):
-        df = pd.read_csv(summary_files["region"])
+            all_rows.append(melted[["control_id", "control_field", "geography", "id", "control_value", "result"]])
+
+    # --- Household: region ---
+    region_path = f"./output/{run_folder}/final_summary_region_1.csv"
+    if os.path.exists(region_path):
+        df = pd.read_csv(region_path)
         df = df[["control_name", "control_value", "mgra_integer_weight"]]
         df.insert(0, "geography", "region")
         df.insert(1, "id", 1)
         df.columns = ["geography", "id", "target", "control_value", "result"]
-        all_control_totals.append(df)
-    
+        df = df.merge(controls_df[["control_id", "target", "control_field"]], on="target", how="left")
+        all_rows.append(df[["control_id", "control_field", "geography", "id", "control_value", "result"]])
+
+    # --- GQ: each type's summary only ever has a "Total_GQ" target — that
+    # name is reused identically across all three types, since it's each
+    # run's sole control. Merging on target would collapse or
+    # cross-attribute the three types, so assign control_field directly
+    # from that type's own controls.csv instead of joining.
+    gq_configs = {
+        "gq_col": "configs_gq_col",
+        "gq_mil": "configs_gq_mil",
+        "gq_oth": "configs_gq_oth",
+    }
+    for name, config_dir in gq_configs.items():
+        summary_path = f"./output/{run_folder}/final_summary_mgra_{name}.csv"
+        if not os.path.exists(summary_path):
+            continue
+
+        gq_controls = pd.read_csv(f"./populationsim/{config_dir}/controls.csv")
+        control_field = gq_controls.iloc[0]["control_field"]  # e.g. GQ_Military
+
+        melted = _melt_summary(pd.read_csv(summary_path))
+        melted["control_id"] = next_id
+        melted["control_field"] = control_field
+        next_id += 1
+        all_rows.append(melted[["control_id", "control_field", "geography", "id", "control_value", "result"]])
+
     # Combine all control totals
-    control_totals = pd.concat(all_control_totals, ignore_index=True)
-    
-    # Merge with controls definition
-    control_totals = control_totals.merge(
-        controls_df[["control_id", "target", "control_field"]],
-        on="target",
-        how="left"
-    )
+    control_totals = pd.concat(all_rows, ignore_index=True)
     
     # Group and aggregate (replicating SQL GROUP BY and SUM)
     result = control_totals.groupby(
@@ -260,7 +229,7 @@ def get_control_data_from_local(year: str) -> pd.DataFrame:
             return "Labor Force"
         elif control_field.startswith("lfp_"):
             return "Civilian Labor Force"
-        elif control_field.startswith("gq_"):
+        elif control_field == "Total_GQ" or control_field.startswith("GQ_"):
             return "Group Quarters"
         return None
     
@@ -363,7 +332,7 @@ if source_choice == "Database":
 elif source_choice == "Local Output":
     st.sidebar.markdown("### 📁 Local Output Runs")
     local_selection = st.sidebar.dataframe(
-        data=local_run_df[["run_id", "year", "date", "version"]],
+        data=local_run_df[["run_id", "folder", "year", "date", "version"]],
         hide_index=True,
         column_config={"year": st.column_config.TextColumn("year", max_chars=4)},
         on_select="rerun",
@@ -387,9 +356,9 @@ if selection and selection["selection"]["rows"]:
         controls_df["geography"] = controls_df["geography"].str.lower()
     else:
         run_id = local_run_df.iloc[idx]["run_id"]
-        year = local_run_df.iloc[idx]["year"]
-        comments = f"Local run from output/{year}/"
-        controls_df = get_control_data_from_local(year=year)
+        run_folder = local_run_df.iloc[idx]["folder"]
+        comments = f"Local run from output/{run_folder}/"
+        controls_df = get_control_data_from_local(run_folder=run_folder)
 
     # Display report title and run selected
     st.markdown("<h1>PopulationSim Validation</h1>", unsafe_allow_html=True)
