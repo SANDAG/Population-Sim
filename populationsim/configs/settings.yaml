@@ -7,12 +7,15 @@
 # ------------------------------------------------------------------
 INTEGERIZE_WITH_BACKSTOPPED_CONTROLS: True
 SUB_BALANCE_WITH_FLOAT_SEED_WEIGHTS: False
+GROUP_BY_INCIDENCE_SIGNATURE: True
+USE_NUMBA: True
+NUMBA_PRECISION: 'float32'
+
 USE_SIMUL_INTEGERIZER: True
 USE_CVXPY: False
+INTEGERIZER_TIMEOUT: 300 # seconds
 max_expansion_factor: 30
 
-NO_INTEGERIZATION_EVER: False
-GROUP_BY_INCIDENCE_SIGNATURE: False
 
 # Geographic Settings
 # ------------------------------------------------------------------
@@ -134,88 +137,3 @@ models:
   - write_tables
 
 #resume_after:
-
-multiprocess_steps:
-  - name: mp_seed_balancing
-    begin: input_pre_processor
-  - name: mp_sub_balancing_mgra
-    begin: sub_balancing.geography=mgra
-    num_processes: 22  # Maximum with San Diego PUMAS
-    slice:
-      tables:
-        - slice_crosswalk
-        - crosswalk
-      # don't slice any tables not explicitly listed above in slice.tables
-      except: True
-      # the following tables are added by sub_balancer and should be coalesced
-      coalesce:
-        - mgra_weights
-        - mgra_weights_sparse
-        - trace_mgra_weights
-  - name: mp_summarize
-    begin: expand_households
-
-#--------------------------------------------------------------------
-
-gq_options:
-
-  input_table_list:
-    - tablename: households
-      filename : seed_households_gq.csv
-    - tablename: persons
-      filename : seed_persons_gq.csv
-    - tablename: geo_cross_walk
-      filename : geo_cross_walk.csv
-    - tablename: mgra_control_data
-      filename : mgra_controls.csv
-  
-  GQ_type_column: gq_type
-  GQ_control_map:
-    - code: 1
-      control_column: gq_mil_pop
-    - code: 2
-      control_column: gq_college_pop
-    - code: 3
-      control_column: gq_other_pop
-  
-  household_weight_col: WGTP
-  household_id_col: hhid
-
-  output_gq_population:
-    household_id: household_id
-    households:
-      filename: output_gq/synthetic_households_gq.csv
-      columns:
-        - SERIALNO
-        - NP
-        - HHADJINC
-        - HHT
-        - HUPAC
-        - VEH
-        - BLD
-        - gq_type
-        - workers
-    persons:
-      filename: output_gq/synthetic_persons_gq.csv
-      columns:
-        - SERIALNO
-        - SPORDER
-        - AGEP
-        - SEX
-        - ESR
-        - COW
-        - WKHP
-        - SCHG
-        - RAC1P
-        - HISP
-        - MIL
-        - SCHL
-        - OCCP
-        - WKW
-        - NAICSP
-        - NAICS2
-        - SOCP 
-        - SOC2
-
-  summary_file: 'output_gq/final_summary_mgra_gq.csv'
-  random_seed: 1729

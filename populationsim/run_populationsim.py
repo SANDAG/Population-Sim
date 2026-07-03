@@ -38,5 +38,4 @@ if __name__ == "__main__":
     args.working_dir = os.path.dirname(__file__)
 
     #print(args)
-
     sys.exit(populationsim.run(args))

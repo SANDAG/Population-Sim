@@ -1,25 +1,21 @@
 ####################################################################
-# PopulationSim Properties - GQ ONLY Test Configuration
+# PopulationSim Properties
 ####################################################################
-# This configuration runs populationsim with GQ (Group Quarters) Military
-# households only, processing them through the full IPF algorithm
-# instead of the sampling approach.
-#
-# SIMPLIFIED CONTROL STRUCTURE:
-# Uses only 1 GQ-specific controls (GQ_Military) to test if GQ type distribution alone 
-# is sufficient for reasonable synthetic population generation.
-# Demographic distributions emerge naturally from seed weights.
+
 
 # Algorithm/Software Configuration
 # ------------------------------------------------------------------
 INTEGERIZE_WITH_BACKSTOPPED_CONTROLS: True
 SUB_BALANCE_WITH_FLOAT_SEED_WEIGHTS: False
+GROUP_BY_INCIDENCE_SIGNATURE: True
+USE_NUMBA: True
+NUMBA_PRECISION: 'float32'
+
 USE_SIMUL_INTEGERIZER: True
 USE_CVXPY: False
+INTEGERIZER_TIMEOUT: 300 # seconds
 max_expansion_factor: 30
 
-NO_INTEGERIZATION_EVER: False
-GROUP_BY_INCIDENCE_SIGNATURE: False
 
 # Geographic Settings
 # ------------------------------------------------------------------
