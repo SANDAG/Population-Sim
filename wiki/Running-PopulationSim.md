@@ -15,11 +15,11 @@ Before running `main.py`, verify:
 3. ✓ Database connectivity tested
 4. ✓ Sufficient disk space (~10 GB per year)
 5. ✓ No conflicting processes using data directories
-6. ✓ Expected runtime: ~7-8 hours for all 7 years
+6. ✓ Expected runtime: ~4-5 hours for all 7 years
 
 ## Basic Execution
 
-```powershell
+```Command Pompt Window
 # Navigate to repository root
 cd C:\Projects\Population-Sim
 
@@ -47,30 +47,29 @@ python main.py
 2026-06-02 16:45:30 - INFO - All years processed successfully.
 ```
 
-### Alternative: Capture Output to Log File
-
-```powershell
-# Capture all output to log file
-python main.py > run_log_$(Get-Date -Format 'yyyyMMdd_HHmmss').txt 2>&1
-
-# Or use Tee to see output AND save to file
-python main.py 2>&1 | Tee-Object -FilePath "run_log.txt"
-```
-
 ## Execution Workflow
 
 ```mermaid
 flowchart TD
     A[Start: python main.py] --> B[Load config.yml & secrets.yml]
-    B --> C[Create SQL Engine]
-    C --> D[Extract Seed Data]
+    B --> C[Create SQL Engine<br/>python/db.py::get_engine]
+    C --> D[Write Seed Files<br/>Split HH + 3 GQ types]
     D --> E{For Each Year}
     
-    E -->|Year N| F[Build MGRA Controls]
-    F --> G[Build Region Controls]
-    G --> H[Run PopulationSim]
-    H --> I[Organize Outputs]
-    I --> J[Create ABM Outputs]
+    E -->|Year N| F[Write Control Files<br/>MGRA + Region + 3 GQ types]
+    F --> G{For Each synthesis_run}
+    
+    G -->|gq_mil| H1[PopulationSim Run 1<br/>Military GQ]
+    G -->|gq_col| H2[PopulationSim Run 2<br/>College GQ]
+    G -->|gq_oth| H3[PopulationSim Run 3<br/>Other GQ]
+    G -->|household| H4[PopulationSim Run 4<br/>Households - 22 processes]
+    
+    H1 --> I[Organize Outputs<br/>Merge all 4 runs]
+    H2 --> I
+    H3 --> I
+    H4 --> I
+    
+    I --> J[Create ABM Outputs<br/>mgrabase file]
     J --> K{Database Loading?}
     K -->|True| L[Run ETL]
     K -->|False| M[Next Year]
@@ -80,7 +79,11 @@ flowchart TD
     E -->|All Years Done| N[Complete]
     
     style D fill:#e1f5ff
-    style H fill:#ffe1e1
+    style H1 fill:#ffe1e1
+    style H2 fill:#ffe1e1
+    style H3 fill:#ffe1e1
+    style H4 fill:#ffe1e1
+    style I fill:#e1ffe1
     style L fill:#e1ffe1
 ```
 
@@ -88,16 +91,23 @@ flowchart TD
 
 ### Step 1: Initialization (~1 second)
 - Load `config.yml` and `secrets.yml`
-- Create database connection
+- Create database connection via `python/db.py::get_engine()`
+- Includes TrustServerCertificate=yes for ODBC Driver 18 compatibility
 - Verify configuration
 
 ### Step 2: Seed Data Extraction (~2-3 minutes)
-- Extract ACS PUMS households and persons
+- Extract ACS PUMS households and persons from SQL
 - Split into regular households (HH) and group quarters (GQ)
-- Write 4 seed files to `populationsim/data/`:
-  - `seed_households_gq.csv` (~50K rows)
+- Split GQ by type (military, college, other) using GQ_TYPES registry
+- Write 8 seed files to `populationsim/data/`:
   - `seed_households_hh.csv` (~350K rows)
-  - `seed_persons_gq.csv` (~50K rows)
+  - `seed_persons_hh.csv` (~950K rows)
+  - `seed_households_gq_mil.csv` (~2,500 rows)
+  - `seed_persons_gq_mil.csv` (~2,500 rows)
+  - `seed_households_gq_col.csv` (~2,500 rows)
+  - `seed_persons_gq_col.csv` (~2,500 rows)
+  - `seed_households_gq_oth.csv` (~2,700 rows)
+  - `seed_persons_gq_oth.csv` (~2,700 rows)
   - `seed_persons_hh.csv` (~950K rows)
 
 ### Step 3: For Each Year
@@ -105,42 +115,90 @@ flowchart TD
 #### 3a. Build Controls (~10-15 seconds per year)
 - Generate MGRA-level control totals (42 controls × ~24,321 MGRAs)
 - Generate regional control totals (18 employment sectors)
+- Split GQ controls by type using `write_gq_control_files()`
 - Write to `populationsim/data/`:
-  - `mgra_controls.csv`
-  - `region_controls.csv`
+  - `mgra_controls.csv` (all household controls)
+  - `mgra_controls_gq_mil.csv` (MGRAs with military GQ only)
+  - `mgra_controls_gq_col.csv` (MGRAs with college GQ only)
+  - `mgra_controls_gq_oth.csv` (MGRAs with other GQ only)
+  - `region_controls.csv` (employment controls)
 
-#### 3b. Run PopulationSim (~60-70 minutes per year)
-- Execute IPF (Iterative Proportional Fitting) algorithm
-- Parallel processing across 22 PUMAs
-- Integerize weights
-- Sub-balance at MGRA level
-- Generate synthetic population
+#### 3b. Run PopulationSim Multiple Times (~40 minutes total per year)
 
-**Output files** in `populationsim/output/`:
-- `synthetic_households.csv`
-- `synthetic_persons.csv`
-- `synthetic_households_gq.csv`
-- `synthetic_persons_gq.csv`
-- `summary_mgra.csv`
-- `summary_mgra_PUMA.csv`
-- `summary_region_1.csv`
-- `final_summary_mgra_gq.csv`
-- `timing_log.csv`
+The workflow executes 4 separate PopulationSim runs as defined in `config.yml: synthesis_runs`:
 
-#### 3c. Organize Outputs (~5 seconds)
-- Move files from `populationsim/output/` to `output/{year}/`
-- Copy control files for archival
+**Run 1: Military GQ (~1 minutes)**
+```bash
+python run_populationsim.py -c ./configs_gq_mil -c ./configs_common -d ./data -o ./output_gq_mil
+```
+- Uses `seed_households_gq_mil.csv`, `seed_persons_gq_mil.csv`
+- Uses `mgra_controls_gq_mil.csv` (only MGRAs with military GQ)
+- Single process (num_processes=1)
+- Outputs to `populationsim/output_gq_mil/`
+
+**Run 2: College GQ (~1 minutes)**
+```bash
+python run_populationsim.py -c ./configs_gq_col -c ./configs_common -d ./data -o ./output_gq_col
+```
+- Uses `seed_households_gq_col.csv`, `seed_persons_gq_col.csv`
+- Uses `mgra_controls_gq_col.csv` (only MGRAs with college GQ)
+- Single process (num_processes=1)
+- Outputs to `populationsim/output_gq_col/`
+
+**Run 3: Other GQ (~1 minutes)**
+```bash
+python run_populationsim.py -c ./configs_gq_oth -c ./configs_common -d ./data -o ./output_gq_oth
+```
+- Uses `seed_households_gq_oth.csv`, `seed_persons_gq_oth.csv`
+- Uses `mgra_controls_gq_oth.csv` (only MGRAs with other GQ)
+- Single process (num_processes=1)
+- Outputs to `populationsim/output_gq_oth/`
+
+**Run 4: Households (~35-40 minutes)**
+```bash
+python run_populationsim.py -c ./configs_mp -c ./configs -c ./configs_common -d ./data -o ./output -m 22
+```
+- Uses `seed_households_hh.csv`, `seed_persons_hh.csv`
+- Uses `mgra_controls.csv` (all 42 household controls)
+- 22 parallel processes (one per PUMA)
+- Outputs to `populationsim/output/`
+
+**Output files from all runs:**
+- `output_gq_mil/synthetic_households_gq.csv`, `synthetic_persons_gq.csv`
+- `output_gq_col/synthetic_households_gq.csv`, `synthetic_persons_gq.csv`
+- `output_gq_oth/synthetic_households_gq.csv`, `synthetic_persons_gq.csv`
+- `output/synthetic_households.csv`, `synthetic_persons.csv`
+- Each run also produces summary files and timing logs
+
+#### 3c. Organize Outputs (~10 seconds)
+- Merge all 4 run outputs using `merge_synthetic_population()`
+- Renumber household IDs sequentially to avoid conflicts:
+  - gq_mil: household_ids 1 to N₁
+  - gq_col: household_ids N₁+1 to N₂
+  - gq_oth: household_ids N₂+1 to N₃
+  - household: household_ids N₃+1 to N₄
+- Drop PUMA column from combined files
+- Fill NULL values for GQ-specific fields
+- Copy ancillary files (timing logs, summaries from household run)
+- Write to `output/{year}/`
 
 #### 3d. Create ABM Outputs (~2-3 minutes)
-- Combine HH and GQ files
-- Renumber GQ household IDs
-- Clean NULL values
-- Query and write land use file (`mgra15_based_input_{year}.csv`)
+- Query mgrabase data from SQL (land use, demographics by MGRA)
+- Write `mgra15_based_input_{year}.csv` for ABM consumption
 
 **Final output files** in `output/{year}/`:
-- `synthetic_households_{year}.csv` (~1.3M households, 77 MB)
-- `synthetic_persons_{year}.csv` (~3.3M persons, 292 MB)
+- `synthetic_households.csv` (~1.3M households combined, 77 MB)
+- `synthetic_persons.csv` (~3.3M persons combined, 292 MB)
 - `mgra15_based_input_{year}.csv` (~24K MGRAs, 5 MB)
+- `final_summary_mgra.csv` (from household run)
+- `final_summary_mgra_PUMA.csv` (from household run)
+- `final_summary_region_1.csv` (from household run)
+- `timing_log.csv` (from household run)
+
+**GQ-specific outputs remain in separate directories:**
+- `populationsim/output_gq_mil/` (for validation)
+- `populationsim/output_gq_col/` (for validation)
+- `populationsim/output_gq_oth/` (for validation)
 
 #### 3e. Optional Database ETL (~5-10 minutes, if enabled)
 - Load all outputs to production database
@@ -154,23 +212,27 @@ flowchart TD
 | Phase | Duration | Cumulative |
 |-------|----------|------------|
 | Controls generation | 15 sec | 0:00:15 |
-| PopulationSim execution | 65 min | 1:05:15 |
-| Output organization | 5 sec | 1:05:20 |
-| ABM output creation | 3 min | 1:08:20 |
-| Database ETL (optional) | 8 min | 1:16:20 |
+| PopulationSim Run 1 (gq_mil) | 1 min | 0:01:15 |
+| PopulationSim Run 2 (gq_col) | 1 min | 0:02:15 |
+| PopulationSim Run 3 (gq_oth) | 1 min | 0:03:15 |
+| PopulationSim Run 4 (household) | 40 min | 0:43:15 |
+| Output organization | 10 sec | 0:43:25 |
+| ABM output creation | 3 min | 0:46:25 |
+| Database ETL (optional) | 8 min | 0:54:25 |
 
-**Total Per Year:** ~70-75 minutes (without ETL), ~80-85 minutes (with ETL)
+**Total Per Year:** ~40-50 minutes (without ETL), ~50-55 minutes (with ETL)
 
 ### Total for All Years
-- **7 years without ETL:** ~8 hours
-- **7 years with ETL:** ~10 hours
+- **7 years without ETL:** ~4 hours
+- **7 years with ETL:** ~5 hours
 
 ### Factors Affecting Runtime
 - Database query performance (network latency, server load)
-- Number of parallel processes (fewer → slower)
+- Number of parallel processes (fewer → slower on household run)
 - Disk I/O speed (SSD vs. HDD)
 - CPU performance (core speed, not just core count)
 - Convergence speed (varies by year's controls)
+- GQ runs have minimal impact on total runtime (only ~15 min combined)
 
 ## Monitoring Progress
 
@@ -201,7 +263,7 @@ ABM outputs created for {year}     → Year complete
 **File System Indicators:**
 - `populationsim/output/` populated → PopSim running
 - `output/{year}/` created → Year processing
-- `synthetic_households_{year}.csv` appears → Year complete
+- `synthetic_households.csv` appears → Year complete
 
 **PopulationSim Log Messages:**
 ```
@@ -247,14 +309,6 @@ Edit `populationsim/configs_mp/settings.yaml`:
 # Uncomment to resume from specific step
 resume_after: integerize_final_seed_weights
 # Options: step name from models list
-```
-
-**Data Cleanup:**
-```powershell
-# Remove partial year outputs
-Remove-Item -Recurse -Force output\2029\
-Remove-Item -Recurse -Force populationsim\output\*
-Remove-Item -Recurse -Force populationsim\output_gq\*
 ```
 
 ## Common Execution Issues

@@ -219,22 +219,27 @@ Final step converts fractional weights to integers:
 - Higher importance controls (e.g., Total_HH = 1,000,000,000) take precedence
 - Allows minor flexibility on lower importance controls if conflicts arise
 
-#### 2.1.2 Dual Processing Paths
+#### 2.1.2 Multi-Run Processing Architecture
 
-The system recognizes that group quarters (GQ) populations require different handling:
+The system uses separate PopulationSim runs for different population types:
 
-**Regular Households (Weight-Based):**
+**Regular Households (Weight-Based IPF):**
 - Full IPF balancing and integerization process
 - Satisfies 42 MGRA-level controls
 - Handles ~91% of total households (remainder is GQ)
-- Output: `synthetic_households.csv`, `synthetic_persons.csv`
+- 22-way parallelization across PUMAs
+- Output: `output/synthetic_households.csv`, `output/synthetic_persons.csv`
 
-**Group Quarters (Sampling-Based):**
-- Simple random sampling with replacement from GQ seed records
-- Draws exact number needed to meet GQ control totals
-- Three types: Military (gq_type=1), College (gq_type=2), Other institutional (gq_type=3)
-- More efficient than weight-based approach for small, concentrated populations
-- Output: `synthetic_households_gq.csv`, `synthetic_persons_gq.csv`
+**Group Quarters (Separate Per-Type Runs):**
+- Each GQ type runs as independent PopulationSim execution
+- Three types processed separately:
+  - **gq_mil** (Military, gq_type=1) → `output_gq_mil/synthetic_households_gq.csv`
+  - **gq_col** (College, gq_type=2) → `output_gq_col/synthetic_households_gq.csv`
+  - **gq_oth** (Other institutional, gq_type=3) → `output_gq_oth/synthetic_households_gq.csv`
+- Each run uses filtered seed data containing only its GQ type
+- Separate control files created per type (Total_GQ + type-specific control)
+- Single-process execution (no parallelization needed for smaller populations)
+- Outputs merged during post-processing with sequential household ID numbering
 
 #### 2.1.3 Key Algorithm Parameters
 
@@ -919,7 +924,7 @@ At MGRA level, system uses **list balancing** algorithm (variant of IPF):
 
 ### 2.6 Group Quarters Handling
 
-Group quarters populations (military barracks, college dormitories, nursing homes, etc.) require different treatment than regular households due to their unique characteristics. SANDAG implements a **sampling-based approach** rather than weight-based synthesis.
+Group quarters populations (military barracks, college dormitories, nursing homes, etc.) require different treatment than regular households due to their unique characteristics. SANDAG implements a **separate per-type PopulationSim run approach** for each GQ category.
 
 #### 2.6.1 Why Separate GQ Processing?
 
@@ -929,17 +934,14 @@ Group quarters populations (military barracks, college dormitories, nursing home
 - **Homogeneous:** Within each GQ type, individuals are demographically similar
 - **Sparse controls:** Only 3 control totals (military, college, other) vs. 42 for households
 
-**Problems with Weight-Based Approach:**
-- IPF performs poorly with sparse, concentrated populations
-- Many MGRAs have zero GQ population → balancing would fail
-- Overfitting risk: Small sample forced to match precise totals
-- Computational inefficiency: Complex algorithm for simple problem
-
-**Sampling Solution:**
-- Direct random sampling with replacement from GQ seed
-- Draw exact number needed to meet control totals
-- Faster, simpler, and more appropriate for the data structure
+**Split Run Architecture:**
+- Each GQ type runs as independent PopulationSim execution with type-specific configuration
+- Avoids mixing heterogeneous GQ types in single IPF balancing process
+- Each run sees only its relevant seed data and control variables
+- Simpler control structure (Total_GQ + single type-specific control per run)
+- Enables independent optimization of each GQ type
 - Maintains realistic GQ person characteristics from PUMS data
+- Facilitates debugging and validation of individual GQ types
 
 #### 2.6.2 GQ Type Classification
 
@@ -966,156 +968,396 @@ Three GQ types are recognized:
 - Mixed demographics depending on facility type
 - Example MGRAs: Hospital zones, correctional facilities
 
-#### 2.6.3 GQ Sampling Algorithm
+#### 2.6.3 Split GQ Synthesis Architecture
 
-Implemented in `populationsim/generate_gq.py`, the algorithm is straightforward:
+The GQ synthesis workflow splits processing into three independent PopulationSim runs, one for each GQ type. This is orchestrated by the `main.py` workflow through the `GQ_TYPES` registry and `synthesis_runs` configuration.
 
-**Step 1: Load GQ Seed and Controls**
+**GQ_TYPES Registry** (in `main.py`):
 ```python
-# Read GQ-specific seed data
-gq_households_seed = seed_households_gq.csv  # TYPEHUGQ = 2 or 3
-gq_persons_seed = seed_persons_gq.csv
-gq_controls = mgra_controls.csv  # gq_mil_pop, gq_college_pop, gq_other_pop columns
+GQ_TYPES = {
+    "gq_mil": {
+        "seed_type_code": 1, 
+        "control_column": "gq_mil_pop", 
+        "control_name": "GQ_Military"
+    },
+    "gq_col": {
+        "seed_type_code": 2, 
+        "control_column": "gq_college_pop", 
+        "control_name": "GQ_College"
+    },
+    "gq_oth": {
+        "seed_type_code": 3, 
+        "control_column": "gq_other_pop", 
+        "control_name": "GQ_Other"
+    },
+}
 ```
 
-**Step 2: Loop Over GQ Types** (military, college, other)
+**Step 1: Seed Data Splitting** (function `write_seed_files()`)
+
+The workflow extracts GQ seed data from SQL, then splits it into type-specific files:
+
 ```python
-For each gq_type in [1, 2, 3]:
-    # Filter seed to this GQ type (~2,500 records per type from ~7,750 total seed)
-    gq_sample = gq_households_seed[gq_type_column == gq_type]
+# Extract combined GQ seed from database
+gq_households = seed_households["gq"]  # TYPEHUGQ = 2 or 3
+gq_persons = seed_persons["gq"]
+
+# Split by gq_type into separate files
+for name, spec in GQ_TYPES.items():
+    hh_subset = gq_households[gq_households["gq_type"] == spec["seed_type_code"]]
+    persons_subset = gq_persons[gq_persons["hhid"].isin(hh_subset["hhid"])]
     
-    # Find MGRAs with non-zero GQ controls
-    mgras_with_gq = controls[gq_control > 0]
-    
-    For each mgra in mgras_with_gq:
-        ndraws = gq_control[mgra]  # Number of GQ persons needed (e.g., 150 for a military base)
-        puma = geo_crosswalk[mgra].PUMA
-        
-        # Preferentially sample from same PUMA
-        puma_sample = gq_sample[PUMA == puma]
-        
-        # Fallback if insufficient sample in PUMA
-        IF len(puma_sample) < 200:
-            puma_sample = gq_sample  # Use all PUMAs
-        
-        # Random sample with replacement, weighted by PWGTP
-        drawn_hh = puma_sample.sample(
-            n=ndraws,
-            replace=True,
-            weights=PWGTP,
-            random_state=1729  # Fixed seed for reproducibility
-        )
-        
-        # Assign to MGRA
-        drawn_hh['mgra'] = mgra
-        drawn_hh['household_id'] = next_available_id
-        
-        # Add to synthetic GQ population
-        synthetic_gq_hh.append(drawn_hh)
+    hh_subset.to_csv(DATA_DIR / f"seed_households_{name}.csv", index=False)
+    persons_subset.to_csv(DATA_DIR / f"seed_persons_{name}.csv", index=False)
 ```
 
-**Step 3: Retrieve Corresponding Persons**
+**Output Files:**
+- `populationsim/data/seed_households_gq_mil.csv` (~2,500 records, gq_type=1)
+- `populationsim/data/seed_persons_gq_mil.csv` (~2,500 persons)
+- `populationsim/data/seed_households_gq_col.csv` (~2,500 records, gq_type=2)
+- `populationsim/data/seed_persons_gq_col.csv` (~2,500 persons)
+- `populationsim/data/seed_households_gq_oth.csv` (~2,700 records, gq_type=3)
+- `populationsim/data/seed_persons_gq_oth.csv` (~2,700 persons)
+
+**Step 2: Control File Splitting** (function `write_gq_control_files()`)
+
+Each GQ type gets its own MGRA control file containing only MGRAs with that GQ type:
+
 ```python
-# Join GQ persons using household ID from seed
-synthetic_gq_persons = gq_persons_seed.merge(
-    synthetic_gq_hh[['household_id', 'hhid']],
-    on='hhid'
+for name, spec in GQ_TYPES.items():
+    pop_col = spec["control_column"]  # e.g., "gq_mil_pop"
+    control_name = spec["control_name"]  # e.g., "GQ_Military"
+    
+    # Extract MGRAs with non-zero population for this type
+    subset = mgra_controls.loc[mgra_controls[pop_col] > 0, ["mgra", pop_col]].copy()
+    subset = subset.rename(columns={pop_col: control_name})
+    
+    # Add Total_GQ as required by PopulationSim
+    subset["Total_GQ"] = subset[control_name]
+    
+    subset.to_csv(DATA_DIR / f"mgra_controls_{name}.csv", index=False)
+```
+
+**Output Files:**
+- `populationsim/data/mgra_controls_gq_mil.csv` (only MGRAs with military GQ)
+- `populationsim/data/mgra_controls_gq_col.csv` (only MGRAs with college GQ)
+- `populationsim/data/mgra_controls_gq_oth.csv` (only MGRAs with other GQ)
+
+**Example Control File Structure:**
+```csv
+mgra,Total_GQ,GQ_Military
+1234,150,150
+5678,85,85
+```
+
+Note: `Total_GQ` equals the type-specific control because this run only processes one GQ type. PopulationSim requires both the total control (`total_hh_control` setting) and the type-specific target.
+
+**Step 3: Separate PopulationSim Runs** (function `run_simulation()`)
+
+The `config.yml` defines four synthesis runs executed sequentially for each year:
+
+```yaml
+synthesis_runs:
+  - name: gq_mil
+    configs: [configs_gq_mil, configs_common]
+    data: data
+    output: output_gq_mil
+    num_processes: 1
+  - name: gq_col
+    configs: [configs_gq_col, configs_common]
+    data: data
+    output: output_gq_col
+    num_processes: 1
+  - name: gq_oth
+    configs: [configs_gq_oth, configs_common]
+    data: data
+    output: output_gq_oth
+    num_processes: 1
+  - name: household
+    configs: [configs_mp, configs, configs_common]
+    data: data
+    output: output
+    num_processes: 22
+```
+
+The `process_year()` function loops through these runs:
+
+```python
+for run in config["synthesis_runs"]:
+    run_simulation(
+        configs_dirs=[POPSIM_DIR / c for c in run["configs"]],
+        data_dir=POPSIM_DIR / run["data"],
+        output_dir=POPSIM_DIR / run["output"],
+        num_processes=run.get("num_processes", 1)
+    )
+```
+
+Each run invokes PopulationSim with its specific configuration:
+```bash
+python run_populationsim.py \
+  -c ./configs_gq_mil \
+  -c ./configs_common \
+  -d ./data \
+  -o ./output_gq_mil
+```
+
+**Type-Specific Configurations:**
+
+Each `configs_gq_*/settings.yaml` specifies:
+```yaml
+# configs_gq_mil/settings.yaml
+seed_households_file: seed_households_gq_mil.csv
+seed_persons_file: seed_persons_gq_mil.csv
+control_file_name: mgra_controls_gq_mil.csv
+total_hh_control: Total_GQ
+```
+
+And corresponding `configs_gq_mil/controls.csv`:
+```csv
+target,geography,seed_table,importance,expression
+Total_GQ,mgra,households,1000000000,(households.WGTP > 0)
+GQ_Military,mgra,households,500000,households.gq_type == 1
+```
+
+**Runtime:** Each GQ run takes ~5-10 minutes (vs. ~60-70 minutes for household run with 22 processes)
+
+**Step 4: Output Merging** (function `merge_synthetic_population()`)
+
+After all four runs complete, `organize_outputs()` combines results into unified files:
+
+```python
+household_frames = []
+person_frames = []
+id_offset = 0
+
+for run in config["synthesis_runs"]:
+    run_output_dir = popsim_dir / run["output"]
+    hh_file, persons_file = _synthetic_filenames(run["name"])
+    
+    hh = pd.read_csv(run_output_dir / hh_file)
+    persons = pd.read_csv(run_output_dir / persons_file)
+    
+    # Renumber household IDs to avoid conflicts
+    hh["household_id"] += id_offset
+    persons["household_id"] += id_offset
+    
+    household_frames.append(hh)
+    person_frames.append(persons)
+    
+    id_offset += len(hh)  # Next run starts after this run's IDs
+
+# Combine all runs
+pd.concat(household_frames, ignore_index=True).to_csv(
+    year_output_dir / "synthetic_households.csv", index=False
+)
+pd.concat(person_frames, ignore_index=True).to_csv(
+    year_output_dir / "synthetic_persons.csv", index=False
 )
 ```
 
-**Step 4: Write GQ Outputs**
-```python
-# Separate files for GQ
-# Note: Output size (e.g., 116,411 for 2022) is much larger than seed size (~7,750)
-# due to sampling with replacement. Each seed record can appear multiple times.
-synthetic_households_gq.csv
-synthetic_persons_gq.csv
-final_summary_mgra_gq.csv  # Control vs. result comparison
+**Household ID Sequencing Example:**
+- gq_mil: household_ids 1 to 5,000
+- gq_col: household_ids 5,001 to 12,000 (offset by 5,000)
+- gq_oth: household_ids 12,001 to 25,000 (offset by 12,000)
+- household: household_ids 25,001 to 1,185,472 (offset by 25,000)
+
+This ensures no household ID conflicts in merged output.
+
+#### 2.6.4 GQ Configuration Files
+
+Each GQ type has its own configuration directory with type-specific settings:
+
+**Directory Structure:**
+```
+populationsim/
+  configs_gq_mil/
+    settings.yaml     # Military-specific settings
+    controls.csv      # Total_GQ + GQ_Military controls
+  configs_gq_col/
+    settings.yaml     # College-specific settings
+    controls.csv      # Total_GQ + GQ_College controls
+  configs_gq_oth/
+    settings.yaml     # Other-specific settings
+    controls.csv      # Total_GQ + GQ_Other controls
+  configs_common/
+    logging.yaml      # Shared logging configuration
 ```
 
-#### 2.6.4 Key Parameters
-
-From GQ settings configuration:
-
+**Example settings.yaml (configs_gq_mil/settings.yaml):**
 ```yaml
-GQ_type_column: gq_type  # Field identifying GQ type (1/2/3)
-household_id_col: hhid   # Seed household identifier
-household_weight_col: PWGTP  # Person weight (not household weight for GQ)
-random_seed: 1729        # Fixed for reproducibility
+inherit_settings: True
 
-GQ_control_map:
-  - code: 1
-    control_column: gq_mil_pop
-  - code: 2
-    control_column: gq_college_pop
-  - code: 3
-    control_column: gq_other_pop
+# Data files
+seed_households_file: seed_households_gq_mil.csv
+seed_persons_file: seed_persons_gq_mil.csv
+control_file_name: mgra_controls_gq_mil.csv
+
+# Control specification
+total_hh_control: Total_GQ  # Column name for total control
+
+# Simplified balancing (single process for GQ)
+multiprocess: False
+
+# Standard integerization settings
+INTEGERIZE_WITH_BACKSTOPPED_CONTROLS: True
+USE_SIMUL_INTEGERIZER: True
 ```
 
-**Why PWGTP Instead of WGTP?**
-- GQ "households" are individual persons, not multi-person units
-- PWGTP (person weight) represents how many people each sample represents
-- WGTP (household weight) would be inappropriate for GQ units
+**Example controls.csv (configs_gq_mil/controls.csv):**
+```csv
+target,geography,seed_table,importance,expression
+Total_GQ,mgra,households,1000000000,(households.WGTP > 0)
+GQ_Military,mgra,households,500000,households.gq_type == 1
+```
 
-**Why random_state = 1729?**
-- Ensures reproducible results across runs
-- Same MGRA with same controls will always get same sampled households
-- 1729 is the Hardy-Ramanujan number (mathematical significance)
+**Key Differences from Household Run:**
+- `multiprocess: False` - GQ populations small enough for single-process
+- Only 2 controls (Total_GQ + type-specific) vs. 42 for households
+- Type-specific seed files eliminate need for filtering expressions
+- Simpler configuration, faster execution
 
 #### 2.6.5 GQ Output Integration
 
-After GQ and regular household synthesis complete:
+After all four synthesis runs complete (gq_mil, gq_col, gq_oth, household), the `organize_outputs()` function merges results:
 
 **Post-Processing Steps** (in `python/outputs.py`):
-1. **Household ID Renumbering:**
+
+1. **Sequential Household ID Assignment:**
    ```python
-   # Avoid ID conflicts between HH and GQ
-   gq_households['household_id'] += len(hh_households)
+   id_offset = 0
+   for run in config["synthesis_runs"]:
+       hh["household_id"] += id_offset
+       persons["household_id"] += id_offset
+       id_offset += len(hh)
    ```
+   
+   This ensures unique household IDs across all runs without conflicts.
 
 2. **File Combination:**
    ```python
-   # Combine for ABM team
-   synthetic_households_{year}.csv = concat(households_hh, households_gq)
-   synthetic_persons_{year}.csv = concat(persons_hh, persons_gq)
+   # Concatenate all runs (gq_mil, gq_col, gq_oth, household)
+   synthetic_households = pd.concat(household_frames, ignore_index=True)
+   synthetic_persons = pd.concat(person_frames, ignore_index=True)
    ```
 
-3. **NULL Filling:**
+3. **NULL Value Cleaning:**
    ```python
-   # GQ households lack some fields
-   households_gq[['HHT', 'HUPAC', 'BLD']].fillna(0)
-   persons_gq[['ESR', 'COW', 'WKHP', 'SCHG', 'OCCP']].fillna(0)
+   # GQ households may lack some fields
+   households.assign(
+       HHADJINC=lambda x: x["HHADJINC"].clip(0, None),
+       HHT=lambda x: x["HHT"].fillna(0),
+       HUPAC=lambda x: x["HUPAC"].fillna(0),
+       BLD=lambda x: x["BLD"].fillna(0)
+   )
+   
+   # GQ persons may lack employment/education fields
+   persons.assign(
+       ESR=lambda x: x["ESR"].fillna(0),
+       COW=lambda x: x["COW"].fillna(0),
+       WKHP=lambda x: x["WKHP"].fillna(0),
+       SCHG=lambda x: x["SCHG"].fillna(0),
+       MIL=lambda x: x["MIL"].fillna(0),
+       SCHL=lambda x: x["SCHL"].fillna(0),
+       OCCP=lambda x: x["OCCP"].fillna(0),
+       WKW=lambda x: x["WKW"].fillna(0)
+   )
    ```
 
-**Final Output Structure:**
-- Combined files have `gq_type` field: 0=regular household, 1/2/3=GQ type
-- ABM team can filter as needed: `gq_type == 0` for regular households
-- Separate summary files maintained for validation
+4. **Drop PUMA Column:**
+   ```python
+   # PUMA not needed in final output
+   households.drop(columns="PUMA")
+   persons.drop(columns="PUMA")
+   ```
+
+**Final Output Files** (in `output/{year}/`):
+- `synthetic_households.csv` - Combined households (all types, sequential IDs)
+- `synthetic_persons.csv` - Combined persons (all types, matching household_ids)
+- `final_summary_mgra.csv` - Household controls vs. results
+- `final_summary_mgra_PUMA.csv` - PUMA-level summaries
+- `final_summary_region_1.csv` - Regional summaries
+
+**Combined File Structure:**
+- Households from all runs merged with `gq_type` field distinguishing:
+  - `gq_type = 0` - Regular households
+  - `gq_type = 1` - Military GQ
+  - `gq_type = 2` - College GQ
+  - `gq_type = 3` - Other GQ
+- ABM team can filter as needed: `households[households.gq_type == 0]`
+
+**Summary File Copying:**
+
+Additional files are copied from individual run outputs to the year directory:
+```python
+ancillary_files = [
+    "timing_log.csv",
+    "final_summary_mgra.csv",
+    "final_summary_mgra_PUMA.csv",
+    "final_summary_region_1.csv",
+]
+# Copied from output/ directory (household run) only
+# GQ summaries remain in output_gq_mil/, output_gq_col/, output_gq_oth/
+```
 
 #### 2.6.6 GQ Validation
 
 **Validation Checks:**
-```python
-# For each MGRA and GQ type:
-assert result == control  # Exact match by design (not probabilistic)
 
-# Person-to-household consistency:
-assert all(persons.household_id.isin(households.household_id))
+Each GQ run produces its own summary files for validation:
 
-# No ID conflicts:
-assert len(combined_households.household_id.unique()) == len(combined_households)
-```
+**Individual Run Summaries:**
+- `output_gq_mil/final_summary_mgra.csv` - Military GQ controls vs. results
+- `output_gq_col/final_summary_mgra.csv` - College GQ controls vs. results
+- `output_gq_oth/final_summary_mgra.csv` - Other GQ controls vs. results
 
-**Summary File Output:**
+**Summary File Format:**
 ```csv
-id,geography,gq_mil_pop_control,gq_mil_pop_result,gq_college_pop_control,gq_college_pop_result,gq_other_pop_control,gq_other_pop_result
-1,mgra,0,0,0,0,0,0
-2,mgra,150,150,0,0,0,0
-3,mgra,0,0,1200,1200,0,0
-...
+id,geography,Total_GQ_control,Total_GQ_result,GQ_Military_control,GQ_Military_result
+1234,mgra,150,150,150,150
+5678,mgra,85,85,85,85
 ```
 
-Since sampling draws exact numbers needed, control always equals result (no balancing deviation).
+**Key Validation Points:**
+
+1. **Exact Control Matching:**
+   ```python
+   # PopulationSim balancing should achieve exact or near-exact match
+   assert (summary.Total_GQ_control == summary.Total_GQ_result).all()
+   ```
+
+2. **Person-to-Household Consistency:**
+   ```python
+   # Every person must belong to a valid household
+   assert all(persons.household_id.isin(households.household_id))
+   ```
+
+3. **No Household ID Conflicts:**
+   ```python
+   # After merging, all household IDs must be unique
+   assert len(combined_households.household_id.unique()) == len(combined_households)
+   ```
+
+4. **Type Consistency:**
+   ```python
+   # Each run's output should only contain its designated gq_type
+   assert (gq_mil_households.gq_type == 1).all()
+   assert (gq_col_households.gq_type == 2).all()
+   assert (gq_oth_households.gq_type == 3).all()
+   ```
+
+5. **Sum Validation:**
+   ```python
+   # Combined GQ population should equal sum of individual types
+   total_gq = len(gq_mil_hh) + len(gq_col_hh) + len(gq_oth_hh)
+   assert total_gq == len(combined_households[combined_households.gq_type > 0])
+   ```
+
+**Typical Balancing Accuracy:**
+- GQ runs typically achieve perfect or near-perfect matches due to:
+  - Simplified control structure (only 2 controls per run)
+  - Higher importance weights ensure backstopping
+  - Smaller populations easier to balance than full household run
+- Household run may have minor deviations on lower-importance controls
 
 ### 2.7 Multiprocessing Architecture
 
@@ -3327,6 +3569,28 @@ sql:
 
 economic_controls: "data/Economic Team Region Controls.csv"
 
+synthesis_runs:
+  - name: gq_mil
+    configs: [configs_gq_mil, configs_common]
+    data: data
+    output: output_gq_mil
+    num_processes: 1
+  - name: gq_col
+    configs: [configs_gq_col, configs_common]
+    data: data
+    output: output_gq_col
+    num_processes: 1
+  - name: gq_oth
+    configs: [configs_gq_oth, configs_common]
+    data: data
+    output: output_gq_oth
+    num_processes: 1
+  - name: household
+    configs: [configs_mp, configs, configs_common]
+    data: data
+    output: output
+    num_processes: 22
+
 years:
   - 2022
   - 2026
@@ -3357,6 +3621,23 @@ years:
 **Data Sources:**
 - `economic_controls`: Path to Economics Team forecast CSV
 
+**Synthesis Runs Configuration:**
+- `synthesis_runs`: List of PopulationSim executions to run for each year
+  - Each run is a separate PopulationSim invocation with its own configuration
+  - Runs execute sequentially in the order listed
+  - **Run Fields:**
+    - `name`: Identifier for the run (gq_mil, gq_col, gq_oth, household)
+    - `configs`: List of configuration directories (paths relative to `populationsim/`)
+      - Config directories layered in order listed (later configs override earlier)
+      - `configs_common` should be last for shared settings
+    - `data`: Data directory containing seed and control files (relative to `populationsim/`)
+    - `output`: Output directory for this run's results (relative to `populationsim/`)
+    - `num_processes`: Number of parallel processes for this run
+      - `1` for GQ runs (small populations, no benefit from parallelization)
+      - `22` for household run (one process per PUMA)
+  - **Standard Configuration:** 3 GQ runs + 1 household run
+  - **Execution Order:** GQ runs first, then household (allows faster testing of GQ independently)
+
 **Run Configuration:**
 - `years`: List of forecast years to process
   - Processes sequentially in order listed
@@ -3377,7 +3658,43 @@ sql:
   load_to_database: True  # Enable ETL to production database
 ```
 
-**Example 3: Alternative Seed Data**
+**Example 3: Run Households Only (Skip GQ)**
+```yaml
+synthesis_runs:
+  - name: household
+    configs: [configs_mp, configs, configs_common]
+    data: data
+    output: output
+    num_processes: 22
+# GQ runs commented out or removed for testing
+```
+
+**Example 4: Single-Process Household Run (Low-Memory System)**
+```yaml
+synthesis_runs:
+  - name: gq_mil
+    configs: [configs_gq_mil, configs_common]
+    data: data
+    output: output_gq_mil
+    num_processes: 1
+  - name: gq_col
+    configs: [configs_gq_col, configs_common]
+    data: data
+    output: output_gq_col
+    num_processes: 1
+  - name: gq_oth
+    configs: [configs_gq_oth, configs_common]
+    data: data
+    output: output_gq_oth
+    num_processes: 1
+  - name: household
+    configs: [configs, configs_common]  # Note: configs_mp removed
+    data: data
+    output: output
+    num_processes: 1  # Single process instead of 22
+```
+
+**Example 5: Alternative Seed Data**
 ```yaml
 seed_data: "ACS PUMS 5 year 2016-2020"  # Use older vintage
 sql:
@@ -3385,7 +3702,7 @@ sql:
   seed_persons: "sql/seed_persons_2020.sql"
 ```
 
-**Example 4: Horizon Year Extension**
+**Example 6: Horizon Year Extension**
 ```yaml
 years:
   - 2022
@@ -3747,15 +4064,24 @@ python main.py 2>&1 | Tee-Object -FilePath "run_log.txt"
 ```mermaid
 flowchart TD
     A[Start: python main.py] --> B[Load config.yml & secrets.yml]
-    B --> C[Create SQL Engine]
-    C --> D[Extract Seed Data<br/>get_seed_households<br/>get_seed_persons]
+    B --> C[Create SQL Engine<br/>python/db.py::get_engine]
+    C --> D[Write Seed Files<br/>Split HH and GQ types]
     D --> E{For Each Year}
     
-    E -->|Year N| F[Build MGRA Controls<br/>get_mgra_controls]
-    F --> G[Build Region Controls<br/>get_region_controls]
-    G --> H[Run PopulationSim<br/>run_simulation]
-    H --> I[Organize Outputs<br/>organize_outputs]
-    I --> J[Create ABM Outputs<br/>create_abm_outputs]
+    E -->|Year N| F[Write Control Files<br/>MGRA + Region + GQ types]
+    F --> G{For Each Run in synthesis_runs}
+    
+    G -->|gq_mil| H1[Run PopulationSim<br/>configs_gq_mil]
+    G -->|gq_col| H2[Run PopulationSim<br/>configs_gq_col]
+    G -->|gq_oth| H3[Run PopulationSim<br/>configs_gq_oth]
+    G -->|household| H4[Run PopulationSim<br/>configs + configs_mp<br/>22 processes]
+    
+    H1 --> I[Organize Outputs<br/>Merge all runs]
+    H2 --> I
+    H3 --> I
+    H4 --> I
+    
+    I --> J[Create ABM Outputs<br/>mgrabase file]
     J --> K{Database<br/>Loading?}
     K -->|True| L[Run ETL<br/>run_etl]
     K -->|False| M[Next Year]
@@ -3765,121 +4091,214 @@ flowchart TD
     E -->|All Years Done| N[Complete]
     
     style D fill:#e1f5ff
-    style H fill:#ffe1e1
+    style H1 fill:#ffe1e1
+    style H2 fill:#ffe1e1
+    style H3 fill:#ffe1e1
+    style H4 fill:#ffe1e1
+    style I fill:#e1ffe1
     style L fill:#e1ffe1
 ```
 
 **Step-by-Step Breakdown:**
 
-**Step 1: Initialization (Lines 1-49)**
+**Step 1: Initialization (main() function)**
 ```python
 # Load configurations
-config = yaml.safe_load(open("config.yml"))
-secrets = yaml.safe_load(open("secrets.yml"))
+config, secrets = load_configs()
 
 # Create database connection
-engine = sql.create_engine(
-    "mssql+pyodbc://@{server}/{database}?trusted_connection=yes&driver=ODBC Driver 17 for SQL Server".format(
-        server=secrets["sql"]["server"],
-        database=secrets["sql"]["output_database"] if config["sql"]["load_to_database"] else "master"
-    ),
-    fast_executemany=True
-)
+dbname = secrets["sql"]["output_database"] if config["sql"]["load_to_database"] else "master"
+engine = get_engine(database=dbname)
 ```
 
 **Timing:** ~1 second  
 **Output:** Database engine ready for queries
 
-**Step 2: Seed Data Extraction (Lines 51-57)**
+**Key Update:** Engine creation centralized in `python/db.py::get_engine()` with TrustServerCertificate=yes for ODBC Driver 18 compatibility.
+
+**Step 2: Seed Data Extraction (write_seed_files() function)**
 ```python
-# Extract and split seed data
 seed_households = get_seed_households(engine, config["sql"]["seed_households"])
 seed_persons = get_seed_persons(engine, config["sql"]["seed_persons"])
 
-# Write 4 seed files
-for k in ["gq", "hh"]:
-    seed_households[k].to_csv(f"populationsim/data/seed_households_{k}.csv", index=False)
-    seed_persons[k].to_csv(f"populationsim/data/seed_persons_{k}.csv", index=False)
+# Write household seed
+seed_households["hh"].to_csv(DATA_DIR / "seed_households_hh.csv", index=False)
+seed_persons["hh"].to_csv(DATA_DIR / "seed_persons_hh.csv", index=False)
+
+# Split GQ seed by type using GQ_TYPES registry
+for name, spec in GQ_TYPES.items():
+    gq_households = seed_households["gq"]
+    gq_persons = seed_persons["gq"]
+    
+    hh_subset = gq_households[gq_households["gq_type"] == spec["seed_type_code"]]
+    persons_subset = gq_persons[gq_persons["hhid"].isin(hh_subset["hhid"])]
+    
+    hh_subset.to_csv(DATA_DIR / f"seed_households_{name}.csv", index=False)
+    persons_subset.to_csv(DATA_DIR / f"seed_persons_{name}.csv", index=False)
 ```
 
 **Timing:** ~2-3 minutes  
 **Output Files:**
-- `populationsim/data/seed_households_gq.csv` (~50K rows)
 - `populationsim/data/seed_households_hh.csv` (~350K rows)
-- `populationsim/data/seed_persons_gq.csv` (~50K rows)
 - `populationsim/data/seed_persons_hh.csv` (~950K rows)
+- `populationsim/data/seed_households_gq_mil.csv` (~2,500 rows)
+- `populationsim/data/seed_persons_gq_mil.csv` (~2,500 rows)
+- `populationsim/data/seed_households_gq_col.csv` (~2,500 rows)
+- `populationsim/data/seed_persons_gq_col.csv` (~2,500 rows)
+- `populationsim/data/seed_households_gq_oth.csv` (~2,700 rows)
+- `populationsim/data/seed_persons_gq_oth.csv` (~2,700 rows)
 
-**Step 3: Year Iteration Loop (Lines 60-105)**
+**Step 3: Year Iteration Loop (process_year() function)**
 
 For each year in `config["years"]`:
 
-**3a. Build Controls (Lines 64-80)**
+**3a. Build Controls (write_control_files() function)**
 ```python
-# Generate MGRA controls
-get_mgra_controls(
+# Generate MGRA controls (household + GQ columns)
+mgra_controls = get_mgra_controls(
     sql_engine=engine,
     query_file=config["sql"]["mgra_controls"],
     schema=secrets["sql"]["schema"],
     year=year
-).to_csv("populationsim/data/mgra_controls.csv", index=False)
+)
+mgra_controls.to_csv(DATA_DIR / "mgra_controls.csv", index=False)
 
-# Generate region controls
+# Split GQ controls by type
+write_gq_control_files(mgra_controls)
+
+# Generate region controls (employment + labor force)
 get_region_controls(
     sql_engine=engine,
     query_file=config["sql"]["region_controls"],
     schema=secrets["sql"]["schema"],
     econ_file=config["economic_controls"],
     year=year
-).to_csv("populationsim/data/region_controls.csv", index=False)
+).to_csv(DATA_DIR / "region_controls.csv", index=False)
 ```
 
 **Timing:** ~10-15 seconds  
 **Output Files:**
-- `populationsim/data/mgra_controls.csv` (overwritten each year)
-- `populationsim/data/region_controls.csv` (overwritten each year)
+- `populationsim/data/mgra_controls.csv` (all controls, overwritten each year)
+- `populationsim/data/mgra_controls_gq_mil.csv` (MGRAs with military GQ)
+- `populationsim/data/mgra_controls_gq_col.csv` (MGRAs with college GQ)
+- `populationsim/data/mgra_controls_gq_oth.csv` (MGRAs with other GQ)
+- `populationsim/data/region_controls.csv` (regional employment controls)
 
-**3b. Run PopulationSim (Lines 82-84)**
+**3b. Run PopulationSim Multiple Times (run_simulation() function)**
+
+The workflow loops through `config["synthesis_runs"]` and executes each:
+
 ```python
-def run_simulation():
-    os.chdir("populationsim")
-    subprocess.call("python run_populationsim.py -c ./configs -m 22", shell=True)
-    os.chdir("..")
+for run in config["synthesis_runs"]:
+    run_simulation(
+        configs_dirs=[POPSIM_DIR / c for c in run["configs"]],
+        data_dir=POPSIM_DIR / run["data"],
+        output_dir=POPSIM_DIR / run["output"],
+        num_processes=run.get("num_processes", 1)
+    )
 ```
 
-**Timing:** ~60-70 minutes per year  
-**Output Files:** (in `populationsim/output` & `populationsim/output_gq`)
+**Run Sequence:**
 
-**3c. Organize Outputs (Line 87)**
+**Run 1: gq_mil**
+```bash
+python run_populationsim.py \
+  -c ./configs_gq_mil \
+  -c ./configs_common \
+  -d ./data \
+  -o ./output_gq_mil
+```
+- Uses `seed_households_gq_mil.csv`, `seed_persons_gq_mil.csv`
+- Uses `mgra_controls_gq_mil.csv` (only MGRAs with military GQ)
+- Single process (num_processes=1)
+- Timing: ~5 minutes
+
+**Run 2: gq_col**
+```bash
+python run_populationsim.py \
+  -c ./configs_gq_col \
+  -c ./configs_common \
+  -d ./data \
+  -o ./output_gq_col
+```
+- Uses `seed_households_gq_col.csv`, `seed_persons_gq_col.csv`
+- Uses `mgra_controls_gq_col.csv` (only MGRAs with college GQ)
+- Single process (num_processes=1)
+- Timing: ~5 minutes
+
+**Run 3: gq_oth**
+```bash
+python run_populationsim.py \
+  -c ./configs_gq_oth \
+  -c ./configs_common \
+  -d ./data \
+  -o ./output_gq_oth
+```
+- Uses `seed_households_gq_oth.csv`, `seed_persons_gq_oth.csv`
+- Uses `mgra_controls_gq_oth.csv` (only MGRAs with other GQ)
+- Single process (num_processes=1)
+- Timing: ~5 minutes
+
+**Run 4: household**
+```bash
+python run_populationsim.py \
+  -c ./configs_mp \
+  -c ./configs \
+  -c ./configs_common \
+  -d ./data \
+  -o ./output \
+  -m 22
+```
+- Uses `seed_households_hh.csv`, `seed_persons_hh.csv`
+- Uses `mgra_controls.csv` (all household controls)
+- Multiprocess with 22 parallel PUMA processes
+- Timing: ~60-70 minutes
+
+**Total PopulationSim Runtime:** ~75-85 minutes per year
+
+**3c. Organize Outputs (organize_outputs() function)**
 ```python
-organize_outputs(year=year)
+organize_outputs(
+    year=year,
+    config=config,
+    popsim_dir=POPSIM_DIR,
+    data_dir=DATA_DIR,
+    final_output_dir=FINAL_OUTPUT_DIR
+)
 ```
 
-**Purpose:** Move files from `populationsim/output/` to `output/{year}/`  
-**Timing:** ~5 seconds
+**Process:**
+1. Merge all four run outputs (gq_mil, gq_col, gq_oth, household)
+2. Renumber household_ids sequentially to avoid conflicts
+3. Drop PUMA column from combined files
+4. Fill NULL values for GQ-specific fields
+5. Copy ancillary files (timing logs, summaries)
 
-**3d. Create ABM Outputs (Lines 89-94)**
+**Timing:** ~10 seconds  
+**Output Directory:** `output/{year}/`
+
+**3d. Create ABM Outputs (create_abm_outputs() function)**
 ```python
 create_abm_outputs(
     year=year,
     sql_engine=engine,
     query_file=config["sql"]["mgrabase"],
-    schema=secrets["sql"]["schema"]
+    schema=secrets["sql"]["schema"],
+    final_output_dir=FINAL_OUTPUT_DIR
 )
 ```
 
 **Process:**
-1. Combine HH and GQ files
-2. Renumber GQ household_ids
-3. Clean NULL values
-4. Query and write mgrabase file
+1. Query mgrabase data from SQL (land use, demographics by MGRA)
+2. Write `mgra15_based_input_{year}.csv` for ABM consumption
 
 **Timing:** ~2-3 minutes  
 **Output Files:** (in `output/{year}/`)
-- `synthetic_households_{year}.csv`
-- `synthetic_persons_{year}.csv`
+- `synthetic_households.csv` (combined all runs)
+- `synthetic_persons.csv` (combined all runs)
 - `mgra15_based_input_{year}.csv`
 
-**3e. Optional ETL (Lines 96-105)**
+**3e. Optional ETL (run_etl() function)**
 ```python
 if config["sql"]["load_to_database"]:
     run_etl(
@@ -3894,9 +4313,9 @@ if config["sql"]["load_to_database"]:
 ```
 
 **Timing:** ~5-10 minutes  
-**Output:** All files loaded to production database tables
+**Output:** All files loaded to production database tables with metadata
 
-**Step 4: Completion (Line 107)**
+**Step 4: Completion**
 ```python
 logging.info("All years processed successfully.")
 ```

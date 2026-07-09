@@ -33,21 +33,28 @@ flowchart TD
     end
     
     subgraph "Synthesis Engine"
-        C1[IPF Algorithm]
-        C2[Integerization]
-        C3[Multi-Processing<br/>22 PUMAs]
+        C1[PopulationSim Run 1<br/>Military GQ]
+        C2[PopulationSim Run 2<br/>College GQ]
+        C3[PopulationSim Run 3<br/>Other GQ]
+        C4[PopulationSim Run 4<br/>Households<br/>IPF + 22 PUMAs]
         B1 --> C1
+        B1 --> C2
+        B1 --> C3
+        B1 --> C4
         B2 --> C1
-        C1 --> C2
-        C2 --> C3
+        B2 --> C2
+        B2 --> C3
+        B2 --> C4
     end
     
     subgraph "Post-Processing"
-        D1[Group Quarters<br/>Sampling]
+        D1[Merge All Runs<br/>Renumber IDs]
         D2[Output<br/>Combination]
         D3[ABM<br/>Formatting]
+        C1 --> D1
+        C2 --> D1
         C3 --> D1
-        C3 --> D2
+        C4 --> D1
         D1 --> D2
         D2 --> D3
     end

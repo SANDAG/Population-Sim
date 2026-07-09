@@ -36,6 +36,28 @@ sql:
 
 economic_controls: "data/Economic Team Region Controls.csv"
 
+synthesis_runs:
+  - name: gq_mil
+    configs: [configs_gq_mil, configs_common]
+    data: data
+    output: output_gq_mil
+    num_processes: 1
+  - name: gq_col
+    configs: [configs_gq_col, configs_common]
+    data: data
+    output: output_gq_col
+    num_processes: 1
+  - name: gq_oth
+    configs: [configs_gq_oth, configs_common]
+    data: data
+    output: output_gq_oth
+    num_processes: 1
+  - name: household
+    configs: [configs_mp, configs, configs_common]
+    data: data
+    output: output
+    num_processes: 22
+
 years:
   - 2022
   - 2026
@@ -66,6 +88,22 @@ years:
 **Data Sources:**
 - `economic_controls` - Path to Economics Team forecast CSV
 
+**Synthesis Runs:**
+- `synthesis_runs` - List of PopulationSim executions for each year
+  - Each run is a separate PopulationSim invocation
+  - Runs execute sequentially in listed order
+  - **Run Fields:**
+    - `name` - Identifier (gq_mil, gq_col, gq_oth, household)
+    - `configs` - List of config directories (relative to `populationsim/`)
+      - Layered in order (later overrides earlier)
+      - `configs_common` should be last for shared settings
+    - `data` - Data directory path (relative to `populationsim/`)
+    - `output` - Output directory path (relative to `populationsim/`)
+    - `num_processes` - Number of parallel processes
+      - `1` for GQ runs (small populations)
+      - `22` for household run (one per PUMA)
+  - **Standard Setup:** 3 GQ runs + 1 household run
+
 **Run Configuration:**
 - `years` - List of forecast years to process sequentially
 
@@ -75,6 +113,41 @@ years:
 ```yaml
 years:
   - 2026  # Test with just one year
+```
+
+**Run Households Only (Skip GQ for testing):**
+```yaml
+synthesis_runs:
+  - name: household
+    configs: [configs_mp, configs, configs_common]
+    data: data
+    output: output
+    num_processes: 22
+```
+
+**Single-Process Household Run (Low-Memory System):**
+```yaml
+synthesis_runs:
+  - name: gq_mil
+    configs: [configs_gq_mil, configs_common]
+    data: data
+    output: output_gq_mil
+    num_processes: 1
+  - name: gq_col
+    configs: [configs_gq_col, configs_common]
+    data: data
+    output: output_gq_col
+    num_processes: 1
+  - name: gq_oth
+    configs: [configs_gq_oth, configs_common]
+    data: data
+    output: output_gq_oth
+    num_processes: 1
+  - name: household
+    configs: [configs, configs_common]  # configs_mp removed
+    data: data
+    output: output
+    num_processes: 1  # Single process
 ```
 
 **Database Loading:**

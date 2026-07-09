@@ -97,10 +97,13 @@ Located in: `sql/seed_households.sql`
 2. **Inflation Adjustment:** CPI adjustment for income (HINCP) by survey year
 3. **Group Quarters:** Split into HH vs. GQ based on TYPEHUGQ
 4. **Household ID:** Assign sequential hhid using ROW_NUMBER()
+5. **GQ Type Splitting:** Further split GQ by gq_type (1=military, 2=college, 3=other)
 
-**Output:** 
+**Output (via `main.py::write_seed_files()`):** 
 - `seed_households_hh.csv` (~350K regular households)
-- `seed_households_gq.csv` (~50K GQ "households")
+- `seed_households_gq_mil.csv` (~2,500 military GQ)
+- `seed_households_gq_col.csv` (~2,500 college GQ)
+- `seed_households_gq_oth.csv` (~2,700 other GQ)
 
 ### Seed Persons Query
 
@@ -112,10 +115,13 @@ Located in: `sql/seed_persons.sql`
 3. **Military Flag:** Extract from MIL field
 4. **Labor Force:** Derive from ESR (Employment Status Recode)
 5. **Group Quarters:** Split persons matching GQ households
+6. **GQ Type Splitting:** Further split GQ by gq_type
 
-**Output:**
+**Output (via `main.py::write_seed_files()`):**
 - `seed_persons_hh.csv` (~950K persons in regular households)
-- `seed_persons_gq.csv` (~50K persons in GQ)
+- `seed_persons_gq_mil.csv` (~2,500 military GQ persons)
+- `seed_persons_gq_col.csv` (~2,500 college GQ persons)
+- `seed_persons_gq_oth.csv` (~2,700 other GQ persons)
 
 ### MGRA Controls Query
 
