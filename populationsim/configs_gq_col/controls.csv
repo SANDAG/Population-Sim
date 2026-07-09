@@ -1,0 +1,2 @@
+target,geography,seed_table,importance,control_field,expression
+Total_GQ,mgra,households,10000000000,GQ_College,households.gq_type == 2

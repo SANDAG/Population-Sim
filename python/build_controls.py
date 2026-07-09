@@ -66,7 +66,7 @@ def get_region_controls(
     controls = (
         pd.read_csv(econ_file)
         .pivot_table(
-            index="region", columns="Label", values=str(year), aggfunc=sum, dropna=True
+            index="region", columns="Label", values=str(year), aggfunc="sum", dropna=True
         )
         .reset_index()
         .assign(job_2=lambda x: x["job_2"] - sql_controls["gq_mil"][0])[

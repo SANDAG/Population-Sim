@@ -39,23 +39,21 @@ data_dir: data
 # input_pre_processor input_table_list
 input_table_list:
   - tablename: households
-    filename : seed_households_hh.csv
+    filename : seed_households_gq_oth.csv
     index_col: hhid
   - tablename: persons
-    filename : seed_persons_hh.csv
+    filename : seed_persons_gq_oth.csv
   - tablename: geo_cross_walk
     filename : geo_cross_walk.csv
   - tablename: mgra_control_data
-    filename : mgra_controls.csv
-  - tablename: region_control_data
-    filename : region_controls.csv
+    filename : mgra_controls_gq_oth.csv
 
 
 # Reserved Column Names
 # ------------------------------------------------------------------
 household_weight_col: WGTP
 household_id_col: hhid
-total_hh_control: Total_HH
+total_hh_control: Total_GQ
 
 
 # Control Specification File Name
@@ -83,7 +81,7 @@ output_tables:
 output_synthetic_population:
   household_id: household_id
   households:
-    filename: synthetic_households.csv
+    filename: synthetic_households_gq.csv
     columns:
       - SERIALNO
       - NP
@@ -95,7 +93,7 @@ output_synthetic_population:
       - gq_type
       - workers
   persons:
-    filename: synthetic_persons.csv
+    filename: synthetic_persons_gq.csv
     columns:
       - SERIALNO
       - SPORDER
