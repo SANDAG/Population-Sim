@@ -135,23 +135,3 @@ models:
   - write_tables
 
 #resume_after:
-
-multiprocess_steps:
-  - name: mp_seed_balancing
-    begin: input_pre_processor
-  - name: mp_sub_balancing_mgra
-    begin: sub_balancing.geography=mgra
-    num_processes: 22  # Maximum with San Diego PUMAS
-    slice:
-      tables:
-        - slice_crosswalk
-        - crosswalk
-      # don't slice any tables not explicitly listed above in slice.tables
-      except: True
-      # the following tables are added by sub_balancer and should be coalesced
-      coalesce:
-        - mgra_weights
-        - mgra_weights_sparse
-        - trace_mgra_weights
-  - name: mp_summarize
-    begin: expand_households

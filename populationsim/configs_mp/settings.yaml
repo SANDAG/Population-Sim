@@ -33,7 +33,6 @@ multiprocess_steps:
     begin: input_pre_processor
   - name: mp_sub_balancing_mgra
     begin: sub_balancing.geography=mgra
-    num_processes: 22  # Maximum with San Diego PUMAS
     slice:
       tables:
         - slice_crosswalk
