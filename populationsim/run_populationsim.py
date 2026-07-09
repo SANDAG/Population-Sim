@@ -9,10 +9,6 @@ import populationsim
 from populationsim.core import inject
 
 
-from generate_gq import run_gq
-
-
-
 @inject.injectable()
 def log_settings():
 
@@ -38,8 +34,4 @@ if __name__ == "__main__":
     args.working_dir = os.path.dirname(__file__)
 
     #print(args)
-
-    # running GQ
-    run_gq(args)
-    # running non GQ or main popsim
     sys.exit(populationsim.run(args))
