@@ -9,10 +9,6 @@ import populationsim
 from populationsim.core import inject
 
 
-from generate_gq import run_gq
-
-
-
 @inject.injectable()
 def log_settings():
 
