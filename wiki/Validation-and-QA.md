@@ -12,9 +12,9 @@ Quality assurance ensures the synthetic population accurately reflects control t
 
 ## Summary Files
 
-PopulationSim generates summary files that compare control totals to synthesis results for each year.
+PopulationSim generates multiple summary files that compare control totals to synthesis results for each year.
 
-### summary_mgra.csv
+### final_summary_mgra.csv
 
 **Purpose:** MGRA-level control vs. result comparison
 
@@ -32,7 +32,7 @@ PopulationSim generates summary files that compare control totals to synthesis r
 ```python
 import pandas as pd
 
-df = pd.read_csv("output/2022/summary_mgra.csv")
+df = pd.read_csv("output/2022/final_summary_mgra.csv")
 
 # Calculate differences for all controls
 for col in df.columns:
@@ -48,7 +48,7 @@ worst_hh = df.nlargest(10, "Total_HH_diff")[
 print(worst_hh)
 ```
 
-### summary_mgra_PUMA.csv
+### final_summary_mgra_PUMA.csv
 
 **Purpose:** Aggregated PUMA-level validation (22 PUMAs)
 
@@ -61,22 +61,22 @@ print(worst_hh)
 - **All controls:** Should match within ±0.5% at PUMA level
 - **Larger deviations:** Indicate systematic issues with controls or balancing
 
-### summary_region_1.csv
+### final_summary_region_1.csv
 
-**Purpose:** Regional (county-wide) employment and labor force validation
+**Purpose:** Regional (county-wide) household control validation with balancing progression
 
 **Key Characteristics:**
-- **Rows:** 18 employment sectors + labor force controls
-- **Columns:** control_name, control_value, mgra_integer_weight
-- **Coverage:** job_1 through job_18, lfp_* controls
+- **Rows:** 54 (one per household control variable)
+- **Columns:** 7 (control_name, control_value, + 5 balancing stage columns)
+- **Coverage:** Shows progression through IPF and integerization stages
 
 **Acceptable Ranges:**
-- **Integer integerization:** Results within ±5 of control values
-- **All controls:** Should match within ±10 workers or ±0.1%
+- **Total_HH and critical controls:** Should match exactly (±0)
+- **Demographic controls:** Within ±50 persons or ±0.5% regionally
 
 **Quick Validation:**
 ```python
-df_region = pd.read_csv("output/2022/summary_region_1.csv")
+df_region = pd.read_csv("output/2022/final_summary_region_1.csv")
 
 # Calculate differences
 df_region["diff"] = df_region["mgra_integer_weight"] - df_region["control_value"]
@@ -86,18 +86,44 @@ df_region["diff_pct"] = 100 * df_region["diff"] / df_region["control_value"]
 print(df_region[["control_name", "control_value", "mgra_integer_weight", "diff", "diff_pct"]])
 ```
 
-### final_summary_mgra_gq.csv
+### GQ Summary Files (by Type)
 
-**Purpose:** Group quarters validation
+**Purpose:** Group quarters validation by type
+
+**Files:**
+- `final_summary_mgra_gq_mil.csv` - Military GQ
+- `final_summary_mgra_gq_col.csv` - College GQ
+- `final_summary_mgra_gq_oth.csv` - Other GQ
 
 **Key Characteristics:**
-- **Rows:** ~24,321 (one per MGRA)
-- **Columns:** 8 (id, geography, 3 GQ types × 2)
-- **Expected Accuracy:** **100% exact match** (GQ sampling is deterministic)
+- **Rows:** Varies by GQ type (only MGRAs with that specific GQ type)
+- **Columns:** 5 (id, geography, Total_GQ_control, Total_GQ_result, Total_GQ_diff)
+- **Expected Accuracy:** **100% exact match** (GQ uses deterministic balancing)
 
 **Acceptable Ranges:**
 - **All GQ controls:** Must match exactly (0 difference)
-- **Any deviation:** Indicates a bug in GQ sampling logic
+- **Any deviation:** Indicates a bug in balancing logic
+
+**Quick Validation:**
+```python
+import pandas as pd
+
+gq_files = {
+    "military": "output/2022/final_summary_mgra_gq_mil.csv",
+    "college": "output/2022/final_summary_mgra_gq_col.csv",
+    "other": "output/2022/final_summary_mgra_gq_oth.csv"
+}
+
+for gq_type, filepath in gq_files.items():
+    df = pd.read_csv(filepath)
+    mismatches = df[df["Total_GQ_diff"] != 0]
+    
+    if len(mismatches) > 0:
+        print(f"❌ {gq_type}: {len(mismatches)} MGRAs with mismatches!")
+    else:
+        total_gq = df["Total_GQ_result"].sum()
+        print(f"✓ {gq_type}: All {len(df)} MGRAs match exactly (total: {total_gq:,.0f})")
+```
 
 **Quick Validation:**
 ```python
@@ -237,21 +263,21 @@ streamlit run report/report.py
 - Verify file sizes are reasonable (not 0 bytes)
 
 ✓ **Regional controls match**
-- Open `summary_region_1.csv`
-- All differences within ±10 workers or ±0.1%
+- Open `final_summary_region_1.csv`
+- All differences within ±50 persons or ±0.5%
 
 ✓ **GQ controls exact match**
-- Open `final_summary_mgra_gq.csv`
-- All gq_*_control == gq_*_result (zero difference)
+- Check `final_summary_mgra_gq_mil.csv`, `final_summary_mgra_gq_col.csv`, `final_summary_mgra_gq_oth.csv`
+- All Total_GQ_diff == 0 (exact match)
 
 ### Level 2: Statistical Validation (Recommended)
 
 ✓ **PUMA-level convergence**
-- Open `summary_mgra_PUMA.csv`
+- Open `final_summary_mgra_PUMA.csv`
 - All control differences within ±0.5%
 
 ✓ **MGRA household totals**
-- Open `summary_mgra.csv`
+- Open `final_summary_mgra.csv`
 - 95% of MGRAs have Total_HH_diff within ±1
 - No MGRA has Total_HH_diff > ±5
 
