@@ -100,14 +100,14 @@ flowchart TD
 - **Consistent aggregation:** Controls sum correctly across all geographic levels
 
 **Demographic Richness:**
-- **56+ control variables** covering household and person characteristics
-- **42 MGRA-level controls:** Age, sex, race/ethnicity, household size, income, workers, children
+- **54 control variables** covering household and person characteristics
+- **36 MGRA-level controls:** Age, sex, race/ethnicity, household size, income, workers
 - **14 regional employment controls** by NAICS industry sector
 - **4 regional labor force participation controls** by race/ethnicity
 
 **Dual Processing Paths:**
 - **Regular Households:** Weight-based IPF balancing with integerization
-- **Group Quarters:** Sampling-based approach for military, college, and institutional populations
+- **Group Quarters:** Separate per-type PopulationSim runs for military, college, and other populations
 - **Combined outputs:** Seamlessly merged with unique household identifiers
 
 **Production Capabilities:**
@@ -148,7 +148,7 @@ orca>=1.8                    # Pipeline orchestration
   - ACS PUMS data views (household and person tables)
   - UDM staged forecast tables (pop_ase_mgra, hh_characteristics_mgra, mgrabase)
   - Optional production database for output storage
-- **ODBC Driver 17 for SQL Server**
+- **ODBC Driver 18 for SQL Server**
 
 **Development Tools (Optional):**
 - **Version Control:** Git for repository management
@@ -225,7 +225,7 @@ The system uses separate PopulationSim runs for different population types:
 
 **Regular Households (Weight-Based IPF):**
 - Full IPF balancing and integerization process
-- Satisfies 42 MGRA-level controls
+- Satisfies 36 MGRA-level controls
 - Handles ~91% of total households (remainder is GQ)
 - 22-way parallelization across PUMAs
 - Output: `output/synthetic_households.csv`, `output/synthetic_persons.csv`
@@ -237,7 +237,7 @@ The system uses separate PopulationSim runs for different population types:
   - **gq_col** (College, gq_type=2) → `output_gq_col/synthetic_households_gq.csv`
   - **gq_oth** (Other institutional, gq_type=3) → `output_gq_oth/synthetic_households_gq.csv`
 - Each run uses filtered seed data containing only its GQ type
-- Separate control files created per type (Total_GQ + type-specific control)
+- Separate control files created per type (single Total_GQ control per type)
 - Single-process execution (no parallelization needed for smaller populations)
 - Outputs merged during post-processing with sequential household ID numbering
 
@@ -288,7 +288,7 @@ The geographic structure defines how controls are applied and balanced:
     ┌────▼────┐            ┌────▼────┐
     │ MGRA 1  │   ...      │MGRA 24K │
     │ (~24,321 MGRAs)                │
-    │ Controls: 42 per MGRA          │
+    │ Controls: 36 per MGRA          │
     └─────────┘            └─────────┘
 ```
 
@@ -316,7 +316,7 @@ The geographic structure defines how controls are applied and balanced:
 - **Coverage:** Micro-Geographic Analysis zones (SANDAG's finest planning geography)
 - **Average Size:** ~150 population, though highly variable (some <10, others >1,000)
 - **Purpose:** Provides spatial detail needed for activity-based transportation modeling
-- **Controls:** 42 variables per MGRA covering demographics, household characteristics, income, GQ
+- **Controls:** 36 variables per MGRA covering demographics, household characteristics, income, GQ
 
 #### 2.2.2 Geographic Crosswalk
 
@@ -370,7 +370,7 @@ sequenceDiagram
 
 ### 2.3 Control Specifications
 
-Controls define the target marginal distributions that the synthetic population must match. SANDAG uses **56 control variables** specified in `populationsim/configs/controls.csv`.
+Controls define the target marginal distributions that the synthetic population must match. SANDAG uses **54 control variables** specified in `populationsim/configs/controls.csv`.
 
 #### 2.3.1 Control File Structure
 
@@ -388,7 +388,7 @@ Total_HH,mgra,households,1000000000,(households.WGTP > 0) & (households.WGTP < n
 - **importance:** Priority weight for balancing algorithm (higher = more important)
 - **expression:** Pandas query expression to identify matching records
 
-#### 2.3.2 MGRA-Level Controls (42 controls)
+#### 2.3.2 MGRA-Level Controls (36 controls)
 
 **Household Size (4 controls, importance: 250,000)**
 ```csv
@@ -418,20 +418,13 @@ HHWork_2,mgra,households,100000,households.workers == 2
 HHWork_3Plus,mgra,households,100000,households.workers >= 3
 ```
 
-**Children in Household (2 controls, importance: 100,000)**
-```csv
-HHChild_0,mgra,households,100000,households.HUPAC == 4
-HHChild_1Plus,mgra,households,100000,(households.HUPAC == 1) | (households.HUPAC == 2) | (households.HUPAC == 3)
-```
-*HUPAC: Presence of persons under 18 years (1=with own children <6, 2=with own children 6-17, 3=with own children all ages, 4=no own children)*
-
 **Sex (2 controls, importance: 1,000,000)**
 ```csv
 Male,mgra,persons,1000000,persons.SEX == 1
 Female,mgra,persons,1000000,persons.SEX == 2
 ```
 
-**Age Groups (13 controls, importance: 100,000)**
+**Age Groups (12 controls, importance: 100,000)**
 ```csv
 Age_LT5,mgra,persons,100000,(persons.AGEP >= 0) & (persons.AGEP <= 4)
 Age_5to9,mgra,persons,100000,(persons.AGEP >= 5) & (persons.AGEP <= 9)
@@ -519,7 +512,7 @@ The importance values create a hierarchy:
 | 350,000 | **Employment** - High priority | job_1 through job_14 |
 | 250,000 | **Household structure** - Medium-high priority | Household size categories |
 | 200,000 | **Race/ethnicity** - Medium priority | Asian, Black, Hispanic, etc. |
-| 100,000 | **Detailed breakdowns** - Standard priority | Age groups, income, workers, children |
+| 100,000 | **Detailed breakdowns** - Standard priority | Age groups, income, workers |
 
 **Balancing Strategy:**
 - Higher importance controls are satisfied first and more precisely
@@ -850,7 +843,7 @@ Output: integer_seed_weights
 ```
 Geography: MGRA (~23,000 zones, processed 22 ways in parallel by PUMA)
 Starting point: integer_seed_weights from Phase 4
-Controls: 42 MGRA-level controls per zone
+Controls: 36 MGRA-level controls per zone
 Purpose: Allocate PUMA seed households to individual MGRAs
 Process: For each MGRA, run IPF starting from PUMA weights
 Output: mgra_weights (fractional)
@@ -938,7 +931,7 @@ Group quarters populations (military barracks, college dormitories, nursing home
 - Each GQ type runs as independent PopulationSim execution with type-specific configuration
 - Avoids mixing heterogeneous GQ types in single IPF balancing process
 - Each run sees only its relevant seed data and control variables
-- Simpler control structure (Total_GQ + single type-specific control per run)
+- Simpler control structure (single Total_GQ control per run)
 - Enables independent optimization of each GQ type
 - Maintains realistic GQ person characteristics from PUMS data
 - Facilitates debugging and validation of individual GQ types
@@ -1026,14 +1019,10 @@ Each GQ type gets its own MGRA control file containing only MGRAs with that GQ t
 ```python
 for name, spec in GQ_TYPES.items():
     pop_col = spec["control_column"]  # e.g., "gq_mil_pop"
-    control_name = spec["control_name"]  # e.g., "GQ_Military"
     
     # Extract MGRAs with non-zero population for this type
     subset = mgra_controls.loc[mgra_controls[pop_col] > 0, ["mgra", pop_col]].copy()
-    subset = subset.rename(columns={pop_col: control_name})
-    
-    # Add Total_GQ as required by PopulationSim
-    subset["Total_GQ"] = subset[control_name]
+    subset = subset.rename(columns={pop_col: "Total_GQ"})
     
     subset.to_csv(DATA_DIR / f"mgra_controls_{name}.csv", index=False)
 ```
@@ -1045,12 +1034,12 @@ for name, spec in GQ_TYPES.items():
 
 **Example Control File Structure:**
 ```csv
-mgra,Total_GQ,GQ_Military
-1234,150,150
-5678,85,85
+mgra,Total_GQ
+1234,150
+5678,85
 ```
 
-Note: `Total_GQ` equals the type-specific control because this run only processes one GQ type. PopulationSim requires both the total control (`total_hh_control` setting) and the type-specific target.
+Note: The `Total_GQ` control represents the specific GQ type population for this run (e.g., military GQ only for the gq_mil run). PopulationSim uses this as the `total_hh_control` setting.
 
 **Step 3: Separate PopulationSim Runs** (function `run_simulation()`)
 
@@ -1115,11 +1104,10 @@ total_hh_control: Total_GQ
 And corresponding `configs_gq_mil/controls.csv`:
 ```csv
 target,geography,seed_table,importance,expression
-Total_GQ,mgra,households,1000000000,(households.WGTP > 0)
-GQ_Military,mgra,households,500000,households.gq_type == 1
+Total_GQ,mgra,households,1000000000,households.gq_type == 1
 ```
 
-**Runtime:** Each GQ run takes ~5-10 minutes (vs. ~60-70 minutes for household run with 22 processes)
+**Runtime:** Each GQ run takes ~1-2 minutes (vs. ~40-50 minutes for household run with 22 processes)
 
 **Step 4: Output Merging** (function `merge_synthetic_population()`)
 
@@ -1172,13 +1160,13 @@ Each GQ type has its own configuration directory with type-specific settings:
 populationsim/
   configs_gq_mil/
     settings.yaml     # Military-specific settings
-    controls.csv      # Total_GQ + GQ_Military controls
+    controls.csv      # Total_GQ control (military GQ only)
   configs_gq_col/
     settings.yaml     # College-specific settings
-    controls.csv      # Total_GQ + GQ_College controls
+    controls.csv      # Total_GQ control (college GQ only)
   configs_gq_oth/
     settings.yaml     # Other-specific settings
-    controls.csv      # Total_GQ + GQ_Other controls
+    controls.csv      # Total_GQ control (other GQ only)
   configs_common/
     logging.yaml      # Shared logging configuration
 ```
@@ -1206,13 +1194,12 @@ USE_SIMUL_INTEGERIZER: True
 **Example controls.csv (configs_gq_mil/controls.csv):**
 ```csv
 target,geography,seed_table,importance,expression
-Total_GQ,mgra,households,1000000000,(households.WGTP > 0)
-GQ_Military,mgra,households,500000,households.gq_type == 1
+Total_GQ,mgra,households,1000000000,households.gq_type == 1
 ```
 
 **Key Differences from Household Run:**
 - `multiprocess: False` - GQ populations small enough for single-process
-- Only 2 controls (Total_GQ + type-specific) vs. 42 for households
+- Only 1 control (Total_GQ for the specific GQ type) vs. 36 for households
 - Type-specific seed files eliminate need for filtering expressions
 - Simpler configuration, faster execution
 
@@ -1312,9 +1299,9 @@ Each GQ run produces its own summary files for validation:
 
 **Summary File Format:**
 ```csv
-id,geography,Total_GQ_control,Total_GQ_result,GQ_Military_control,GQ_Military_result
-1234,mgra,150,150,150,150
-5678,mgra,85,85,85,85
+id,geography,Total_GQ_control,Total_GQ_result
+1234,mgra,150,150
+5678,mgra,85,85
 ```
 
 **Key Validation Points:**
@@ -1354,7 +1341,7 @@ id,geography,Total_GQ_control,Total_GQ_result,GQ_Military_control,GQ_Military_re
 
 **Typical Balancing Accuracy:**
 - GQ runs typically achieve perfect or near-perfect matches due to:
-  - Simplified control structure (only 2 controls per run)
+  - Simplified control structure (only 1 control per run)
   - Higher importance weights ensure backstopping
   - Smaller populations easier to balance than full household run
 - Household run may have minor deviations on lower-importance controls
@@ -1380,7 +1367,6 @@ multiprocess_steps:
     
   - name: mp_sub_balancing_mgra
     begin: sub_balancing.geography=mgra
-    num_processes: 22  # Parallel MGRA processing
     slice:
       tables:
         - slice_crosswalk
@@ -1434,14 +1420,14 @@ Each process independently:
      - Integerize MGRA weights
   3. Write mgra_weights_PUMA{code} table
 
-Runtime per process: ~20-40 minutes (varies by PUMA size)
-Total wall-clock time: ~40 minutes (limited by slowest PUMA)
+Runtime per process: ~15-30 minutes (varies by PUMA size)
+Total wall-clock time: ~30-40 minutes (limited by slowest PUMA)
 ```
 
 **Why Parallel?**
 - Sub-balancing is independent across PUMAs (no cross-PUMA constraints)
 - Each PUMA-MGRA combination self-contained
-- 22x speedup: ~13 hours sequential → ~40 minutes parallel
+- 22x speedup: ~11 hours sequential → ~30 minutes parallel
 - Critical for production: Reduces total runtime from days to hours for all years
 
 **Phase 3: mp_summarize (Single Process)**
@@ -1504,48 +1490,12 @@ assert len(mgra_weights) == num_seed_households * num_mgras  # Sparse representa
 - `mgra_weights_sparse`: Compressed version (only non-zero weights)
 - `trace_mgra_weights`: Debugging traces for specified MGRAs
 
-#### 2.7.4 Performance Considerations
-
-**Scaling Analysis:**
-
-| Configuration | Total Runtime | Peak Memory | Notes |
-|---------------|---------------|-------------|-------|
-| Sequential (1 process) | ~13 hours | ~8 GB | Original baseline |
-| Parallel (11 processes) | ~2 hours | ~35 GB | Half parallelization |
-| Parallel (22 processes) | ~40 minutes | ~65 GB | Full parallelization (recommended) |
-| Parallel (44 processes) | ~40 minutes | ~100 GB | No benefit (only 22 PUMAs) |
-
-**Hardware Requirements:**
-- **Minimum:** 22 logical processors (1 per PUMA)
-- **Recommended:** 32+ cores for overhead and OS
-- **Memory:** ~3 GB per process × 22 = ~66 GB minimum
-  - Each process loads full seed (~2 GB)
-  - Working memory for balancing (~1 GB)
-  - OS and other services (~10 GB)
-- **Storage:** ~5 GB for intermediate files, ~10 GB for final outputs
-
-**Production Environment:**
-```
-SANDAG typically uses:
-  - Windows Server with 28-core Xeon processors
-  - 128 GB RAM
-  - SSD storage for fast I/O
-  - SQL Server on same machine or local network
-```
-
-**Performance Tuning:**
-- If fewer cores available: Reduce `num_processes` proportionally
-  - 11 cores → `num_processes: 11` → ~2 hour runtime
-  - Still beneficial vs. sequential
-- If memory constrained: Consider serial processing or cloud scaling
-- Bottleneck typically database I/O (seed data queries) or slowest PUMA
-
-#### 2.7.5 Error Handling in Multiprocessing
+#### 2.7.4 Error Handling in Multiprocessing
 
 **Process Independence:**
 - Each PUMA process isolated in separate Python subprocess
 - Failure in one process doesn't crash others
-- Logs written to separate files: `populationsim_PUMA7301.log`, etc.
+- Logs written to separate files: `populationsim.log`, etc.
 
 **Common Failure Modes:**
 1. **Memory exhaustion:** One PUMA has too many MGRAs or complex controls
@@ -1698,7 +1648,7 @@ Runtime: ~3-5 minutes
 Purpose: Allocate PUMA households to MGRAs
 Geography: MGRA (~23,000 zones, processed 22 ways in parallel)
 Starting Weights: integer_seed_weights from step 6
-Controls: 42 MGRA-level controls per MGRA
+Controls: 36 MGRA-level controls per MGRA
 Algorithm: List balancing (IPF variant for integer starting weights)
 Process per MGRA:
   1. Identify eligible seed households (from MGRA's PUMA)
@@ -1709,7 +1659,7 @@ Outputs (per process):
   - mgra_weights_PUMA{code} (fractional or integer depending on settings)
 Coalesced Output:
   - mgra_weights (full table for all MGRAs)
-Runtime: ~20-40 minutes (wall-clock, parallelized)
+Runtime: ~30-40 minutes (wall-clock, parallelized)
 ```
 
 **Step 8: expand_households**
@@ -1742,9 +1692,9 @@ Operations:
       deviation[c] = result[c] - target[c]
       percent_diff[c] = deviation[c] / target[c] × 100
 Outputs:
-  - summary_mgra.csv (~23K rows × ~84 columns: 42 _control + 42 _result)
-  - summary_mgra_PUMA.csv (22 rows)
-  - summary_region_1.csv (1 row)
+  - final_summary_mgra.csv (~23K rows × ~74 columns: 36 _control + 36 _result + id + geography)
+  - final_summary_mgra_PUMA.csv (22 rows)
+  - final_summary_region_1.csv (1 row)
 Runtime: ~2 minutes
 ```
 
@@ -1798,13 +1748,13 @@ models:
 #### 2.8.4 Total Runtime Summary
 
 **For Single Year (all 11 steps):**
-- Phase 1 (Seed Balancing): ~15-20 minutes
-- Phase 2 (Sub-Balancing): ~40 minutes (22 parallel processes)
-- Phase 3 (Summarize & Output): ~10 minutes
-- **Total: ~65-70 minutes per year**
+- Phase 1 (Seed Balancing): ~10-15 minutes
+- Phase 2 (Sub-Balancing): ~30-40 minutes (22 parallel processes)
+- Phase 3 (Summarize & Output): ~5-10 minutes
+- **Total: ~45-65 minutes per year**
 
 **For All 7 Years (config.yml specifies 2022, 2026, 2029, 2032, 2035, 2040, 2050):**
-- Total: ~7-8 hours
+- Total: ~5.5-7.5 hours
 - Note: Seed data created once, controls rebuilt per year
 - Each year runs sequentially (not parallelized across years)
 
@@ -2080,59 +2030,95 @@ After SQL extraction, Python modules split and format the data:
 **Function: get_seed_households()**
 
 ```python
-def get_seed_households(sql_engine, query_file):
-    # Execute SQL query
-    with open(query_file, 'r') as query:
-        households = pd.read_sql_query(sql.text(query.read()), sql_engine)
+def get_seed_households(sql_engine: sql.engine, query_file: str) -> dict:
+    """Get households seed files.
     
-    # Split by TYPEHUGQ
-    households_gq = households[households['TYPEHUGQ'].isin(['2', '3'])]
-    households_hh = households[households['TYPEHUGQ'] == '1']
+    Get the ACS PUMS households seed data, splitting by Group Quarters versus
+    Households.
     
-    # Assign unique hhid
-    households_gq = households_gq.sort_values(by='SERIALNO')
-    households_gq['hhid'] = pd.factorize(households_gq['SERIALNO'])[0] + 1
+    Args:
+        sql_engine (sql.engine): SQL Database connection
+        query_file (str): SQL query file to return households seed data
     
-    households_hh = households_hh.sort_values(by='SERIALNO')
-    households_hh['hhid'] = pd.factorize(households_hh['SERIALNO'])[0] + 1
+    Returns:
+        dict[pd.DataFrame, pd.DataFrame]: A two-element dictionary. The first
+            element, "gq", containing the Group Quarters households seed data
+            and the second element, "hh", containing the Households households
+            seed data.
+    """
+    # Get seed data
+    with sql_engine.connect() as connection:
+        with open(query_file, "r") as query:
+            households = pd.read_sql_query(sql.text(query.read()), connection)
     
-    return {'gq': households_gq, 'hh': households_hh}
+    # Split into Group Quarters/non-Group Quarters
+    households_gq = households[households["TYPEHUGQ"].isin(["2", "3"])]
+    households_hh = households[households["TYPEHUGQ"] == "1"]
+    
+    # Add the hhid field by sorting SERIALNO
+    households_gq = households_gq.sort_values(by="SERIALNO")
+    households_gq["hhid"] = pd.factorize(households_gq["SERIALNO"])[0] + 1
+    households_hh = households_hh.sort_values(by="SERIALNO")
+    households_hh["hhid"] = pd.factorize(households_hh["SERIALNO"])[0] + 1
+    
+    return {"gq": households_gq, "hh": households_hh}
 ```
 
 **Key Operations:**
-1. **SQL Execution:** Queries database and returns DataFrame
-2. **GQ/HH Split:** Separates by TYPEHUGQ field
-3. **hhid Assignment:** Sequential numbering within each split
-   - `pd.factorize()` converts SERIALNO to consecutive integers
+1. **SQL Connection Management:** Uses context manager (`with sql_engine.connect() as connection`) for proper connection handling
+2. **SQL Execution:** Reads query file and executes using `sql.text()` wrapper with connection object
+3. **GQ/HH Split:** Separates by TYPEHUGQ field (2 or 3 = GQ, 1 = regular households)
+4. **hhid Assignment:** Sequential numbering within each split
+   - `pd.factorize()` converts SERIALNO to consecutive integers starting at 0
    - Add 1 to start at hhid=1 (not 0)
-4. **Output:** Dictionary with 'gq' and 'hh' DataFrames
+   - Sorting by SERIALNO ensures consistent ID assignment
+5. **Output:** Dictionary with 'gq' and 'hh' DataFrames
 
 **Function: get_seed_persons()**
 
 ```python
-def get_seed_persons(sql_engine, query_file):
-    # Execute SQL query
-    with open(query_file, 'r') as query:
-        persons = pd.read_sql_query(sql.text(query.read()), sql_engine)
+def get_seed_persons(sql_engine: sql.engine, query_file: str) -> dict:
+    """Get persons seed files.
     
-    # Split by TYPEHUGQ
-    persons_gq = persons[persons['TYPEHUGQ'].isin(['2', '3'])]
-    persons_hh = persons[persons['TYPEHUGQ'] == '1']
+    Get the ACS PUMS persons seed data, splitting by Group Quarters versus
+    Households.
     
-    # Assign hhid (must match household hhid)
-    persons_gq = persons_gq.sort_values(by=['SERIALNO', 'SPORDER'])
-    persons_gq['hhid'] = pd.factorize(persons_gq['SERIALNO'])[0] + 1
+    Args:
+        sql_engine (sql.engine): SQL Database connection
+        query_file (str): SQL query file to return persons seed data
     
-    persons_hh = persons_hh.sort_values(by=['SERIALNO', 'SPORDER'])
-    persons_hh['hhid'] = pd.factorize(persons_hh['SERIALNO'])[0] + 1
+    Returns:
+        dict[pd.DataFrame, pd.DataFrame]: A two-element dictionary. The first
+            element, "gq", containing the Group Quarters persons seed data and
+            the second element, "hh", containing the Households persons seed
+            data.
+    """
+    # Get seed data
+    with sql_engine.connect() as connection:
+        with open(query_file, "r") as query:
+            persons = pd.read_sql_query(sql.text(query.read()), connection)
     
-    return {'gq': persons_gq, 'hh': persons_hh}
+    # Split into Group Quarters/non-Group Quarters
+    persons_gq = persons[persons["TYPEHUGQ"].isin(["2", "3"])]
+    persons_hh = persons[persons["TYPEHUGQ"] == "1"]
+    
+    # Add the hhid field by sorting SERIALNO
+    persons_gq = persons_gq.sort_values(by=["SERIALNO", "SPORDER"])
+    persons_gq["hhid"] = pd.factorize(persons_gq["SERIALNO"])[0] + 1
+    persons_hh = persons_hh.sort_values(by=["SERIALNO", "SPORDER"])
+    persons_hh["hhid"] = pd.factorize(persons_hh["SERIALNO"])[0] + 1
+    
+    return {"gq": persons_gq, "hh": persons_hh}
 ```
 
-**Critical Detail:**
-- Persons sorted by SERIALNO **AND** SPORDER
-- SPORDER preserves person order within household (householder=1, spouse=2, etc.)
-- hhid assignment must match household hhid for same SERIALNO
+**Critical Details:**
+- **Connection Management:** Same context manager pattern as households function
+- **Dual Sorting:** Persons sorted by SERIALNO **AND** SPORDER
+  - SPORDER preserves person order within household (householder=1, spouse=2, etc.)
+  - Critical for maintaining household structure in output
+- **hhid Consistency:** hhid assignment uses same SERIALNO → factorize logic as households
+  - Ensures persons link correctly to their households
+  - Same SERIALNO gets same hhid in both functions
 
 **Output Files:**
 ```
@@ -2269,9 +2255,7 @@ SELECT
     SUM(hhworkers0) AS HHWork_0,
     SUM(hhworkers1) AS HHWork_1,
     SUM(hhworkers2) AS HHWork_2,
-    SUM(hhworkers3) AS HHWork_3Plus,
-    SUM(hhwoc) AS HHChild_0,
-    SUM(hhwc) AS HHChild_1Plus
+    SUM(hhworkers3) AS HHWork_3Plus
 FROM [sr15_staging].{staging_schema}.[hh_characteristics_mgra]
 WHERE [increment] = {year}
 GROUP BY mgra
@@ -2289,8 +2273,6 @@ GROUP BY mgra
 | hhworkers1 | HHWork_1 | Households with 1 worker |
 | hhworkers2 | HHWork_2 | Households with 2 workers |
 | hhworkers3 | HHWork_3Plus | Households with 3+ workers |
-| hhwoc | HHChild_0 | Households without own children |
-| hhwc | HHChild_1Plus | Households with own children |
 
 **Aggregation Logic:**
 - hhs4 through hhs7 collapsed to HHSize_4Plus (4, 5, 6, 7+ persons)
@@ -2343,7 +2325,6 @@ SELECT
     Asian, Black, Hispanic, Other, Two_or_more, White,
     HHSize_1, HHSize_2, HHSize_3, HHSize_4Plus,
     HHWork_0, HHWork_1, HHWork_2, HHWork_3Plus,
-    HHChild_0, HHChild_1Plus,
     HHInc_0to14999, ..., HHInc_200000Plus,
     Total_HH,
     gq_college_pop, gq_mil_pop, gq_other_pop,
@@ -2356,7 +2337,7 @@ ORDER BY mgra
 
 **Output Structure:**
 - One row per MGRA (~23,000 rows)
-- 43 columns: 42 control variables + Total_HH_GQ calculated field
+- 41 columns: 36 control variables + 3 GQ controls + Total_HH_GQ calculated field + mgra ID
 - All MGRAs included, even those with zero population (controls = 0)
 
 #### 3.2.3 Python Processing (python/build_controls.py)
@@ -2772,12 +2753,12 @@ All SQL queries used in data preparation are stored in the `sql/` directory. Thi
 
 **CTE 1: ase_controls (Age/Sex/Ethnicity)**
 - Source: pop_ase_mgra
-- Dimensions: 21 aggregations (2 sex + 13 age + 6 race/ethnicity)
+- Dimensions: 20 aggregations (2 sex + 12 age + 6 race/ethnicity)
 - Logic: CASE WHEN aggregations with SUM
 
 **CTE 2: hh_controls (Household Characteristics)**
 - Source: hh_characteristics_mgra
-- Variables: 11 (4 size + 1 total + 4 workers + 2 children)
+- Variables: 9 (4 size + 1 total + 4 workers)
 - Aggregations: Some collapse detailed categories (e.g., hhs4-hhs7 → HHSize_4Plus)
 
 **CTE 3: mgrabase_controls (Income and GQ)**
@@ -2785,7 +2766,7 @@ All SQL queries used in data preparation are stored in the `sql/` directory. Thi
 - Variables: 10 (7 income + 3 GQ types)
 - Aggregations: Income brackets combined (e.g., i3+i4 → HHInc_30000to59999)
 
-**Final Output:** 43 columns (42 controls + Total_HH_GQ calculated)
+**Final Output:** 41 columns (36 MGRA controls + 3 GQ controls + Total_HH_GQ calculated + mgra ID)
 
 **Execution Time:** ~5 seconds (well-indexed UDM tables)
 
@@ -3333,7 +3314,7 @@ This section provides step-by-step guidance for installing, configuring, and run
   - Alternative: pip (slower, requires manual venv management)
 - **Database:** Microsoft SQL Server (any edition)
   - Must have read access to ACS PUMS and UDM staging databases
-- **ODBC Driver:** ODBC Driver 17 or 18 for SQL Server
+- **ODBC Driver:** ODBC Driver 18 for SQL Server
   - Download: https://learn.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server
 
 **Network Access:**
@@ -3879,33 +3860,6 @@ multiprocess_steps:
         - trace_mgra_weights
 ```
 
-**Adjustments for Different Hardware:**
-
-**Scenario 1: Fewer Cores (e.g., 11 cores)**
-```yaml
-num_processes: 11  # Half parallelization
-# Runtime: ~2 hours vs. 40 minutes (still better than 13 hours sequential)
-```
-
-**Scenario 2: More Cores (e.g., 44 cores)**
-```yaml
-num_processes: 22  # No benefit beyond PUMA count
-# Runtime: Same as 22 processes (limited by slowest PUMA)
-```
-
-**Scenario 3: Memory Constrained (<64 GB)**
-```yaml
-num_processes: 10  # Reduce to fit memory
-multiprocess: False  # Disable if severe memory issues (slow)
-```
-
-**Scenario 4: Debugging Single PUMA**
-```yaml
-num_processes: 1
-slice_geography: PUMA
-# Process only one PUMA at a time for detailed logging
-```
-
 #### 4.2.5 Control Specifications (controls.csv)
 
 **Location:** `populationsim/configs/controls.csv`
@@ -4211,7 +4165,7 @@ python run_populationsim.py \
 - Uses `seed_households_gq_mil.csv`, `seed_persons_gq_mil.csv`
 - Uses `mgra_controls_gq_mil.csv` (only MGRAs with military GQ)
 - Single process (num_processes=1)
-- Timing: ~5 minutes
+- Timing: ~1-2 minutes
 
 **Run 2: gq_col**
 ```bash
@@ -4224,7 +4178,7 @@ python run_populationsim.py \
 - Uses `seed_households_gq_col.csv`, `seed_persons_gq_col.csv`
 - Uses `mgra_controls_gq_col.csv` (only MGRAs with college GQ)
 - Single process (num_processes=1)
-- Timing: ~5 minutes
+- Timing: ~1-2 minutes
 
 **Run 3: gq_oth**
 ```bash
@@ -4237,7 +4191,7 @@ python run_populationsim.py \
 - Uses `seed_households_gq_oth.csv`, `seed_persons_gq_oth.csv`
 - Uses `mgra_controls_gq_oth.csv` (only MGRAs with other GQ)
 - Single process (num_processes=1)
-- Timing: ~5 minutes
+- Timing: ~1-2 minutes
 
 **Run 4: household**
 ```bash
@@ -4252,9 +4206,9 @@ python run_populationsim.py \
 - Uses `seed_households_hh.csv`, `seed_persons_hh.csv`
 - Uses `mgra_controls.csv` (all household controls)
 - Multiprocess with 22 parallel PUMA processes
-- Timing: ~60-70 minutes
+- Timing: ~40-50 minutes
 
-**Total PopulationSim Runtime:** ~75-85 minutes per year
+**Total PopulationSim Runtime:** ~45-55 minutes per year
 
 **3c. Organize Outputs (organize_outputs() function)**
 ```python
@@ -4312,7 +4266,7 @@ if config["sql"]["load_to_database"]:
     )
 ```
 
-**Timing:** ~5-10 minutes  
+**Timing:** ~1-2 minutes  
 **Output:** All files loaded to production database tables with metadata
 
 **Step 4: Completion**
@@ -4327,16 +4281,16 @@ logging.info("All years processed successfully.")
 | Phase | Duration | Cumulative |
 |-------|----------|------------|
 | Controls generation | 15 sec | 0:00:15 |
-| PopulationSim execution | 65 min | 1:05:15 |
-| Output organization | 5 sec | 1:05:20 |
-| ABM output creation | 3 min | 1:08:20 |
-| Database ETL (optional) | 8 min | 1:16:20 |
+| PopulationSim execution | 48 min | 0:48:15 |
+| Output organization | 5 sec | 0:48:20 |
+| ABM output creation | 3 min | 0:51:20 |
+| Database ETL (optional) | 8 min | 0:59:20 |
 
-**Total Per Year:** ~70-75 minutes (without ETL), ~80-85 minutes (with ETL)
+**Total Per Year:** ~45-50 minutes (without ETL), ~55-60 minutes (with ETL)
 
 **Total for All Years:**
-- **7 years without ETL:** ~8 hours
-- **7 years with ETL:** ~10 hours
+- **7 years without ETL:** ~5.5 hours
+- **7 years with ETL:** ~6.5-7 hours
 
 **Factors Affecting Runtime:**
 - Database query performance (network latency, server load)
@@ -4374,7 +4328,7 @@ ABM outputs created for {year}  → Year complete
 **File System Indicators:**
 - `populationsim/output/` populated → PopSim running
 - `output/{year}/` created → Year processing
-- `synthetic_households_{year}.csv` appears → Year complete
+- `synthetic_households.csv` appears → Year complete
 
 **PopulationSim Log Messages:**
 ```
@@ -4462,20 +4416,30 @@ PopulationSim generates numerous output files. This section documents all files 
 ```
 output/
 ├── 2022/
-│   ├── synthetic_households_2022.csv          # ABM deliverable
-│   ├── synthetic_persons_2022.csv             # ABM deliverable
-│   ├── mgra15_based_input_2022.csv           # ABM deliverable
-│   ├── synthetic_households.csv               # PopSim raw HH output
-│   ├── synthetic_persons.csv                  # PopSim raw person output
-│   ├── synthetic_households_gq.csv            # PopSim raw GQ HH output
-│   ├── synthetic_persons_gq.csv               # PopSim raw GQ person output
-│   ├── summary_mgra.csv                       # Validation summary
-│   ├── summary_mgra_PUMA.csv                  # Validation summary
-│   ├── summary_region_1.csv                   # Validation summary
-│   ├── final_summary_mgra_gq.csv              # GQ validation summary
-│   ├── mgra_controls.csv                      # Control totals used for this year
-│   ├── region_controls.csv                    # Regional control totals used for this year
-│   └── timing_log.csv                         # Performance metrics
+│   ├── synthetic_households.csv               # ABM deliverable: Combined HH+GQ households
+│   ├── synthetic_persons.csv                  # ABM deliverable: Combined HH+GQ persons
+│   ├── mgra15_based_input_2022.csv           # ABM deliverable: MGRA spatial reference
+│   ├── final_summary_mgra.csv                 # Validation: MGRA-level household controls
+│   ├── final_summary_mgra_PUMA.csv            # Validation: PUMA-level household controls
+│   ├── final_summary_region_1.csv             # Validation: Regional household controls
+│   ├── final_summary_mgra_gq_mil.csv          # Validation: MGRA-level military GQ
+│   ├── final_summary_mgra_gq_col.csv          # Validation: MGRA-level college GQ
+│   ├── final_summary_mgra_gq_oth.csv          # Validation: MGRA-level other GQ
+│   ├── final_summary_mgra_PUMA_gq_mil.csv     # Validation: PUMA-level military GQ
+│   ├── final_summary_mgra_PUMA_gq_col.csv     # Validation: PUMA-level college GQ
+│   ├── final_summary_mgra_PUMA_gq_oth.csv     # Validation: PUMA-level other GQ
+│   ├── final_summary_region_1_gq_mil.csv      # Validation: Regional military GQ
+│   ├── final_summary_region_1_gq_col.csv      # Validation: Regional college GQ
+│   ├── final_summary_region_1_gq_oth.csv      # Validation: Regional other GQ
+│   ├── mgra_controls.csv                      # Control totals: Household controls used
+│   ├── mgra_controls_gq_mil.csv               # Control totals: Military GQ by MGRA
+│   ├── mgra_controls_gq_col.csv               # Control totals: College GQ by MGRA
+│   ├── mgra_controls_gq_oth.csv               # Control totals: Other GQ by MGRA
+│   ├── region_controls.csv                    # Control totals: Regional controls used
+│   ├── timing_log.csv                         # Performance: Household run timing
+│   ├── timing_log_gq_mil.csv                  # Performance: Military GQ run timing
+│   ├── timing_log_gq_col.csv                  # Performance: College GQ run timing
+│   └── timing_log_gq_oth.csv                  # Performance: Other GQ run timing
 ├── 2026/
 │   └── [same structure as 2022]
 ├── 2029/
@@ -4489,7 +4453,7 @@ output/
 
 These three files are the primary deliverables for the Activity-Based Model team.
 
-**File 1: synthetic_households_{year}.csv**
+**File 1: synthetic_households.csv**
 
 **Purpose:** Complete household synthetic population for ABM
 
@@ -4514,7 +4478,7 @@ These three files are the primary deliverables for the Activity-Based Model team
 
 **Usage:** ABM reads this file to simulate household activities
 
-**File 2: synthetic_persons_{year}.csv**
+**File 2: synthetic_persons.csv**
 
 **Purpose:** Complete person synthetic population for ABM
 
@@ -4601,7 +4565,7 @@ These three files are the primary deliverables for the Activity-Based Model team
 
 **Purpose:** Group quarters household output from GQ sampling module
 
-**Schema:** Same structure as regular households, but all gq_type ∈ {1, 2, 3}
+**Schema:** Same structure as regular households, but by each gq_type ∈ {1, 2, 3}
 
 **Rows:** 116,411 (2022)
 
@@ -4609,7 +4573,7 @@ These three files are the primary deliverables for the Activity-Based Model team
 
 **Purpose:** Group quarters person output from GQ sampling module
 
-**Schema:** Same structure as regular persons, linked to GQ households
+**Schema:** Same structure as regular persons, linked to each GQ type households
 
 **Rows:** 116,411 (2022)
 
@@ -4620,7 +4584,7 @@ These three files are the primary deliverables for the Activity-Based Model team
 
 #### 4.4.4 Validation Summary Files
 
-**File: summary_mgra.csv**
+**File: final_summary_mgra.csv**
 
 **Purpose:** Control vs. result comparison for all MGRA-level controls
 
@@ -4637,15 +4601,15 @@ PUMA,7302,43077,43077,0,9166,8923,-243,...
 
 **Usage:** Quality assurance, identify MGRAs with large deviations
 
-**File: summary_mgra_PUMA.csv**
+**File: final_summary_mgra_PUMA.csv**
 
 **Purpose:** Aggregated control vs. result at PUMA level
 
-**Schema:** Same structure as summary_mgra.csv but 22 rows (one per PUMA)
+**Schema:** Same structure as final_summary_mgra.csv but 22 rows (one per PUMA)
 
 **Usage:** Mid-level validation, verify PUMA totals
 
-**File: summary_region_1.csv**
+**File: final_summary_region_1.csv**
 
 **Purpose:** Regional-level control totals vs. synthesis results with balancing stages
 
@@ -4658,25 +4622,25 @@ HHSize_2,381757.0,381756.01274555293,381755.8576917914,381761,381761.0,382314
 ```
 
 **Structure:**
-- 56 rows (one per control variable)
+- 54 rows (one per control variable)
 - 7 columns showing balancing progression from IPF through integerization
 
 **Usage:** Verify regional employment totals match economic forecasts, track balancing process
 
-**File: final_summary_mgra_gq.csv**
+**File: final_summary_mgra_gq_{type}.csv**
 
 **Purpose:** GQ control vs. result (exact matches expected)
 
 **Schema:**
 ```csv
-id,geography,gq_mil_pop_control,gq_mil_pop_result,gq_college_pop_control,gq_college_pop_result,...
-1,mgra,0,0,0,0,...
-2,mgra,150,150,0,0,...
+id,geography,Total_GQ_control,Total_GQ_result,Total_GQ_diff
+1,mgra,1460,1460,0
+2,mgra,150,150,0
 ```
 
 **Structure:**
-- ~23,000 rows
-- 8 columns: id, geography, plus 3 GQ types × 2
+- number of rows varies by GQ type
+- 5 columns: id, geography, control, result and diff
 
 **Usage:** Verify GQ sampling produced exact control totals
 
@@ -4707,37 +4671,49 @@ write_tables,12.1
 - Identify bottlenecks
 - Compare runs across different configurations
 
-#### 4.4.6 Data Dictionary
-
-**File: data_dictionary.txt** (optional, if generated)
-
-**Purpose:** Field descriptions for all output columns
-
-**Content:** Human-readable descriptions of each field in synthetic population files
-
-#### 4.4.7 Output File Size Summary
+#### 4.4.6 Output File Size Summary
 
 **Per Year (based on 2022 actual data):**
 
 | File | Rows | Size | Compressed |
 |------|------|------|------------|
-| synthetic_households_{year}.csv | 1,276,883 | 77 MB | 8 MB |
-| synthetic_persons_{year}.csv | 3,283,519 | 292 MB | 30 MB |
+| **ABM Deliverables** | | | |
+| synthetic_households.csv | 1,276,883 | 77 MB | 8 MB |
+| synthetic_persons.csv | 3,283,519 | 292 MB | 30 MB |
 | mgra15_based_input_{year}.csv | 24,321 | 4.8 MB | 500 KB |
-| synthetic_households.csv | 1,160,472 | 65 MB | 7 MB |
-| synthetic_persons.csv | 3,167,108 | 270 MB | 28 MB |
-| synthetic_households_gq.csv | 116,411 | 5.5 MB | 600 KB |
-| synthetic_persons_gq.csv | 116,411 | 10 MB | 1 MB |
-| summary_mgra.csv | ~1,360,000 | 5.1 MB | 500 KB |
-| summary_mgra_PUMA.csv | 22 | 20 KB | 2 KB |
-| summary_region_1.csv | 56 | 5 KB | 1 KB |
-| final_summary_mgra_gq.csv | 24,321 | 570 KB | 60 KB |
-| timing_log.csv | ~30 | <1 KB | <1 KB |
+| **Validation Summaries** | | | |
+| final_summary_mgra.csv | 24,321 | 5.1 MB | 500 KB |
+| final_summary_mgra_PUMA.csv | 22 | 20 KB | 2 KB |
+| final_summary_region_1.csv | 54 | 5 KB | 1 KB |
+| final_summary_mgra_gq_mil.csv | varies | ~100 KB | ~10 KB |
+| final_summary_mgra_gq_col.csv | varies | ~100 KB | ~10 KB |
+| final_summary_mgra_gq_oth.csv | varies | ~100 KB | ~10 KB |
+| final_summary_mgra_PUMA_gq_mil.csv | 22 | 5 KB | 1 KB |
+| final_summary_mgra_PUMA_gq_col.csv | 22 | 5 KB | 1 KB |
+| final_summary_mgra_PUMA_gq_oth.csv | 22 | 5 KB | 1 KB |
+| final_summary_region_1_gq_mil.csv | 1 | <1 KB | <1 KB |
+| final_summary_region_1_gq_col.csv | 1 | <1 KB | <1 KB |
+| final_summary_region_1_gq_oth.csv | 1 | <1 KB | <1 KB |
+| **Control Totals** | | | |
 | mgra_controls.csv | 24,321 | 2.6 MB | 300 KB |
+| mgra_controls_gq_mil.csv | varies | ~50 KB | ~5 KB |
+| mgra_controls_gq_col.csv | varies | ~50 KB | ~5 KB |
+| mgra_controls_gq_oth.csv | varies | ~50 KB | ~5 KB |
 | region_controls.csv | few | <1 KB | <1 KB |
-| **Total per year** | | **~738 MB** | **~76 MB** |
+| **Performance Metrics** | | | |
+| timing_log.csv | ~30 | <1 KB | <1 KB |
+| timing_log_gq_mil.csv | ~11 | <1 KB | <1 KB |
+| timing_log_gq_col.csv | ~11 | <1 KB | <1 KB |
+| timing_log_gq_oth.csv | ~11 | <1 KB | <1 KB |
+| **Total per year** | | **~382 MB** | **~39 MB** |
 
-**All Years (7):** ~5.2 GB uncompressed, ~530 MB compressed
+**All Years (7):** ~2.7 GB uncompressed, ~275 MB compressed
+
+**Notes:**
+- File sizes based on 2022 synthesis with 1,276,883 total households (1,160,472 regular + 116,411 GQ)
+- GQ file sizes vary by type (military, college, other) and year-specific populations
+- Main synthetic files (households/persons) comprise ~96% of total storage
+- Compression ratios typically 10:1 for synthetic population files
 
 **Storage Recommendations:**
 - Keep uncompressed files on fast SSD during runs
@@ -4756,9 +4732,9 @@ Quality assurance is critical to ensure the synthetic population accurately refl
 
 ### 5.1 Summary File Interpretation
 
-PopulationSim generates four summary files per year that compare control totals to synthesis results. Understanding these files is essential for validation.
+PopulationSim generates multiple summary files per year that compare control totals to synthesis results. Understanding these files is essential for validation.
 
-#### 5.1.1 summary_mgra.csv
+#### 5.1.1 final_summary_mgra.csv
 
 **Purpose:** MGRA-level control vs. result comparison for household and person controls
 
@@ -4771,7 +4747,7 @@ id,geography,Male_control,Male_result,Female_control,Female_result,Age_0_4_contr
 
 **Key Characteristics:**
 - **Rows:** ~23,000 (one per MGRA)
-- **Columns:** ~86 columns (id, geography, plus 42 control pairs)
+- **Columns:** ~74 columns (id, geography, plus 36 control pairs)
 - **Control Pairs:** Each control has `{name}_control` and `{name}_result` columns
 - **Geography:** Always "mgra" in lowercase
 
@@ -4781,7 +4757,7 @@ id,geography,Male_control,Male_result,Female_control,Female_result,Age_0_4_contr
    ```python
    import pandas as pd
    
-   df = pd.read_csv("output/2022/summary_mgra.csv")
+   df = pd.read_csv("output/2022/final_summary_mgra.csv")
    
    # Calculate absolute differences for all controls
    for col in df.columns:
@@ -4823,11 +4799,11 @@ id,geography,Male_control,Male_result,Female_control,Female_result,Age_0_4_contr
 - **Demographic controls:** ±5% deviation acceptable for most MGRAs
 - **Small MGRAs:** Higher percentage deviations expected due to rounding
 
-#### 5.1.2 summary_mgra_PUMA.csv
+#### 5.1.2 final_summary_mgra_PUMA.csv
 
 **Purpose:** Aggregated PUMA-level validation (22 PUMAs)
 
-**Structure:** Same format as summary_mgra.csv but with 22 rows
+**Structure:** Same format as final_summary_mgra.csv but with 22 rows
 
 **Key Characteristics:**
 - **Rows:** 22 (one per PUMA)
@@ -4837,7 +4813,7 @@ id,geography,Male_control,Male_result,Female_control,Female_result,Age_0_4_contr
 **Reading Strategy:**
 
 ```python
-df_puma = pd.read_csv("output/2022/summary_mgra_PUMA.csv")
+df_puma = pd.read_csv("output/2022/final_summary_mgra_PUMA.csv")
 
 # Calculate total regional deviations
 for col in df_puma.columns:
@@ -4855,90 +4831,123 @@ for col in df_puma.columns:
 - **All controls:** Should match within ±0.5% at PUMA level
 - **Larger deviations:** Indicate systematic issues with controls or balancing
 
-#### 5.1.3 summary_region_1.csv
+#### 5.1.3 final_summary_region_1.csv
 
-**Purpose:** Regional (county-wide) control validation for employment and labor force controls
+**Purpose:** Regional (county-wide) control validation for household controls and balancing progression
 
 **Structure:**
 ```csv
-control_name,control_value,mgra_integer_weight
-job_1,97874.64,97875
-job_2,74000.00,74001
+control_name,control_value,region_preliminary_balanced_weight,region_balanced_weight,region_integer_weight,mgra_balanced_weight,mgra_integer_weight
+Total_HH,1160472.0,1160472.0006298593,1160472.0001404851,1160472,1160472.0,1160472
+HHSize_1,278544.0,278539.73085250036,278539.6579843013,278538,278538.0,278207
+HHSize_2,381757.0,381756.01274555293,381755.8576917914,381761,381761.0,382314
 ...
 ```
 
 **Key Characteristics:**
-- **Rows:** 18 (one per regional control)
-- **Columns:** 3 (control_name, control_value, mgra_integer_weight)
-- **Coverage:** Employment by industry (18 categories) and labor force participation
+- **Rows:** 54 (one per household control variable)
+- **Columns:** 7 (control_name, control_value, + 5 balancing stage columns)
+- **Coverage:** Shows progression of control totals through IPF and integerization stages
 
-**Control Naming:**
-- `job_1` through `job_18`: Employment by industry sector
-- `lfp_male_16_to_64`, `lfp_female_16_to_64`, etc.: Labor force participation by age/sex
+**Column Descriptions:**
+- `control_name`: Name of the control variable
+- `control_value`: Target value from control file
+- `region_preliminary_balanced_weight`: After initial PUMA balancing
+- `region_balanced_weight`: After meta-control factoring
+- `region_integer_weight`: After integerization at PUMA level
+- `mgra_balanced_weight`: After MGRA-level balancing (fractional)
+- `mgra_integer_weight`: Final result after MGRA integerization
 
 **Reading Strategy:**
 
 ```python
-df_region = pd.read_csv("output/2022/summary_region_1.csv")
+df_region = pd.read_csv("output/2022/final_summary_region_1.csv")
 
 # Calculate differences
 df_region["diff"] = df_region["mgra_integer_weight"] - df_region["control_value"]
 df_region["diff_pct"] = 100 * df_region["diff"] / df_region["control_value"]
 
-# Display all regional controls
+# Display key controls
 print(df_region[["control_name", "control_value", "mgra_integer_weight", "diff", "diff_pct"]])
+
+# Analyze balancing progression for specific control
+control = "Total_HH"
+row = df_region[df_region["control_name"] == control].iloc[0]
+print(f"\nBalancing progression for {control}:")
+print(f"  Target: {row['control_value']:,.0f}")
+print(f"  After PUMA balancing: {row['region_integer_weight']:,.0f}")
+print(f"  After MGRA balancing: {row['mgra_integer_weight']:,.0f}")
+print(f"  Final deviation: {row['diff']:,.0f} ({row['diff_pct']:.2f}%)")
 ```
 
 **Acceptable Ranges:**
-- **Integer integerization:** Results will be within ±5 of control values (due to integerization)
-- **Fractional controls:** Controls with decimals (e.g., 97874.64) will round to nearest integer
-- **All controls:** Should match within ±10 workers or ±0.1%
+- **Total_HH and critical controls:** Should match exactly (±0 after integerization)
+- **Demographic controls:** Within ±50 persons or ±0.5% regionally
 
-#### 5.1.4 final_summary_mgra_gq.csv
+#### 5.1.4 GQ Summary Files (by Type)
 
-**Purpose:** Group quarters validation (exact match expected)
+**Purpose:** Group quarters validation by type (exact match expected)
 
-**Structure:**
+**Files:**
+- `final_summary_mgra_gq_mil.csv` - Military GQ
+- `final_summary_mgra_gq_col.csv` - College GQ
+- `final_summary_mgra_gq_oth.csv` - Other GQ
+
+**Structure (each file):**
 ```csv
-id,geography,gq_mil_pop_control,gq_mil_pop_result,gq_college_pop_control,gq_college_pop_result,...
-1,mgra,0,0,0,0,...
-2,mgra,150,150,0,0,...
+id,geography,Total_GQ_control,Total_GQ_result,Total_GQ_diff
+1234,mgra,150,150,0
+5678,mgra,85,85,0
 ```
 
 **Key Characteristics:**
-- **Rows:** ~23,000 (one per MGRA)
-- **Columns:** 8 (id, geography, 3 GQ types × 2)
-- **Expected Accuracy:** **100% exact match** (GQ sampling uses deterministic algorithm)
+- **Rows:** Varies by GQ type (only MGRAs with that specific GQ type)
+- **Columns:** 5 (id, geography, Total_GQ_control, Total_GQ_result, Total_GQ_diff)
+- **Expected Accuracy:** **100% exact match** (GQ uses deterministic balancing)
 
 **Reading Strategy:**
 
 ```python
-df_gq = pd.read_csv("output/2022/final_summary_mgra_gq.csv")
+import pandas as pd
 
-# Check for any mismatches
-gq_types = ["gq_mil_pop", "gq_college_pop", "gq_other_pop"]
+# Check all three GQ types
+gq_files = {
+    "military": "output/2022/final_summary_mgra_gq_mil.csv",
+    "college": "output/2022/final_summary_mgra_gq_col.csv",
+    "other": "output/2022/final_summary_mgra_gq_oth.csv"
+}
 
-for gq in gq_types:
-    control_col = f"{gq}_control"
-    result_col = f"{gq}_result"
-    mismatches = df_gq[df_gq[control_col] != df_gq[result_col]]
+for gq_type, filepath in gq_files.items():
+    df = pd.read_csv(filepath)
+    mismatches = df[df["Total_GQ_diff"] != 0]
     
     if len(mismatches) > 0:
-        print(f"❌ {gq}: {len(mismatches)} MGRAs with mismatches!")
-        print(mismatches[["id", control_col, result_col]])
+        print(f"❌ {gq_type}: {len(mismatches)} MGRAs with mismatches!")
+        print(mismatches[["id", "Total_GQ_control", "Total_GQ_result", "Total_GQ_diff"]])
     else:
-        print(f"✓ {gq}: All MGRAs match exactly")
+        total_gq = df["Total_GQ_result"].sum()
+        print(f"✓ {gq_type}: All {len(df)} MGRAs match exactly (total GQ: {total_gq:,.0f})")
 ```
+
+**Additional GQ Summaries:**
+- `final_summary_mgra_PUMA_gq_{mil|col|oth}.csv` - PUMA-level aggregations
+- `final_summary_region_1_gq_{mil|col|oth}.csv` - Regional totals
 
 **Acceptable Ranges:**
 - **All GQ controls:** Must match exactly (0 difference)
-- **Any deviation:** Indicates a bug in GQ sampling logic
+- **Any deviation:** Indicates a bug in balancing logic
 
-#### 5.1.5 timing_log.csv
+#### 5.1.5 Timing Log Files
 
 **Purpose:** Performance metrics for pipeline steps
 
-**Structure:**
+**Files:**
+- `timing_log.csv` - Household run timing (main synthesis)
+- `timing_log_gq_mil.csv` - Military GQ run timing
+- `timing_log_gq_col.csv` - College GQ run timing
+- `timing_log_gq_oth.csv` - Other GQ run timing
+
+**Structure (each file):**
 ```csv
 model_name,seconds
 input_pre_processor,45.2
@@ -4947,34 +4956,56 @@ initial_seed_balancing,287.5
 ...
 ```
 
-**Key Metrics:**
+**Key Metrics (Household Run):**
 
 | Step | Typical Duration | Concern Threshold |
 |------|------------------|-------------------|
 | input_pre_processor | 30-60 sec | >120 sec |
 | initial_seed_balancing | 200-400 sec | >600 sec |
 | integerize_final_seed_weights | 100-200 sec | >400 sec |
-| sub_balancing.geography=mgra | 2000-3000 sec | >4000 sec |
+| sub_balancing.geography=mgra | 1800-2400 sec | >3000 sec |
 | expand_households | 150-250 sec | >400 sec |
-| **Total** | **3500-4500 sec (60-75 min)** | **>5400 sec (90 min)** |
+| **Total (household)** | **2400-3000 sec (40-50 min)** | **>3600 sec (60 min)** |
+
+**Key Metrics (Each GQ Run):**
+
+| Step | Typical Duration | Concern Threshold |
+|------|------------------|-------------------|
+| input_pre_processor | 5-10 sec | >30 sec |
+| initial_seed_balancing | 30-60 sec | >120 sec |
+| integerize_final_seed_weights | 10-20 sec | >60 sec |
+| sub_balancing.geography=mgra | 30-60 sec | >120 sec |
+| expand_households | 5-10 sec | >30 sec |
+| **Total (per GQ type)** | **60-120 sec (1-2 min)** | **>300 sec (5 min)** |
 
 **Reading Strategy:**
 
 ```python
-df_timing = pd.read_csv("output/2022/timing_log.csv")
+import pandas as pd
 
-# Calculate total runtime
-total_seconds = df_timing["seconds"].sum()
-print(f"Total runtime: {total_seconds:.0f} seconds ({total_seconds/60:.1f} minutes)")
+# Analyze all timing logs
+timing_files = {
+    "household": "output/2022/timing_log.csv",
+    "gq_mil": "output/2022/timing_log_gq_mil.csv",
+    "gq_col": "output/2022/timing_log_gq_col.csv",
+    "gq_oth": "output/2022/timing_log_gq_oth.csv"
+}
 
-# Identify bottlenecks
-slowest = df_timing.nlargest(5, "seconds")
-print("\nSlowest steps:")
-print(slowest)
+for run_name, filepath in timing_files.items():
+    df = pd.read_csv(filepath)
+    total_seconds = df["seconds"].sum()
+    print(f"{run_name}: {total_seconds:.0f} seconds ({total_seconds/60:.1f} minutes)")
+    
+    # Show slowest steps
+    slowest = df.nlargest(3, "seconds")[["model_name", "seconds"]]
+    print(slowest)
+    print()
 ```
 
 **Performance Indicators:**
-- **sub_balancing.geography=mgra:** Typically 50-60% of total runtime
+- **Household run:** sub_balancing.geography=mgra typically 60-70% of total runtime
+- **GQ runs:** Much faster due to smaller populations and simpler controls
+- **Total synthesis time:** ~45-55 minutes per year (all 4 runs combined)
 - **Balancing steps:** Longer times indicate convergence difficulties
 - **Sudden slowdowns:** May indicate database/disk I/O issues
 
@@ -5043,13 +5074,13 @@ streamlit run report/report.py
 1. **Scans `output/` directory** for year folders (e.g., `output/2022/`)
 2. **Checks for required files:**
    - `timing_log.csv`
-   - `synthetic_households_{year}.csv`
-   - `synthetic_persons_{year}.csv`
+   - `synthetic_households.csv`
+   - `synthetic_persons.csv`
 3. **Loads summary files:**
-   - `summary_mgra.csv`
-   - `final_summary_mgra_gq.csv`
-   - `summary_mgra_PUMA.csv`
-   - `summary_region_1.csv`
+   - `final_summary_mgra.csv`
+   - `final_summary_mgra_gq_mil.csv`, `final_summary_mgra_gq_col.csv`, `final_summary_mgra_gq_oth.csv`
+   - `final_summary_mgra_PUMA.csv`
+   - `final_summary_region_1.csv`
 4. **Replicates database query logic** to build control data
 
 **Selecting Local Run:**
@@ -5243,7 +5274,7 @@ SANDAG uses quantitative thresholds to assess synthesis quality. These metrics b
 
 **Calculation:**
 ```python
-df = pd.read_csv("output/2022/summary_mgra.csv")
+df = pd.read_csv("output/2022/final_summary_mgra.csv")
 df["hh_diff"] = df["Total_HH_result"] - df["Total_HH_control"]
 df["hh_diff_abs"] = df["hh_diff"].abs()
 ```
@@ -5419,8 +5450,8 @@ Common issues encountered during validation and their resolutions.
 
 ```python
 # Check if MGRA controls sum to region total
-df_mgra = pd.read_csv("output/2022/summary_mgra.csv")
-df_region = pd.read_csv("output/2022/summary_region_1.csv")
+df_mgra = pd.read_csv("output/2022/final_summary_mgra.csv")
+df_region = pd.read_csv("output/2022/final_summary_region_1.csv")
 
 mgra_total_hh = df_mgra["Total_HH_control"].sum()
 print(f"MGRA controls total HH: {mgra_total_hh:.0f}")
@@ -5453,7 +5484,7 @@ print(f"Control file total HH: {control_total_hh:.0f}")
 
 ```python
 # Check if age controls sum correctly
-df = pd.read_csv("output/2022/summary_mgra.csv")
+df = pd.read_csv("output/2022/final_summary_mgra.csv")
 
 age_controls = ["Age_0_4", "Age_5_17", "Age_18_64", "Age_65_up"]
 for mgra_id in [1, 100, 500, 1000]:  # Sample MGRAs
@@ -5725,7 +5756,7 @@ Data lake integration is optional but recommended for production environments. E
 
 ### Appendix A: Complete Control Variable Definitions
 
-This appendix provides complete definitions for all 56 control variables used in SANDAG's PopulationSim implementation.
+This appendix provides complete definitions for all 54 control variables used in SANDAG's PopulationSim implementation.
 
 #### A.1 Household Controls (MGRA-Level)
 
@@ -5747,8 +5778,6 @@ This appendix provides complete definitions for all 56 control variables used in
 | 14 | HHWork_1 | mgra | 100,000 | workers == 1 | One-worker households |
 | 15 | HHWork_2 | mgra | 100,000 | workers == 2 | Two-worker households |
 | 16 | HHWork_3Plus | mgra | 100,000 | workers >= 3 | Households with 3+ workers |
-| 17 | HHChild_0 | mgra | 100,000 | HUPAC == 4 | No children present |
-| 18 | HHChild_1Plus | mgra | 100,000 | (HUPAC == 1) \| (HUPAC == 2) \| (HUPAC == 3) | One or more children present |
 
 #### A.2 Person Controls (MGRA-Level)
 
@@ -5889,7 +5918,7 @@ target,geography,seed_table,importance,control_field,expression
 | control_field | string | Output column name | Same as target |
 | expression | string | Pandas filter expression | (NP == 1), (AGEP >= 0) & (AGEP <= 4) |
 
-**Rows:** 56 (18 household + 38 person controls)
+**Rows:** 54 (16 household + 38 person controls)
 
 **File: populationsim/configs/settings.yaml**
 
@@ -6046,7 +6075,6 @@ mgra,Total_HH,HHSize_1,HHSize_2,...,Age_85Plus,Asian,Black,Hispanic,Other,Two_or
 | HHSize_* | integer | Household size controls |
 | HHInc_* | integer | Income bracket controls |
 | HHWork_* | integer | Worker count controls |
-| HHChild_* | integer | Children presence controls |
 | Male, Female | integer | Sex controls |
 | Age_* | integer | Age group controls |
 | Race_* | integer | Race/ethnicity controls |
@@ -6144,26 +6172,26 @@ See Section 4.4.2 for complete field list
 
 **Rows:** 24,321 (2022)
 
-**File: output/{year}/summary_mgra.csv**
+**File: output/{year}/final_summary_mgra.csv**
 
 **Format:** CSV (comma-separated values)
 
-**Columns (86):**
+**Columns (74):**
 ```csv
 id,geography,Male_control,Male_result,Female_control,Female_result,...
 ```
 
-**Pattern:** id, geography, plus 42 control variables × 2 (control & result)
+**Pattern:** id, geography, plus 36 control variables × 2 (control & result)
 
 **Rows:** ~23,000
 
-**File: output/{year}/summary_mgra_PUMA.csv**
+**File: output/{year}/final_summary_mgra_PUMA.csv**
 
-**Format:** Same as summary_mgra.csv
+**Format:** Same as final_summary_mgra.csv
 
 **Rows:** 22
 
-**File: output/{year}/summary_region_1.csv**
+**File: output/{year}/final_summary_region_1.csv**
 
 **Format:** CSV (comma-separated values)
 
@@ -6240,29 +6268,29 @@ This appendix documents all SQL queries used in the PopulationSim workflow.
 
 **File: sql/mgra_controls.sql**
 
-**Purpose:** Generate 42 MGRA-level control totals from UDM forecast
+**Purpose:** Generate 36 MGRA-level control totals from UDM forecast
 
 **Structure:**
 ```sql
-WITH base_controls AS (...),     -- Person-level controls (sex, age, race)
-     hh_controls AS (...),       -- Household-level controls (size, income, workers)
-     mgrabase_controls AS (...)  -- Children presence
-SELECT mgra, [42 control columns]
-FROM base_controls
+WITH ase_controls AS (...),         -- Person-level controls (sex, age, race)
+     hh_controls AS (...),          -- Household-level controls (size, workers)
+     mgrabase_controls AS (...)     -- Income and GQ controls
+SELECT mgra, [36 control columns]
+FROM ase_controls
     JOIN hh_controls ON mgra
     JOIN mgrabase_controls ON mgra
 ```
 
 **Key Operations:**
-1. **base_controls CTE:** Aggregate persons by sex (2), age (12), race (6) = 20 controls
-2. **hh_controls CTE:** Aggregate households by size (4), income (7), workers (4) = 15 controls
-3. **mgrabase_controls CTE:** Aggregate households by children presence = 2 controls
+1. **ase_controls CTE:** Aggregate persons by sex (2), age (12), race (6) = 20 controls
+2. **hh_controls CTE:** Aggregate households by size (4), workers (4), Total_HH (1) = 9 controls
+3. **mgrabase_controls CTE:** Aggregate income (7) and GQ types (3) = 10 controls (but GQ not counted as MGRA controls)
 4. JOIN all CTEs on mgra
-5. Add Total_HH = 1 control
+5. Calculate Total_HH_GQ
 
-**Output Columns:** mgra + 42 control columns
+**Output Columns:** mgra + 36 MGRA control columns + 3 GQ controls + Total_HH_GQ calculated
 
-**Complexity:** High (3 CTEs, multiple GROUP BY, PIVOT operations)
+**Complexity:** High (3 CTEs, multiple GROUP BY operations)
 
 **Execution Time:** ~5-10 seconds
 
