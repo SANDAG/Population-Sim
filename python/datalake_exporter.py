@@ -6,6 +6,12 @@ and uploads them to the datalake under popsim/<file>/<year>/<file>_<timestamp>.p
 where <year> is the last segment of the output_path (e.g. '2022').
 The timestamp is derived from the modification time of synthetic_persons.csv.
 
+Each synthesis run's controls.csv (control definitions) lives under
+populationsim/configs*/ rather than in the output directory, so it isn't
+picked up by the CSV glob — it's exported separately via controls_paths,
+landing under popsim/controls/<year>/... (household) or
+popsim/controls_<run>/<year>/... (GQ runs).
+
 This layout lets Databricks Autoloader / Spark Declarative Pipelines point at
 popsim/<file>/ and ingest all runs for a given table across years.
 """
@@ -102,7 +108,47 @@ def export_csv_as_parquet(file, folder_name, ts_str, container, run_timestamp=No
         return False
 
 
-def write_to_datalake(output_path, env, metadata=None):
+def export_controls_csv(filepath, run_name, folder_name, ts_str, container):
+    table = pd.read_csv(filepath)
+    if folder_name.isdigit():
+        table["year"] = int(folder_name)
+    table["synthesis_run"] = run_name
+    lake_name = "controls" if run_name == "household" else f"controls_{run_name}"
+    lake_file_name = build_blob_path(
+        "popsim", lake_name, folder_name, lake_name + "_" + ts_str + ".parquet"
+    )
+    parquet_file = BytesIO()
+    table.to_parquet(parquet_file, engine="pyarrow")
+    parquet_file.seek(0)
+    try:
+        container.upload_blob(name=lake_file_name, data=parquet_file)
+        print(f"{lake_name} written to Azure")
+        return True
+    except ResourceExistsError:
+        print(f"{lake_file_name} already exists in Azure, skipping", file=sys.stderr)
+        return False
+    except Exception as e:
+        print(f"Failed to upload {lake_name}: {e}", file=sys.stderr)
+        return False
+
+
+def find_controls_paths(synthesis_runs, popsim_dir=None):
+    # controls.csv lives in whichever config dir a run lists first that
+    # actually has one (configs_common/configs_mp never do) — resolve it
+    # per run rather than hardcoding a directory index.
+    if popsim_dir is None:
+        popsim_dir = os.path.join(os.path.dirname(__file__), "..", "populationsim")
+    controls_paths = {}
+    for run in synthesis_runs:
+        for c in run["configs"]:
+            candidate = os.path.join(popsim_dir, c, "controls.csv")
+            if os.path.isfile(candidate):
+                controls_paths[run["name"]] = candidate
+                break
+    return controls_paths
+
+
+def write_to_datalake(output_path, env, metadata=None, controls_paths=None):
     if not os.path.isdir(output_path):
         print(
             f"Output path does not exist or is not a directory: {output_path}",
@@ -139,8 +185,16 @@ def write_to_datalake(output_path, env, metadata=None):
         )
         (succeeded if ok else failed).append(os.path.basename(file))
 
+    # controls.csv definitions live under populationsim/configs*/, not in the
+    # output/<year> folder, so they aren't picked up by the glob above.
+    for run_name, filepath in (controls_paths or {}).items():
+        ok = export_controls_csv(filepath, run_name, folder_name, ts_str, container)
+        label = "controls.csv" if run_name == "household" else f"controls_{run_name}.csv"
+        (succeeded if ok else failed).append(label)
+
     if metadata is not None:
         meta_df = pd.DataFrame([metadata])
+        meta_df["run_timestamp"] = created_ts
         meta_blob = build_blob_path(
             "popsim", "run_metadata", folder_name, "run_metadata_" + ts_str + ".parquet"
         )
@@ -187,6 +241,7 @@ if __name__ == "__main__":
     # run_metadata parquet file. Skip metadata entirely if config.yml is missing/invalid.
     config_path = os.path.join(os.path.dirname(__file__), "..", "config.yml")
     metadata = None
+    cfg = None
     try:
         with open(config_path, "r") as f:
             cfg = yaml.safe_load(f)
@@ -203,4 +258,8 @@ if __name__ == "__main__":
             file=sys.stderr,
         )
 
-    write_to_datalake(output_path, env, metadata=metadata)
+    controls_paths = {}
+    if cfg is not None:
+        controls_paths = find_controls_paths(cfg.get("synthesis_runs", []))
+
+    write_to_datalake(output_path, env, metadata=metadata, controls_paths=controls_paths)
