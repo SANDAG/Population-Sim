@@ -8,7 +8,7 @@ The timestamp is derived from the modification time of synthetic_persons.csv.
 
 Each synthesis run's controls.csv (control definitions) lives under
 populationsim/configs*/ rather than in the output directory, so it isn't
-picked up by the CSV glob — it's exported separately via controls_paths,
+picked up by the CSV glob. It's exported separately via controls_paths,
 landing under popsim/controls/<year>/... (household) or
 popsim/controls_<run>/<year>/... (GQ runs).
 
@@ -29,7 +29,7 @@ from azure.core.exceptions import ResourceExistsError
 from azure.storage.blob import ContainerClient
 
 # -----------------------------------------------------------------------
-# HOW TO RUN
+# HOW TO RUN AFTER POPSIM GENERATES OUTPUT
 # -----------------------------------------------------------------------
 #   Activate the sandag-population-sim venv
 #   Usage:          python datalake_exporter.py <output_path> <env>
@@ -108,12 +108,43 @@ def export_csv_as_parquet(file, folder_name, ts_str, container, run_timestamp=No
         return False
 
 
-def export_controls_csv(filepath, run_name, folder_name, ts_str, container):
+def export_controls_csv(filepath, run_name, folder_name, ts_str, container, run_timestamp=None):
     table = pd.read_csv(filepath)
     if folder_name.isdigit():
         table["year"] = int(folder_name)
     table["synthesis_run"] = run_name
+    # run_timestamp is required to join this file to run_id_lookup (keyed on
+    # run_timestamp + year), matching the timestamp stamped on every other
+    # export for the same run.
+    if run_timestamp is not None:
+        table["run_timestamp"] = run_timestamp
     lake_name = "controls" if run_name == "household" else f"controls_{run_name}"
+    lake_file_name = build_blob_path(
+        "popsim", lake_name, folder_name, lake_name + "_" + ts_str + ".parquet"
+    )
+    parquet_file = BytesIO()
+    table.to_parquet(parquet_file, engine="pyarrow")
+    parquet_file.seek(0)
+    try:
+        container.upload_blob(name=lake_file_name, data=parquet_file)
+        print(f"{lake_name} written to Azure")
+        return True
+    except ResourceExistsError:
+        print(f"{lake_file_name} already exists in Azure, skipping", file=sys.stderr)
+        return False
+    except Exception as e:
+        print(f"Failed to upload {lake_name}: {e}", file=sys.stderr)
+        return False
+
+
+def export_seed_csv(filepath, run_name, seed_type, folder_name, ts_str, container, run_timestamp=None):
+    table = pd.read_csv(filepath)
+    if folder_name.isdigit():
+        table["year"] = int(folder_name)
+    table["synthesis_run"] = run_name
+    if run_timestamp is not None:
+        table["run_timestamp"] = run_timestamp
+    lake_name = f"seed_{seed_type}" if run_name == "household" else f"seed_{seed_type}_{run_name}"
     lake_file_name = build_blob_path(
         "popsim", lake_name, folder_name, lake_name + "_" + ts_str + ".parquet"
     )
@@ -134,8 +165,7 @@ def export_controls_csv(filepath, run_name, folder_name, ts_str, container):
 
 def find_controls_paths(synthesis_runs, popsim_dir=None):
     # controls.csv lives in whichever config dir a run lists first that
-    # actually has one (configs_common/configs_mp never do) — resolve it
-    # per run rather than hardcoding a directory index.
+    # actually has one. Resolve it per run rather than hardcoding a directory index.
     if popsim_dir is None:
         popsim_dir = os.path.join(os.path.dirname(__file__), "..", "populationsim")
     controls_paths = {}
@@ -148,7 +178,24 @@ def find_controls_paths(synthesis_runs, popsim_dir=None):
     return controls_paths
 
 
-def write_to_datalake(output_path, env, metadata=None, controls_paths=None):
+def find_seed_paths(synthesis_runs, popsim_dir=None):
+    """Locates each run's seed_households/seed_persons CSVs. Household files
+    use an '_hh' suffix while GQ files use the run name directly (see
+    main.py's write_seed_files/GQ_TYPES)."""
+    if popsim_dir is None:
+        popsim_dir = os.path.join(os.path.dirname(__file__), "..", "populationsim")
+    seed_paths = {}
+    for run in synthesis_runs:
+        suffix = "hh" if run["name"] == "household" else run["name"]
+        data_dir = os.path.join(popsim_dir, run["data"])
+        households_path = os.path.join(data_dir, f"seed_households_{suffix}.csv")
+        persons_path = os.path.join(data_dir, f"seed_persons_{suffix}.csv")
+        if os.path.isfile(households_path) and os.path.isfile(persons_path):
+            seed_paths[run["name"]] = {"households": households_path, "persons": persons_path}
+    return seed_paths
+
+
+def write_to_datalake(output_path, env, metadata=None, controls_paths=None, seed_paths=None):
     if not os.path.isdir(output_path):
         print(
             f"Output path does not exist or is not a directory: {output_path}",
@@ -188,9 +235,25 @@ def write_to_datalake(output_path, env, metadata=None, controls_paths=None):
     # controls.csv definitions live under populationsim/configs*/, not in the
     # output/<year> folder, so they aren't picked up by the glob above.
     for run_name, filepath in (controls_paths or {}).items():
-        ok = export_controls_csv(filepath, run_name, folder_name, ts_str, container)
+        ok = export_controls_csv(
+            filepath, run_name, folder_name, ts_str, container, run_timestamp=created_ts
+        )
         label = "controls.csv" if run_name == "household" else f"controls_{run_name}.csv"
         (succeeded if ok else failed).append(label)
+
+    # seed_households/seed_persons live under populationsim/data/, not in the
+    # output/<year> folder, so they aren't picked up by the glob above either.
+    for run_name, paths in (seed_paths or {}).items():
+        for seed_type, filepath in paths.items():
+            ok = export_seed_csv(
+                filepath, run_name, seed_type, folder_name, ts_str, container, run_timestamp=created_ts
+            )
+            label = (
+                f"seed_{seed_type}.csv"
+                if run_name == "household"
+                else f"seed_{seed_type}_{run_name}.csv"
+            )
+            (succeeded if ok else failed).append(label)
 
     if metadata is not None:
         meta_df = pd.DataFrame([metadata])
@@ -239,7 +302,12 @@ if __name__ == "__main__":
     # parsed from the output folder name. Nested/list fields (sql, synthesis_runs, years)
     # are JSON-encoded so pandas/pyarrow can serialize them as flat string columns in the
     # run_metadata parquet file. Skip metadata entirely if config.yml is missing/invalid.
-    config_path = os.path.join(os.path.dirname(__file__), "..", "config.yml")
+    # Resolve config.yml/populationsim relative to output_path's repo root, not
+    # this script's location
+    # Assumes the standard layout: <repo_root>/output/<year>.
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(output_path)))
+    config_path = os.path.join(repo_root, "config.yml")
+    popsim_dir = os.path.join(repo_root, "populationsim")
     metadata = None
     cfg = None
     try:
@@ -259,7 +327,15 @@ if __name__ == "__main__":
         )
 
     controls_paths = {}
+    seed_paths = {}
     if cfg is not None:
-        controls_paths = find_controls_paths(cfg.get("synthesis_runs", []))
+        controls_paths = find_controls_paths(cfg.get("synthesis_runs", []), popsim_dir)
+        seed_paths = find_seed_paths(cfg.get("synthesis_runs", []), popsim_dir)
 
-    write_to_datalake(output_path, env, metadata=metadata, controls_paths=controls_paths)
+    write_to_datalake(
+        output_path,
+        env,
+        metadata=metadata,
+        controls_paths=controls_paths,
+        seed_paths=seed_paths,
+    )

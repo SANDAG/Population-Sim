@@ -13,7 +13,7 @@ import yaml
 from python.build_controls import get_mgra_controls, get_region_controls
 from python.build_seed_data import get_seed_households, get_seed_persons
 from python.outputs import create_abm_outputs, organize_outputs
-from python.datalake_exporter import find_controls_paths, write_to_datalake
+from python.datalake_exporter import find_controls_paths, find_seed_paths, write_to_datalake
 from python.db import get_engine
 
 # Paths — anchored to this file so the pipeline can be run from any directory
@@ -158,6 +158,7 @@ def process_year(year: int, engine, config: dict, secrets: dict) -> None:
                 "comments": config["comments"],
             },
             controls_paths=find_controls_paths(config["synthesis_runs"], POPSIM_DIR),
+            seed_paths=find_seed_paths(config["synthesis_runs"], POPSIM_DIR),
         )
 
 def main() -> None:
