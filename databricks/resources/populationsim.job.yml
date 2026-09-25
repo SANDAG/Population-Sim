@@ -1,0 +1,22 @@
+resources:
+  jobs:
+    populationsim_pipeline_trigger:
+      name: Population-Sim-Pipeline-Trigger
+      # _export_status/ is written last by datalake_exporter.write_completion_marker,
+      # after every other file for a run has been attempted - so a pipeline update
+      # only kicks off once a whole export (CSVs, controls, seed files, metadata)
+      # has actually finished, not on every individual file upload.
+      # bundle mode "development" auto-pauses triggers on deploy unless overridden
+      trigger:
+        pause_status: PAUSED
+        file_arrival:
+          url: ${var.source_root}/_export_status/
+          min_time_between_triggers_seconds: 60
+          wait_after_last_change_seconds: 60
+      queue:
+        enabled: true
+      max_concurrent_runs: 1
+      tasks:
+        - task_key: run_pipeline_update
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.populationsim_pipeline.id}
