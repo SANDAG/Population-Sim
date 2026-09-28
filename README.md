@@ -31,7 +31,7 @@ sql:
   mgra_controls: "sql/mgra_controls.sql" # mgra controls data query
   region_controls: "sql/region_controls.sql" # region controls data query
   mgrabase: "sql/mgrabase.sql" # mgrabase file generation data query
-  load_to_database: False # Set to True to Load results to database
+  load_to_database: False # Set to True to write outputs to the Azure datalake (for ingestion by the Databricks pipeline)
 
 economic_controls: "data/Economic Team Region Controls.csv" # region economic controls provided by SANDAG's Economics Team
 
@@ -75,9 +75,14 @@ If running PopulationSim as an _official run_ for use by SANDAG's QA and/or Acti
 
 *Note: This is temporary until ABM team feels comfortable with use of production SQL database*
 
-### Production Database
-This repository contains the option in the `config.yml` to load PopulationSim outputs into a production database. The schema for the database is shown below.
-![input](./documentation/Database%20Diagram.png)
+### Databricks Lakehouse Pipeline
+This repository contains the option in `config.yml` (`load_to_database: True`) to export PopulationSim outputs to an Azure Data Lake as Parquet via `python/datalake_exporter.py`. A Databricks Lakeflow Declarative Pipeline (`databricks/`) then ingests and transforms those files into Delta tables across three layers:
+
+- **Bronze** (`databricks/transformations/bronze/`):  raw Auto Loader ingestion of every PopSim export: synthetic households/persons, run metadata, MGRA/PUMA/region final summaries (household + each GQ type), control definitions, seed households/persons, and the `mgra15_based_input` ABM file.
+- **Silver** (`databricks/transformations/silver/`): cleaned, typed tables with a stable `run_id` attached via `run_id_lookup`/`run_info`, plus `silver_controls` and `silver_control_totals`, which reproduce a unified control-vs-result comparison across every geography and synthesis run.
+- **Gold** (`databricks/transformations/gold/`): BI-ready aggregate marts such as `gold_household_demographics` and `gold_population_by_mgra`.
+
+A Databricks job (`databricks/resources/populationsim.job.yml`) with a file arrival trigger automatically starts a pipeline update once `datalake_exporter.py` finishes writing a run's export, signaled by a `_export_status/<year>/_SUCCESS_*.json` completion marker. See `databricks.yml` and `databricks/resources/populationsim.pipeline.yml` for the bundle configuration.
 
 ### Streamlit Report App
 This repository contains a Streamlit app that generates validation reports for PopulationSim outputs stored in SANDAG's production database. You can use it to visualize the results of the run interactively using Streamlit's easy-to-use interface. The documentation can be found here https://docs.streamlit.io/.
