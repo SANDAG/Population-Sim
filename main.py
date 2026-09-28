@@ -13,7 +13,7 @@ import yaml
 from python.build_controls import get_mgra_controls, get_region_controls
 from python.build_seed_data import get_seed_households, get_seed_persons
 from python.outputs import create_abm_outputs, organize_outputs
-from python.datalake_exporter import find_controls_paths, find_seed_paths, write_to_datalake
+from python.datalake_exporter import find_controls_paths, find_seed_paths, new_batch_id, write_to_datalake
 from python.db import get_engine
 
 # Paths — anchored to this file so the pipeline can be run from any directory
@@ -116,7 +116,7 @@ def run_simulation(configs_dirs: list[Path], data_dir: Path, output_dir: Path, n
     subprocess.run(cmd, check=True, cwd=POPSIM_DIR)
     logging.info("Simulation run successful: %s", output_dir.name)
 
-def process_year(year: int, engine, config: dict, secrets: dict) -> None:
+def process_year(year: int, engine, config: dict, secrets: dict, batch_id: str) -> None:
     folder = "populationsim/data/"
 
     print(f"Building controls for {year}")
@@ -153,6 +153,7 @@ def process_year(year: int, engine, config: dict, secrets: dict) -> None:
             env=config["datalake"]["env"],
             metadata={
                 "year": year,
+                "batch_id": batch_id,
                 "version": config["version"],
                 "seed_data": config["seed_data"],
                 "comments": config["comments"],
@@ -173,8 +174,10 @@ def main() -> None:
 
     write_seed_files(engine, config)
 
+    # One batch_id per execution, shared by every year's exported run_metadata
+    batch_id = new_batch_id()
     for year in config["years"]:
-        process_year(year, engine, config, secrets)
+        process_year(year, engine, config, secrets, batch_id)
 
     logging.info("All years processed successfully.")
 

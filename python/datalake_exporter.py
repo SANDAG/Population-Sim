@@ -34,13 +34,16 @@ from azure.storage.blob import ContainerClient
 # HOW TO RUN AFTER POPSIM GENERATES OUTPUT
 # -----------------------------------------------------------------------
 #   Activate the sandag-population-sim venv
-#   Usage:          python datalake_exporter.py <output_path> <env>
+#   Usage:          python datalake_exporter.py <output_path> <env> [--batch-id <id>]
 #   Example (dev):  python datalake_exporter.py C:\abm_runs\popsim_new\output\2022 dev
 #   Example (prod): python datalake_exporter.py C:\abm_runs\popsim_new\output\2022 prod
+#   Example (add to an existing batch):
+#                   python datalake_exporter.py C:\abm_runs\popsim_new\output\2026 dev --batch-id 20260927_143005
 #
 # Notes:
 #   - env must be 'dev' or 'prod'
 #   - output_path must contain synthetic_persons.csv
+#   - batch_id defaults to a new timestamp (the export becomes its own batch)
 #   - CSVs are converted to parquet and uploaded to: popsim/<file>/<year>/<file>_<timestamp>.parquet
 # -----------------------------------------------------------------------
 
@@ -67,6 +70,12 @@ def connect_to_azure(env):
             file=sys.stderr,
         )
         return False, None
+
+
+def new_batch_id():
+    """Identifier shared by every year exported from one execution, so runs
+    that were produced together can be grouped in run_info (batch_id column)."""
+    return datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
 
 def build_blob_path(*parts):
@@ -306,7 +315,7 @@ if __name__ == "__main__":
 
     if len(sys.argv) < 3:
         print(
-            "Usage: python datalake_exporter_popsim.py <output_path> <env>",
+            "Usage: python datalake_exporter.py <output_path> <env> [--batch-id <id>]",
             file=sys.stderr,
         )
         print("  env must be 'dev' or 'prod'", file=sys.stderr)
@@ -318,6 +327,22 @@ if __name__ == "__main__":
             f"Error: env must be 'dev' or 'prod', got '{sys.argv[2]}'", file=sys.stderr
         )
         sys.exit(1)
+
+    # Optional --batch-id groups this export with other years from the same
+    # execution (pass the batch_id shown in run_info); without it, the export
+    # is its own batch.
+    extra_args = sys.argv[3:]
+    if not extra_args:
+        batch_id = new_batch_id()
+    elif len(extra_args) == 2 and extra_args[0] == "--batch-id":
+        batch_id = extra_args[1]
+    else:
+        print(
+            f"Error: unexpected arguments {extra_args}; expected [--batch-id <id>]",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    print(f"batch_id: {batch_id}")
 
     # Build run_metadata from every top-level field in config.yml, plus the run year
     # parsed from the output folder name. Nested/list fields (sql, synthesis_runs, years)
@@ -338,6 +363,7 @@ if __name__ == "__main__":
             "year": int(year_str)
             if (year_str := os.path.basename(output_path)).isdigit()
             else year_str,
+            "batch_id": batch_id,
         }
         for key, value in cfg.items():
             metadata[key] = json.dumps(value) if isinstance(value, (dict, list)) else value
