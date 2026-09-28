@@ -1,6 +1,12 @@
 from pyspark import pipelines as dp
 from pyspark.sql import functions as F
 
+from utilities.column_comments import (
+    SYNTHETIC_HOUSEHOLD_RENAMES,
+    SYNTHETIC_HOUSEHOLDS,
+    with_comments,
+)
+
 
 @dp.table(
     comment="Cleaned synthetic households with standardized column names and types",
@@ -20,15 +26,7 @@ def silver_synthetic_households():
             *[c for c in df.columns if c not in ("run_id", "run_timestamp")],
             "run_timestamp",
         ))
-        .withColumnsRenamed({
-            "SERIALNO": "serialno",
-            "NP": "num_persons",
-            "HHADJINC": "hh_adj_income",
-            "HHT": "hh_type",
-            "HUPAC": "presence_of_children",
-            "VEH": "vehicles",
-            "BLD": "building_type",
-        })
+        .withColumnsRenamed(SYNTHETIC_HOUSEHOLD_RENAMES)
         .withColumns({
             "num_persons": F.col("num_persons").cast("int"),
             "hh_adj_income": F.col("hh_adj_income").cast("int"),
@@ -37,4 +35,5 @@ def silver_synthetic_households():
             "vehicles": F.col("vehicles").cast("int"),
             "building_type": F.col("building_type").cast("int"),
         })
+        .transform(lambda df: with_comments(df, SYNTHETIC_HOUSEHOLDS))
     )

@@ -1,6 +1,12 @@
 from pyspark import pipelines as dp
 from pyspark.sql import functions as F
 
+from utilities.column_comments import (
+    SYNTHETIC_PERSON_RENAMES,
+    SYNTHETIC_PERSONS,
+    with_comments,
+)
+
 
 @dp.table(
     comment="Cleaned synthetic persons with standardized column names and types",
@@ -20,26 +26,7 @@ def silver_synthetic_persons():
             *[c for c in df.columns if c not in ("run_id", "run_timestamp")],
             "run_timestamp",
         ))
-        .withColumnsRenamed({
-            "SERIALNO": "serialno",
-            "SPORDER": "person_order",
-            "AGEP": "age",
-            "ESR": "employment_status",
-            "COW": "class_of_worker",
-            "WKHP": "work_hours_per_week",
-            "SCHG": "school_grade",
-            "RAC1P": "race",
-            "HISP": "hispanic_origin",
-            "MIL": "military_service",
-            "SCHL": "education_attainment",
-            "OCCP": "occupation_code",
-            "WKW": "weeks_worked",
-            "NAICSP": "naics_industry_code",
-            "NAICS2": "naics_2digit",
-            "SOCP": "soc_occupation_code",
-            "SOC2": "soc_2digit",
-            "SEX": "sex",
-        })
+        .withColumnsRenamed(SYNTHETIC_PERSON_RENAMES)
         .withColumns({
             "person_order": F.col("person_order").cast("int"),
             "age": F.col("age").cast("int"),
@@ -52,4 +39,5 @@ def silver_synthetic_persons():
             "weeks_worked": F.col("weeks_worked").cast("int"),
             "soc_2digit": F.col("soc_2digit").cast("int"),
         })
+        .transform(lambda df: with_comments(df, SYNTHETIC_PERSONS))
     )

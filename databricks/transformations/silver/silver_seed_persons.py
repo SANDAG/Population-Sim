@@ -1,6 +1,8 @@
 from pyspark import pipelines as dp
 from pyspark.sql import functions as F
 
+from utilities.column_comments import SEED_PERSONS, with_comments
+
 
 @dp.table(
     comment="Cleaned seed persons across the household and GQ runs, unioned",
@@ -31,4 +33,4 @@ def silver_seed_persons():
         "run_id",
         *[c for c in df.columns if c not in ("run_id", "run_timestamp")],
         "run_timestamp",
-    ))
+    )).transform(lambda df: with_comments(df, SEED_PERSONS))
