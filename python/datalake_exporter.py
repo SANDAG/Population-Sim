@@ -78,6 +78,17 @@ def new_batch_id():
     return datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
 
+def build_run_metadata(year, config, batch_id):
+    """run_metadata row for one exported year: year, batch_id, plus every
+    top-level field in config.yml. Nested/list fields (sql, synthesis_runs,
+    years) are JSON-encoded so pandas/pyarrow can serialize them as flat
+    string columns in the run_metadata parquet file."""
+    metadata = {"year": year, "batch_id": batch_id}
+    for key, value in config.items():
+        metadata[key] = json.dumps(value) if isinstance(value, (dict, list)) else value
+    return metadata
+
+
 def build_blob_path(*parts):
     return "/".join(filter(None, parts))
 
@@ -344,10 +355,8 @@ if __name__ == "__main__":
         sys.exit(1)
     print(f"batch_id: {batch_id}")
 
-    # Build run_metadata from every top-level field in config.yml, plus the run year
-    # parsed from the output folder name. Nested/list fields (sql, synthesis_runs, years)
-    # are JSON-encoded so pandas/pyarrow can serialize them as flat string columns in the
-    # run_metadata parquet file. Skip metadata entirely if config.yml is missing/invalid.
+    # Build run_metadata from config.yml plus the run year parsed from the output
+    # folder name. Skip metadata entirely if config.yml is missing/invalid.
     # Resolve config.yml/populationsim relative to output_path's repo root, not
     # this script's location
     # Assumes the standard layout: <repo_root>/output/<year>.
@@ -359,14 +368,12 @@ if __name__ == "__main__":
     try:
         with open(config_path, "r") as f:
             cfg = yaml.safe_load(f)
-        metadata = {
-            "year": int(year_str)
-            if (year_str := os.path.basename(output_path)).isdigit()
-            else year_str,
-            "batch_id": batch_id,
-        }
-        for key, value in cfg.items():
-            metadata[key] = json.dumps(value) if isinstance(value, (dict, list)) else value
+        year_str = os.path.basename(output_path)
+        metadata = build_run_metadata(
+            year=int(year_str) if year_str.isdigit() else year_str,
+            config=cfg,
+            batch_id=batch_id,
+        )
     except Exception as e:
         print(
             f"Could not load config.yml, run_metadata will be skipped: {e}",

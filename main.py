@@ -13,7 +13,13 @@ import yaml
 from python.build_controls import get_mgra_controls, get_region_controls
 from python.build_seed_data import get_seed_households, get_seed_persons
 from python.outputs import create_abm_outputs, organize_outputs
-from python.datalake_exporter import find_controls_paths, find_seed_paths, new_batch_id, write_to_datalake
+from python.datalake_exporter import (
+    build_run_metadata,
+    find_controls_paths,
+    find_seed_paths,
+    new_batch_id,
+    write_to_datalake,
+)
 from python.db import get_engine
 
 # Paths — anchored to this file so the pipeline can be run from any directory
@@ -151,13 +157,7 @@ def process_year(year: int, engine, config: dict, secrets: dict, batch_id: str) 
         write_to_datalake(
             output_path=f"output/{year}",
             env=config["datalake"]["env"],
-            metadata={
-                "year": year,
-                "batch_id": batch_id,
-                "version": config["version"],
-                "seed_data": config["seed_data"],
-                "comments": config["comments"],
-            },
+            metadata=build_run_metadata(year=year, config=config, batch_id=batch_id),
             controls_paths=find_controls_paths(config["synthesis_runs"], POPSIM_DIR),
             seed_paths=find_seed_paths(config["synthesis_runs"], POPSIM_DIR),
         )
