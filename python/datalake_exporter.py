@@ -19,6 +19,7 @@ every other file for the run has been attempted to kick off a pipeline
 update only after a run's export has fully finished."""
 
 import datetime
+import getpass
 import glob
 import json
 import os
@@ -79,11 +80,12 @@ def new_batch_id():
 
 
 def build_run_metadata(year, config, batch_id):
-    """run_metadata row for one exported year: year, batch_id, plus every
+    """run_metadata row for one exported year: year, batch_id, the Windows
+    login running the export (user, like the old metadata.run table), plus every
     top-level field in config.yml. Nested/list fields (sql, synthesis_runs,
     years) are JSON-encoded so pandas/pyarrow can serialize them as flat
     string columns in the run_metadata parquet file."""
-    metadata = {"year": year, "batch_id": batch_id}
+    metadata = {"year": year, "batch_id": batch_id, "user": getpass.getuser()}
     for key, value in config.items():
         metadata[key] = json.dumps(value) if isinstance(value, (dict, list)) else value
     return metadata
