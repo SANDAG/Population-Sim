@@ -3,12 +3,14 @@ resources:
     populationsim_pipeline_trigger:
       name: Population-Sim-Pipeline-Trigger
       # _export_status/ is written last by datalake_exporter.write_completion_marker,
-      # after every other file for a run has been attempted - so a pipeline update
-      # only kicks off once a whole export (CSVs, controls, seed files, metadata)
-      # has actually finished, not on every individual file upload.
-      # bundle mode "development" auto-pauses triggers on deploy unless overridden
+      #  so a pipeline update only kicks off once a whole export has actually finished.
+      
+      # PAUSED = pipeline must be started manually. 
+      #          defaults to PAUSED in dev mode, if not explicitly set as UNPAUSED.
+      # UNPAUSED = each completed export starts a pipeline run automatically.
+
       trigger:
-        pause_status: PAUSED
+        pause_status:
         file_arrival:
           url: ${var.source_root}/_export_status/
           min_time_between_triggers_seconds: 60

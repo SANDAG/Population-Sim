@@ -82,7 +82,14 @@ This repository contains the option in `config.yml` (`load_to_database: True`) t
 - **Silver** (`databricks/transformations/silver/`): cleaned, typed tables with a stable `run_id` attached via `run_id_lookup`/`run_info`, plus `silver_controls` and `silver_control_totals`, which reproduce a unified control-vs-result comparison across every geography and synthesis run.
 - **Gold** (`databricks/transformations/gold/`): BI-ready aggregate marts such as `gold_household_demographics` and `gold_population_by_mgra`.
 
-A Databricks job (`databricks/resources/populationsim.job.yml`) with a file arrival trigger automatically starts a pipeline update once `datalake_exporter.py` finishes writing a run's export, signaled by a `_export_status/<year>/_SUCCESS_*.json` completion marker. See `databricks.yml` and `databricks/resources/populationsim.pipeline.yml` for the bundle configuration.
+A Databricks job (`databricks/resources/populationsim.job.yml`) with a file arrival trigger starts a pipeline update once `datalake_exporter.py` finishes writing a run's export, signaled by a `_export_status/<year>/_SUCCESS_*.json` completion marker. See `databricks.yml` and `databricks/resources/populationsim.pipeline.yml` for the bundle configuration.
+
+#### Pausing or enabling the file arrival trigger
+Whether the trigger fires is controlled by `trigger.pause_status` in `databricks/resources/populationsim.job.yml`:
+
+- `UNPAUSED`: each completed export starts a pipeline update automatically.
+- `PAUSED`: exports land in the volume but nothing runs until running the pipeline in the Databricks UI
+
 
 ### Streamlit Report App
 This repository contains a Streamlit app that generates validation reports for PopulationSim outputs stored in SANDAG's production database. You can use it to visualize the results of the run interactively using Streamlit's easy-to-use interface. The documentation can be found here https://docs.streamlit.io/.
