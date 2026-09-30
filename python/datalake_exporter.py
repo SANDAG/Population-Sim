@@ -126,7 +126,7 @@ def export_csv_as_parquet(file, folder_name, ts_str, container, run_timestamp=No
         return True
     except ResourceExistsError:
         print(f"{lake_file_name} already exists in Azure, skipping", file=sys.stderr)
-        return False
+        return True
     except Exception as e:
         print(f"Failed to upload {lake_name}: {e}", file=sys.stderr)
         return False
@@ -155,7 +155,7 @@ def export_controls_csv(filepath, run_name, folder_name, ts_str, container, run_
         return True
     except ResourceExistsError:
         print(f"{lake_file_name} already exists in Azure, skipping", file=sys.stderr)
-        return False
+        return True
     except Exception as e:
         print(f"Failed to upload {lake_name}: {e}", file=sys.stderr)
         return False
@@ -181,7 +181,7 @@ def export_seed_csv(filepath, run_name, seed_type, folder_name, ts_str, containe
         return True
     except ResourceExistsError:
         print(f"{lake_file_name} already exists in Azure, skipping", file=sys.stderr)
-        return False
+        return True
     except Exception as e:
         print(f"Failed to upload {lake_name}: {e}", file=sys.stderr)
         return False
@@ -311,7 +311,7 @@ def write_to_datalake(output_path, env, metadata=None, controls_paths=None, seed
             print("run_metadata.parquet written to Azure")
         except ResourceExistsError:
             print(f"{meta_blob} already exists in Azure, skipping", file=sys.stderr)
-            failed.append("run_metadata.parquet")
+            succeeded.append("run_metadata.parquet")
         except Exception as e:
             print(f"Failed to upload run_metadata: {e}", file=sys.stderr)
             failed.append("run_metadata.parquet")
@@ -319,6 +319,8 @@ def write_to_datalake(output_path, env, metadata=None, controls_paths=None, seed
     print(f"\nExport complete: {len(succeeded)} succeeded, {len(failed)} failed")
     if failed:
         print(f"Failed files: {', '.join(failed)}", file=sys.stderr)
+        print("Completion marker not written because the export is incomplete", file=sys.stderr)
+        return
 
     write_completion_marker(folder_name, ts_str, container, succeeded, failed)
 
