@@ -8,10 +8,10 @@ sql:
   mgra_controls: "sql/mgra_controls.sql"
   region_controls: "sql/region_controls.sql"
   mgrabase: "sql/mgrabase.sql"
-  load_to_database: False
+  load_to_database: True
 
 datalake:
-  env: dev
+  env: dev # development environment. change to 'prod' for production.
 
 economic_controls: "data/Economic Team Region Controls.csv"
 
