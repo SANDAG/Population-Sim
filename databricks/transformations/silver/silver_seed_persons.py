@@ -1,11 +1,12 @@
 from pyspark import pipelines as dp
 from pyspark.sql import functions as F
 
-from utilities.column_comments import SEED_PERSONS, with_comments
+from utilities.column_comments import SEED_PERSON_TYPES, SEED_PERSONS, schema_ddl
 
 
 @dp.table(
     comment="Cleaned seed persons across the household and GQ runs, unioned",
+    schema=schema_ddl(SEED_PERSON_TYPES, SEED_PERSONS),
     table_properties={"delta.feature.timestampNtz": "supported"},
 )
 def silver_seed_persons():
@@ -29,8 +30,25 @@ def silver_seed_persons():
     for table_name in sources[1:]:
         combined = combined.unionByName(_clean(table_name))
 
-    return combined.transform(lambda df: df.select(
-        "run_id",
-        *[c for c in df.columns if c not in ("run_id", "run_timestamp")],
-        "run_timestamp",
-    )).transform(lambda df: with_comments(df, SEED_PERSONS))
+    return (
+        combined
+        .transform(lambda df: df.select(
+            "run_id",
+            *[c for c in df.columns if c not in ("run_id", "run_timestamp")],
+            "run_timestamp",
+        ))
+        # Integer PUMS columns with nulls arrive as DOUBLE from the parquet
+        .withColumns({
+            "SPORDER": F.col("SPORDER").cast("int"),
+            "AGEP": F.col("AGEP").cast("int"),
+            "ESR": F.col("ESR").cast("int"),
+            "COW": F.col("COW").cast("int"),
+            "WKHP": F.col("WKHP").cast("int"),
+            "MIL": F.col("MIL").cast("int"),
+            "SCHL": F.col("SCHL").cast("int"),
+            "OCCP": F.col("OCCP").cast("int"),
+            "WKW": F.col("WKW").cast("int"),
+            "SOC2": F.col("SOC2").cast("int"),
+            "PINCP": F.col("PINCP").cast("int"),
+        })
+    )

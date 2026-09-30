@@ -1,11 +1,12 @@
 from pyspark import pipelines as dp
 from pyspark.sql import functions as F
 
-from utilities.column_comments import SEED_HOUSEHOLDS, with_comments
+from utilities.column_comments import SEED_HOUSEHOLD_TYPES, SEED_HOUSEHOLDS, schema_ddl
 
 
 @dp.table(
     comment="Cleaned seed households across the household and GQ runs, unioned",
+    schema=schema_ddl(SEED_HOUSEHOLD_TYPES, SEED_HOUSEHOLDS),
     table_properties={"delta.feature.timestampNtz": "supported"},
 )
 def silver_seed_households():
@@ -29,8 +30,21 @@ def silver_seed_households():
     for table_name in sources[1:]:
         combined = combined.unionByName(_clean(table_name))
 
-    return combined.transform(lambda df: df.select(
-        "run_id",
-        *[c for c in df.columns if c not in ("run_id", "run_timestamp")],
-        "run_timestamp",
-    )).transform(lambda df: with_comments(df, SEED_HOUSEHOLDS))
+    return (
+        combined
+        .transform(lambda df: df.select(
+            "run_id",
+            *[c for c in df.columns if c not in ("run_id", "run_timestamp")],
+            "run_timestamp",
+        ))
+        # Integer PUMS columns with nulls arrive as DOUBLE from the parquet
+        .withColumns({
+            "NP": F.col("NP").cast("int"),
+            "HINCP": F.col("HINCP").cast("int"),
+            "HHADJINC": F.col("HHADJINC").cast("int"),
+            "HHT": F.col("HHT").cast("int"),
+            "HUPAC": F.col("HUPAC").cast("int"),
+            "VEH": F.col("VEH").cast("int"),
+            "BLD": F.col("BLD").cast("int"),
+        })
+    )

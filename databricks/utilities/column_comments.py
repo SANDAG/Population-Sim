@@ -1,24 +1,28 @@
-"""Column comments for the silver seed and synthetic population tables.
+"""Column types and comments for the silver seed and synthetic population tables.
 
 Uppercase names are ACS PUMS variables; their full code lists are in the
 Census "ACS PUMS Data Dictionary 2017-2021". Lowercase names are either derived
 in sql/seed_*.sql / python/build_seed_data.py or renamed in the silver layer.
 
-Comments are attached as Spark column metadata ({"comment": ...}), which Delta
-stores as the column's comment. Apply with_comments() as the LAST step of a
-table function: casts and other expressions drop column metadata.
+Comments are applied through the table's declared schema (@dp.table(schema=
+schema_ddl(...))). The pipeline ignores comments attached as DataFrame column
+metadata, so the schema is the only place they stick. The declared schema must
+list every column the table function returns, with matching types: when a
+source CSV gains or loses a column, update the *_TYPES list here too.
 """
 
-from pyspark.sql import DataFrame
-from pyspark.sql import functions as F
 
+def schema_ddl(types: list, comments: dict) -> str:
+    """DDL schema string for @dp.table(schema=...): every (column, type) pair in
+    types, in order, with a COMMENT wherever comments has an entry."""
+    def _column(name, type_):
+        ddl = f"`{name}` {type_}"
+        if name in comments:
+            escaped = comments[name].replace("\\", "\\\\").replace("'", "\\'")
+            ddl += f" COMMENT '{escaped}'"
+        return ddl
 
-def with_comments(df: DataFrame, comments: dict) -> DataFrame:
-    """Attach comments to every column of df that has an entry in comments."""
-    return df.select(*[
-        F.col(c).alias(c, metadata={"comment": comments[c]}) if c in comments else F.col(c)
-        for c in df.columns
-    ])
+    return ",\n".join(_column(name, type_) for name, type_ in types)
 
 
 # Columns added by the exporter / silver layer to every table
@@ -118,10 +122,13 @@ _SYNTHETIC_COMMON = {
 # by python/outputs.py before export.
 _ZERO_IS_NA = "; 0 = N/A (filled before export)"
 
+_SYNTHESIS_RUN = "Synthesis run whose seed file this row came from: household, gq_mil, gq_col or gq_oth"
+
 SEED_HOUSEHOLDS = {
     **_RUN_COLUMNS,
     **_HH,
     "hhid": "Seed household id: sequential by SERIALNO within each seed file, so not unique across the unioned household and GQ seeds",
+    "synthesis_run": _SYNTHESIS_RUN,
 }
 
 SEED_PERSONS = {
@@ -131,6 +138,7 @@ SEED_PERSONS = {
     "worker": "Derived: 1 if ESR in (1,2,4,5), i.e. employed (civilian or armed forces), else 0",
     "race": "Derived race/ethnicity control category: Hispanic (any race), White alone, Black or African American alone, Asian alone, Two or More Races, Other",
     "hhid": "Seed household id linking to silver_seed_households.hhid within the same seed file",
+    "synthesis_run": _SYNTHESIS_RUN,
 }
 
 SYNTHETIC_HOUSEHOLDS = {
@@ -154,3 +162,96 @@ SYNTHETIC_PERSONS = {
            for k in ("ESR", "COW", "WKHP", "MIL", "SCHL", "OCCP", "WKW")},
     }, SYNTHETIC_PERSON_RENAMES),
 }
+
+
+# --- Declared column types, in table column order ---
+# Seed PUMS columns that are integers with nulls arrive from the parquet as
+# DOUBLE; the silver seed tables cast them to INT, so they are INT here.
+
+_RUN_ID = [("run_id", "BIGINT"), ("year", "INT")]
+_RUN_TIMESTAMP = [("run_timestamp", "TIMESTAMP_NTZ")]
+
+SEED_HOUSEHOLD_TYPES = _RUN_ID + [
+    ("SERIALNO", "STRING"),
+    ("PUMA", "BIGINT"),
+    ("NP", "INT"),
+    ("HINCP", "INT"),
+    ("HHADJINC", "INT"),
+    ("HHT", "INT"),
+    ("workers", "BIGINT"),
+    ("HUPAC", "INT"),
+    ("VEH", "INT"),
+    ("BLD", "INT"),
+    ("TYPEHUGQ", "BIGINT"),
+    ("gq_type", "BIGINT"),
+    ("WGTP", "DOUBLE"),  # a weight, so left uncast even though current values are whole
+    ("hhid", "BIGINT"),
+    ("synthesis_run", "STRING"),
+] + _RUN_TIMESTAMP
+
+SEED_PERSON_TYPES = _RUN_ID + [
+    ("SERIALNO", "STRING"),
+    ("SPORDER", "INT"),
+    ("PUMA", "BIGINT"),
+    ("AGEP", "INT"),
+    ("SEX", "BIGINT"),
+    ("ESR", "INT"),
+    ("laborforce", "BIGINT"),
+    ("worker", "BIGINT"),
+    ("COW", "INT"),
+    ("WKHP", "INT"),
+    ("SCHG", "BIGINT"),
+    ("HISP", "BIGINT"),
+    ("RAC1P", "BIGINT"),
+    ("race", "STRING"),
+    ("MIL", "INT"),
+    ("SCHL", "INT"),
+    ("OCCP", "INT"),
+    ("WKW", "INT"),
+    ("NAICSP", "STRING"),
+    ("NAICS2", "STRING"),
+    ("SOCP", "STRING"),
+    ("SOC2", "INT"),
+    ("TYPEHUGQ", "BIGINT"),
+    ("gq_type", "BIGINT"),
+    ("PINCP", "INT"),
+    ("hhid", "BIGINT"),
+    ("synthesis_run", "STRING"),
+] + _RUN_TIMESTAMP
+
+SYNTHETIC_HOUSEHOLD_TYPES = _RUN_ID + [
+    ("household_id", "BIGINT"),
+    ("mgra", "BIGINT"),
+    ("serialno", "STRING"),
+    ("num_persons", "INT"),
+    ("hh_adj_income", "INT"),
+    ("hh_type", "INT"),
+    ("presence_of_children", "INT"),
+    ("vehicles", "INT"),
+    ("building_type", "INT"),
+    ("gq_type", "BIGINT"),
+    ("workers", "BIGINT"),
+] + _RUN_TIMESTAMP
+
+SYNTHETIC_PERSON_TYPES = _RUN_ID + [
+    ("mgra", "BIGINT"),
+    ("household_id", "BIGINT"),
+    ("serialno", "STRING"),
+    ("person_order", "INT"),
+    ("age", "INT"),
+    ("sex", "BIGINT"),
+    ("employment_status", "INT"),
+    ("class_of_worker", "INT"),
+    ("work_hours_per_week", "INT"),
+    ("school_grade", "BIGINT"),
+    ("race", "BIGINT"),
+    ("hispanic_origin", "BIGINT"),
+    ("military_service", "INT"),
+    ("education_attainment", "INT"),
+    ("occupation_code", "INT"),
+    ("weeks_worked", "INT"),
+    ("naics_industry_code", "STRING"),
+    ("naics_2digit", "STRING"),
+    ("soc_occupation_code", "STRING"),
+    ("soc_2digit", "INT"),
+] + _RUN_TIMESTAMP

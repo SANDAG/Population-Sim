@@ -3,13 +3,15 @@ from pyspark.sql import functions as F
 
 from utilities.column_comments import (
     SYNTHETIC_HOUSEHOLD_RENAMES,
+    SYNTHETIC_HOUSEHOLD_TYPES,
     SYNTHETIC_HOUSEHOLDS,
-    with_comments,
+    schema_ddl,
 )
 
 
 @dp.table(
     comment="Cleaned synthetic households with standardized column names and types",
+    schema=schema_ddl(SYNTHETIC_HOUSEHOLD_TYPES, SYNTHETIC_HOUSEHOLDS),
     table_properties={"delta.feature.timestampNtz": "supported"},
 )
 @dp.expect_or_drop("valid_household_id", "household_id IS NOT NULL")
@@ -35,5 +37,4 @@ def silver_synthetic_households():
             "vehicles": F.col("vehicles").cast("int"),
             "building_type": F.col("building_type").cast("int"),
         })
-        .transform(lambda df: with_comments(df, SYNTHETIC_HOUSEHOLDS))
     )

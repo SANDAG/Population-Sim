@@ -3,13 +3,15 @@ from pyspark.sql import functions as F
 
 from utilities.column_comments import (
     SYNTHETIC_PERSON_RENAMES,
+    SYNTHETIC_PERSON_TYPES,
     SYNTHETIC_PERSONS,
-    with_comments,
+    schema_ddl,
 )
 
 
 @dp.table(
     comment="Cleaned synthetic persons with standardized column names and types",
+    schema=schema_ddl(SYNTHETIC_PERSON_TYPES, SYNTHETIC_PERSONS),
     table_properties={"delta.feature.timestampNtz": "supported"},
 )
 @dp.expect_or_drop("valid_household_id", "household_id IS NOT NULL")
@@ -39,5 +41,4 @@ def silver_synthetic_persons():
             "weeks_worked": F.col("weeks_worked").cast("int"),
             "soc_2digit": F.col("soc_2digit").cast("int"),
         })
-        .transform(lambda df: with_comments(df, SYNTHETIC_PERSONS))
     )
