@@ -10,7 +10,7 @@ resources:
       # UNPAUSED = each completed export starts a pipeline run automatically.
 
       trigger:
-        pause_status:
+        pause_status: PAUSED
         file_arrival:
           url: ${var.source_root}/_export_status/
           min_time_between_triggers_seconds: 60
