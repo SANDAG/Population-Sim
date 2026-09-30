@@ -6,11 +6,10 @@ resources:
       #  so a pipeline update only kicks off once a whole export has actually finished.
       
       # PAUSED = pipeline must be started manually. 
-      #          defaults to PAUSED in dev mode, if not explicitly set as UNPAUSED.
       # UNPAUSED = each completed export starts a pipeline run automatically.
 
       trigger:
-        pause_status: PAUSED
+        pause_status: UNPAUSED
         file_arrival:
           url: ${var.source_root}/_export_status/
           min_time_between_triggers_seconds: 60
