@@ -234,8 +234,10 @@ def write_completion_marker(folder_name, ts_str, container, succeeded, failed):
             name=marker_blob, data=json.dumps(marker).encode("utf-8"), overwrite=True
         )
         print(f"Export completion marker written ({len(succeeded)} succeeded, {len(failed)} failed)")
+        return True
     except Exception as e:
         print(f"Failed to upload completion marker: {e}", file=sys.stderr)
+        return False
 
 
 def write_to_datalake(output_path, env, metadata=None, controls_paths=None, seed_paths=None):
@@ -244,18 +246,18 @@ def write_to_datalake(output_path, env, metadata=None, controls_paths=None, seed
             f"Output path does not exist or is not a directory: {output_path}",
             file=sys.stderr,
         )
-        return
+        return False
 
     cloud_bool, container = connect_to_azure(env)
     if not cloud_bool:
-        return
+        return False
 
     folder_name = os.path.basename(os.path.normpath(output_path))
 
     files = glob.glob(os.path.join(output_path, "*.csv"))
     if not files:
         print(f"No CSV files found in {output_path}", file=sys.stderr)
-        return
+        return False
 
     # synthetic_persons.csv is used as a reference file to derive the run timestamp.
     # Its modification time represents when the PopulationSim run completed and is used to
@@ -263,7 +265,7 @@ def write_to_datalake(output_path, env, metadata=None, controls_paths=None, seed
     ref_file = os.path.join(output_path, "synthetic_persons.csv")
     if not os.path.isfile(ref_file):
         print(f"synthetic_persons.csv not found in {output_path}", file=sys.stderr)
-        return
+        return False
     created_ts = datetime.datetime.fromtimestamp(os.path.getmtime(ref_file))
     ts_str = created_ts.strftime("%Y%m%d_%H%M%S")
 
@@ -322,9 +324,9 @@ def write_to_datalake(output_path, env, metadata=None, controls_paths=None, seed
     if failed:
         print(f"Failed files: {', '.join(failed)}", file=sys.stderr)
         print("Completion marker not written because the export is incomplete", file=sys.stderr)
-        return
+        return False
 
-    write_completion_marker(folder_name, ts_str, container, succeeded, failed)
+    return write_completion_marker(folder_name, ts_str, container, succeeded, failed)
 
 
 if __name__ == "__main__":
