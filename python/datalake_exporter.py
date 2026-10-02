@@ -53,8 +53,10 @@ def connect_to_azure(env):
     try:
         if env == "dev":
             sas_url = os.environ["AZURE_STORAGE_SAS_TOKEN_DS_DEV_SHARED"]
-        else:
+        elif env == "prod":
             sas_url = os.environ["AZURE_STORAGE_SAS_TOKEN_DS_PROD_SHARED"]
+        else:
+            raise ValueError(f"env must be 'dev' or 'prod', got {env!r}")
         container = ContainerClient.from_container_url(sas_url)
         container.get_account_information()
         print("popsim exporter connected to Azure container")
