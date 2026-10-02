@@ -33,6 +33,9 @@ sql:
   mgrabase: "sql/mgrabase.sql" # mgrabase file generation data query
   load_to_database: False # Set to True to write outputs to the Azure datalake (for ingestion by the Databricks pipeline)
 
+datalake:
+  env: dev # Required when exporting; use 'dev' or 'prod'
+
 economic_controls: "data/Economic Team Region Controls.csv" # region economic controls provided by SANDAG's Economics Team
 
 years: # years for which to generate controls and run populationsim
