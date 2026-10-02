@@ -166,7 +166,10 @@ def export_controls_csv(filepath, run_name, folder_name, ts_str, container, run_
 def export_seed_csv(filepath, run_name, seed_type, folder_name, ts_str, container, run_timestamp=None):
     lake_name = f"seed_{seed_type}" if run_name == "household" else f"seed_{seed_type}_{run_name}"
     try:
-        table = pd.read_csv(filepath)
+        string_columns = {"SERIALNO": "string"}
+        if seed_type == "persons":
+            string_columns.update({"NAICSP": "string", "NAICS2": "string", "SOCP": "string"})
+        table = pd.read_csv(filepath, dtype=string_columns)
         if folder_name.isdigit():
             table["year"] = int(folder_name)
         table["synthesis_run"] = run_name
