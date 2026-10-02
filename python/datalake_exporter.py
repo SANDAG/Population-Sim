@@ -374,7 +374,7 @@ if __name__ == "__main__":
     try:
         with open(config_path, "r") as f:
             cfg = yaml.safe_load(f)
-        year_str = os.path.basename(output_path)
+        year_str = os.path.basename(os.path.normpath(output_path))
         metadata = build_run_metadata(
             year=int(year_str) if year_str.isdigit() else year_str,
             config=cfg,
