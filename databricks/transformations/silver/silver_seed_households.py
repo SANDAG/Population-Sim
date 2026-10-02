@@ -46,5 +46,6 @@ def silver_seed_households():
             "HUPAC": F.col("HUPAC").cast("int"),
             "VEH": F.col("VEH").cast("int"),
             "BLD": F.col("BLD").cast("int"),
+            "WGTP": F.col("WGTP").cast("double"),
         })
     )
