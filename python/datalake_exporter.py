@@ -105,23 +105,23 @@ def get_lake_name(name):
 
 
 def export_csv_as_parquet(file, folder_name, ts_str, container, run_timestamp=None):
-    table = pd.read_csv(file, low_memory=False)
-    # year and run_timestamp are added as columns (not just encoded in the blob path) so
-    # Autoloader/Spark can partition and query across runs without parsing the file path.
-    if folder_name.isdigit():
-        table["year"] = int(folder_name)
-    if run_timestamp is not None:
-        table["run_timestamp"] = run_timestamp
     name = os.path.splitext(os.path.basename(file))[0]
     lake_name = get_lake_name(name)
-    lake_file_name = build_blob_path(
-        "popsim", lake_name, folder_name, lake_name + "_" + ts_str + ".parquet"
-    )
-    parquet_file = BytesIO()
-    table.to_parquet(parquet_file, engine="pyarrow")
-    parquet_file.seek(0)
-    t0 = datetime.datetime.now()
     try:
+        table = pd.read_csv(file, low_memory=False)
+        # year and run_timestamp are added as columns (not just encoded in the blob path) so
+        # Autoloader/Spark can partition and query across runs without parsing the file path.
+        if folder_name.isdigit():
+            table["year"] = int(folder_name)
+        if run_timestamp is not None:
+            table["run_timestamp"] = run_timestamp
+        lake_file_name = build_blob_path(
+            "popsim", lake_name, folder_name, lake_name + "_" + ts_str + ".parquet"
+        )
+        parquet_file = BytesIO()
+        table.to_parquet(parquet_file, engine="pyarrow")
+        parquet_file.seek(0)
+        t0 = datetime.datetime.now()
         container.upload_blob(name=lake_file_name, data=parquet_file)
         elapsed = (datetime.datetime.now() - t0).total_seconds()
         print(f"{lake_name} took {elapsed:.1f}s to write to Azure")
@@ -135,23 +135,23 @@ def export_csv_as_parquet(file, folder_name, ts_str, container, run_timestamp=No
 
 
 def export_controls_csv(filepath, run_name, folder_name, ts_str, container, run_timestamp=None):
-    table = pd.read_csv(filepath)
-    if folder_name.isdigit():
-        table["year"] = int(folder_name)
-    table["synthesis_run"] = run_name
-    # run_timestamp is required to join this file to run_id_lookup (keyed on
-    # run_timestamp + year), matching the timestamp stamped on every other
-    # export for the same run.
-    if run_timestamp is not None:
-        table["run_timestamp"] = run_timestamp
     lake_name = "controls" if run_name == "household" else f"controls_{run_name}"
-    lake_file_name = build_blob_path(
-        "popsim", lake_name, folder_name, lake_name + "_" + ts_str + ".parquet"
-    )
-    parquet_file = BytesIO()
-    table.to_parquet(parquet_file, engine="pyarrow")
-    parquet_file.seek(0)
     try:
+        table = pd.read_csv(filepath)
+        if folder_name.isdigit():
+            table["year"] = int(folder_name)
+        table["synthesis_run"] = run_name
+        # run_timestamp is required to join this file to run_id_lookup (keyed on
+        # run_timestamp + year), matching the timestamp stamped on every other
+        # export for the same run.
+        if run_timestamp is not None:
+            table["run_timestamp"] = run_timestamp
+        lake_file_name = build_blob_path(
+            "popsim", lake_name, folder_name, lake_name + "_" + ts_str + ".parquet"
+        )
+        parquet_file = BytesIO()
+        table.to_parquet(parquet_file, engine="pyarrow")
+        parquet_file.seek(0)
         container.upload_blob(name=lake_file_name, data=parquet_file)
         print(f"{lake_name} written to Azure")
         return True
@@ -164,20 +164,20 @@ def export_controls_csv(filepath, run_name, folder_name, ts_str, container, run_
 
 
 def export_seed_csv(filepath, run_name, seed_type, folder_name, ts_str, container, run_timestamp=None):
-    table = pd.read_csv(filepath)
-    if folder_name.isdigit():
-        table["year"] = int(folder_name)
-    table["synthesis_run"] = run_name
-    if run_timestamp is not None:
-        table["run_timestamp"] = run_timestamp
     lake_name = f"seed_{seed_type}" if run_name == "household" else f"seed_{seed_type}_{run_name}"
-    lake_file_name = build_blob_path(
-        "popsim", lake_name, folder_name, lake_name + "_" + ts_str + ".parquet"
-    )
-    parquet_file = BytesIO()
-    table.to_parquet(parquet_file, engine="pyarrow")
-    parquet_file.seek(0)
     try:
+        table = pd.read_csv(filepath)
+        if folder_name.isdigit():
+            table["year"] = int(folder_name)
+        table["synthesis_run"] = run_name
+        if run_timestamp is not None:
+            table["run_timestamp"] = run_timestamp
+        lake_file_name = build_blob_path(
+            "popsim", lake_name, folder_name, lake_name + "_" + ts_str + ".parquet"
+        )
+        parquet_file = BytesIO()
+        table.to_parquet(parquet_file, engine="pyarrow")
+        parquet_file.seek(0)
         container.upload_blob(name=lake_file_name, data=parquet_file)
         print(f"{lake_name} written to Azure")
         return True
@@ -299,15 +299,15 @@ def write_to_datalake(output_path, env, metadata=None, controls_paths=None, seed
             (succeeded if ok else failed).append(label)
 
     if metadata is not None:
-        meta_df = pd.DataFrame([metadata])
-        meta_df["run_timestamp"] = created_ts
         meta_blob = build_blob_path(
             "popsim", "run_metadata", folder_name, "run_metadata_" + ts_str + ".parquet"
         )
-        parquet_file = BytesIO()
-        meta_df.to_parquet(parquet_file, engine="pyarrow")
-        parquet_file.seek(0)
         try:
+            meta_df = pd.DataFrame([metadata])
+            meta_df["run_timestamp"] = created_ts
+            parquet_file = BytesIO()
+            meta_df.to_parquet(parquet_file, engine="pyarrow")
+            parquet_file.seek(0)
             container.upload_blob(name=meta_blob, data=parquet_file)
             succeeded.append("run_metadata.parquet")
             print("run_metadata.parquet written to Azure")
