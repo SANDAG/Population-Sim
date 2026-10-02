@@ -250,7 +250,7 @@ def write_to_datalake(output_path, env, metadata=None, controls_paths=None, seed
     if not cloud_bool:
         return
 
-    folder_name = os.path.basename(output_path)
+    folder_name = os.path.basename(os.path.normpath(output_path))
 
     files = glob.glob(os.path.join(output_path, "*.csv"))
     if not files:
