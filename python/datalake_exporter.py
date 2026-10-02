@@ -397,10 +397,11 @@ if __name__ == "__main__":
         controls_paths = find_controls_paths(cfg.get("synthesis_runs", []), popsim_dir)
         seed_paths = find_seed_paths(cfg.get("synthesis_runs", []), popsim_dir)
 
-    write_to_datalake(
+    export_succeeded = write_to_datalake(
         output_path,
         env,
         metadata=metadata,
         controls_paths=controls_paths,
         seed_paths=seed_paths,
     )
+    sys.exit(0 if export_succeeded else 1)
