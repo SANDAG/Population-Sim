@@ -155,7 +155,7 @@ def process_year(year: int, engine, config: dict, secrets: dict, batch_id: str) 
 
     if config["sql"]["load_to_database"]:
         write_to_datalake(
-            output_path=f"output/{year}",
+            output_path=str(FINAL_OUTPUT_DIR / str(year)),
             env=config["datalake"]["env"],
             metadata=build_run_metadata(year=year, config=config, batch_id=batch_id),
             controls_paths=find_controls_paths(config["synthesis_runs"], POPSIM_DIR),
