@@ -171,8 +171,8 @@ def main() -> None:
 
     config, secrets = load_configs()
 
-    dbname = secrets["sql"]["output_database"] if config["sql"]["load_to_database"] else "master"
-    engine = get_engine(database=dbname)
+    # Input queries use fully qualified database names, so connect to master
+    engine = get_engine(database="master")
 
     write_seed_files(engine, config)
 
