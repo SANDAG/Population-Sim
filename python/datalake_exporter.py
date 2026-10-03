@@ -204,6 +204,13 @@ def find_controls_paths(synthesis_runs, popsim_dir=None):
             if os.path.isfile(candidate):
                 controls_paths[run["name"]] = candidate
                 break
+        else:
+            # A missing run would let the export publish a success marker
+            # without that run's control definitions.
+            searched = [os.path.join(popsim_dir, c) for c in run["configs"]]
+            raise FileNotFoundError(
+                f"controls.csv not found for synthesis run {run['name']!r}; searched {searched}"
+            )
     return controls_paths
 
 
@@ -219,8 +226,14 @@ def find_seed_paths(synthesis_runs, popsim_dir=None):
         data_dir = os.path.join(popsim_dir, run["data"])
         households_path = os.path.join(data_dir, f"seed_households_{suffix}.csv")
         persons_path = os.path.join(data_dir, f"seed_persons_{suffix}.csv")
-        if os.path.isfile(households_path) and os.path.isfile(persons_path):
-            seed_paths[run["name"]] = {"households": households_path, "persons": persons_path}
+        # A missing run would let the export publish a success marker
+        # without that run's seed data.
+        missing = [p for p in (households_path, persons_path) if not os.path.isfile(p)]
+        if missing:
+            raise FileNotFoundError(
+                f"Seed files not found for synthesis run {run['name']!r}: {missing}"
+            )
+        seed_paths[run["name"]] = {"households": households_path, "persons": persons_path}
     return seed_paths
 
 
@@ -367,35 +380,34 @@ if __name__ == "__main__":
     print(f"batch_id: {batch_id}")
 
     # Build run_metadata from config.yml plus the run year parsed from the output
-    # folder name. Skip metadata entirely if config.yml is missing/invalid.
+    # folder name. config.yml is required: without it, run_metadata, controls and
+    # seeds can't be exported, so the export would be incomplete.
     # Resolve config.yml/populationsim relative to output_path's repo root, not
     # this script's location
     # Assumes the standard layout: <repo_root>/output/<year>.
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(output_path)))
     config_path = os.path.join(repo_root, "config.yml")
     popsim_dir = os.path.join(repo_root, "populationsim")
-    metadata = None
-    cfg = None
     try:
         with open(config_path, "r") as f:
             cfg = yaml.safe_load(f)
+        # config.yml can parse to a list or scalar; only a mapping has synthesis_runs
+        if not isinstance(cfg, dict):
+            raise ValueError(f"expected a mapping, got {type(cfg).__name__}")
+        synthesis_runs = cfg.get("synthesis_runs")
+        if not synthesis_runs:
+            raise ValueError("synthesis_runs is missing or empty")
         year_str = os.path.basename(os.path.normpath(output_path))
         metadata = build_run_metadata(
             year=int(year_str) if year_str.isdigit() else year_str,
             config=cfg,
             batch_id=batch_id,
         )
+        controls_paths = find_controls_paths(synthesis_runs, popsim_dir)
+        seed_paths = find_seed_paths(synthesis_runs, popsim_dir)
     except Exception as e:
-        print(
-            f"Could not load config.yml, run_metadata will be skipped: {e}",
-            file=sys.stderr,
-        )
-
-    controls_paths = {}
-    seed_paths = {}
-    if cfg is not None:
-        controls_paths = find_controls_paths(cfg.get("synthesis_runs", []), popsim_dir)
-        seed_paths = find_seed_paths(cfg.get("synthesis_runs", []), popsim_dir)
+        print(f"Error: could not prepare export from {config_path}: {e}", file=sys.stderr)
+        sys.exit(1)
 
     export_succeeded = write_to_datalake(
         output_path,
