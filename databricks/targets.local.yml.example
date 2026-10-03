@@ -1,0 +1,5 @@
+# Copy to targets.local.yml (gitignored) and fill in your workspace URL.
+targets:
+  dev:
+    workspace:
+      host: https://<your-workspace>.azuredatabricks.net
