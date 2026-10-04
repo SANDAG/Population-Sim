@@ -15,6 +15,7 @@ from python.build_seed_data import get_seed_households, get_seed_persons
 from python.outputs import create_abm_outputs, organize_outputs
 from python.datalake_exporter import (
     build_run_metadata,
+    connect_to_azure,
     find_controls_paths,
     find_seed_paths,
     new_batch_id,
@@ -170,6 +171,16 @@ def main() -> None:
     )
 
     config, secrets = load_configs()
+
+    # Check data lake access up front so a missing SAS token or bad env fails
+    # now, not after the first year's simulation has finished
+    if config["sql"]["load_to_database"]:
+        connected, _ = connect_to_azure(config["datalake"]["env"])
+        if not connected:
+            raise RuntimeError(
+                "Cannot connect to the Azure data lake; check datalake.env in "
+                "config.yml and the SAS token environment variable"
+            )
 
     # Input queries use fully qualified database names, so connect to master
     engine = get_engine(database="master")

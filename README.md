@@ -31,7 +31,7 @@ sql:
   mgra_controls: "sql/mgra_controls.sql" # mgra controls data query
   region_controls: "sql/region_controls.sql" # region controls data query
   mgrabase: "sql/mgrabase.sql" # mgrabase file generation data query
-  load_to_database: False # Set to True to write outputs to the Azure datalake (for ingestion by the Databricks pipeline)
+  load_to_database: True # Write outputs to the Azure datalake (for ingestion by the Databricks pipeline); set to False to skip the export
 
 datalake:
   env: dev # Required when exporting; use 'dev' or 'prod'
