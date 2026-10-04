@@ -9,6 +9,9 @@ from utilities.column_comments import SEED_HOUSEHOLD_TYPES, SEED_HOUSEHOLDS, sch
     schema=schema_ddl(SEED_HOUSEHOLD_TYPES, SEED_HOUSEHOLDS),
     table_properties={"delta.feature.timestampNtz": "supported"},
 )
+# Data quality: drop rows with no run_id, i.e. from a partial export whose
+# synthetic_persons never landed, so it never got a run_id_lookup entry
+@dp.expect_or_drop("valid_run_id", "run_id IS NOT NULL")
 def silver_seed_households():
     lookup = spark.read.table("run_id_lookup")
     sources = [

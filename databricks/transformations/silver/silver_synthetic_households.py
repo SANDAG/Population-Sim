@@ -16,6 +16,9 @@ from utilities.column_comments import (
 )
 @dp.expect_or_drop("valid_household_id", "household_id IS NOT NULL")
 @dp.expect_or_drop("valid_mgra", "mgra IS NOT NULL")
+# Data quality: drop rows with no run_id, i.e. from a partial export whose
+# synthetic_persons never landed, so it never got a run_id_lookup entry
+@dp.expect_or_drop("valid_run_id", "run_id IS NOT NULL")
 def silver_synthetic_households():
     lookup = spark.read.table("run_id_lookup")
     return (
