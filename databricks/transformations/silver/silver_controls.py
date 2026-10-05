@@ -5,11 +5,12 @@ from pyspark.sql.window import Window
 # GQ runs each define a single "Total_GQ" target — the same string reused
 # across all three types (see populationsim/configs_gq_*/controls.csv) — so
 # control_id must be ordered by a stable per-run priority (household first,
-# then GQ types in a fixed order) rather than by target alone. This mirrors
-# the old etl.py behavior of appending GQ control rows after the household
-# controls.csv rows and numbering them sequentially, while keeping ids
-# reproducible across pipeline refreshes (a materialized_view is fully
-# recomputed each run).
+# then GQ types in a fixed order) rather than by target alone. Like the old
+# etl.py, GQ controls are numbered after the household controls, but within
+# each run they're ordered by target name, not controls.csv row order, so
+# control_id values won't match the old SQL inputs.controls ids. Ordering by
+# name keeps ids reproducible across pipeline refreshes (a materialized_view
+# is fully recomputed each run).
 _SOURCE_PRIORITY = {"household": 0, "gq_mil": 1, "gq_col": 2, "gq_oth": 3}
 _SOURCES = [
     "bronze_controls",

@@ -8,16 +8,16 @@ source_root = spark.conf.get("popsim.source_root")
 # here so silver/gold can disambiguate the "Total_GQ" target every GQ type
 # shares.
 _SOURCES = {
-    "bronze_final_summary_mgra_gq_mil": "gq_mil",
-    "bronze_final_summary_mgra_gq_col": "gq_col",
-    "bronze_final_summary_mgra_gq_oth": "gq_oth",
+    "bronze_final_summary_mgra_gq_mil": ("gq_mil", "military"),
+    "bronze_final_summary_mgra_gq_col": ("gq_col", "college"),
+    "bronze_final_summary_mgra_gq_oth": ("gq_oth", "other"),
 }
 
 
-def _register(table_name, synthesis_run):
+def _register(table_name, synthesis_run, label):
     @dp.table(
         name=table_name,
-        comment=f"Raw MGRA-level final summary for the {synthesis_run} GQ run",
+        comment=f"Raw MGRA-level final summary for the {label} GQ run ({synthesis_run})",
         table_properties={"delta.feature.timestampNtz": "supported"},
     )
     def _bronze():
@@ -29,5 +29,5 @@ def _register(table_name, synthesis_run):
         )
 
 
-for _table_name, _synthesis_run in _SOURCES.items():
-    _register(_table_name, _synthesis_run)
+for _table_name, (_synthesis_run, _label) in _SOURCES.items():
+    _register(_table_name, _synthesis_run, _label)
