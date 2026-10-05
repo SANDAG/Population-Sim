@@ -13,7 +13,14 @@ import yaml
 from python.build_controls import get_mgra_controls, get_region_controls
 from python.build_seed_data import get_seed_households, get_seed_persons
 from python.outputs import create_abm_outputs, organize_outputs
-from python.etl import run_etl
+from python.datalake_exporter import (
+    build_run_metadata,
+    connect_to_azure,
+    find_controls_paths,
+    find_seed_paths,
+    new_batch_id,
+    write_to_datalake,
+)
 from python.db import get_engine
 
 # Paths — anchored to this file so the pipeline can be run from any directory
@@ -116,7 +123,7 @@ def run_simulation(configs_dirs: list[Path], data_dir: Path, output_dir: Path, n
     subprocess.run(cmd, check=True, cwd=POPSIM_DIR)
     logging.info("Simulation run successful: %s", output_dir.name)
 
-def process_year(year: int, engine, config: dict, secrets: dict) -> None:
+def process_year(year: int, engine, config: dict, secrets: dict, batch_id: str) -> None:
     folder = "populationsim/data/"
 
     print(f"Building controls for {year}")
@@ -148,15 +155,15 @@ def process_year(year: int, engine, config: dict, secrets: dict) -> None:
     )
 
     if config["sql"]["load_to_database"]:
-        run_id = run_etl(
-            year=year,
-            engine=engine,
-            output_database=secrets["sql"]["output_database"],
-            version=config["version"],
-            staging_schema=secrets["sql"]["schema"],
-            seed_data=config["seed_data"],
-            comments=config["comments"],
+        export_succeeded = write_to_datalake(
+            output_path=str(FINAL_OUTPUT_DIR / str(year)),
+            env=config["datalake"]["env"],
+            metadata=build_run_metadata(year=year, config=config, batch_id=batch_id),
+            controls_paths=find_controls_paths(config["synthesis_runs"], POPSIM_DIR),
+            seed_paths=find_seed_paths(config["synthesis_runs"], POPSIM_DIR),
         )
+        if not export_succeeded:
+            raise RuntimeError(f"Data lake export failed for {year}")
 
 def main() -> None:
     logging.basicConfig(
@@ -165,13 +172,25 @@ def main() -> None:
 
     config, secrets = load_configs()
 
-    dbname = secrets["sql"]["output_database"] if config["sql"]["load_to_database"] else "master"
-    engine = get_engine(database=dbname)
+    # Check data lake access up front so a missing SAS token or bad env fails
+    # now, not after the first year's simulation has finished
+    if config["sql"]["load_to_database"]:
+        connected, _ = connect_to_azure(config["datalake"]["env"])
+        if not connected:
+            raise RuntimeError(
+                "Cannot connect to the Azure data lake; check datalake.env in "
+                "config.yml and the SAS token environment variable"
+            )
+
+    # Input queries use fully qualified database names, so connect to master
+    engine = get_engine(database="master")
 
     write_seed_files(engine, config)
 
+    # One batch_id per execution, shared by every year's exported run_metadata
+    batch_id = new_batch_id()
     for year in config["years"]:
-        process_year(year, engine, config, secrets)
+        process_year(year, engine, config, secrets, batch_id)
 
     logging.info("All years processed successfully.")
 

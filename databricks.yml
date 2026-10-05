@@ -1,0 +1,35 @@
+# Databricks Asset Bundle for the PopSim Lakeflow Declarative Pipeline.
+#
+# The workspace host is intentionally not committed. Copy
+# databricks/targets.local.yml.example to databricks/targets.local.yml (gitignored)
+# and fill in the host; the VS Code Databricks extension requires it.
+bundle:
+  name: populationsim
+
+include:
+  - databricks/resources/*.yml
+  # Gitignored per-user overrides (e.g. workspace host) - see databricks/targets.local.yml.example
+  - databricks/*.local.yml
+
+# Only upload the pipeline code, not data/, output/, populationsim/, etc.
+sync:
+  paths:
+    - databricks
+
+variables:
+  catalog:
+    description: Target catalog for pipeline tables
+    default: sandbox
+  schema:
+    description: Target schema for pipeline tables
+    default: ${workspace.current_user.short_name}
+  source_root:
+    description: Volume path containing PopSim parquet output
+    default: /Volumes/tam_dev/raw/popsim_output
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
