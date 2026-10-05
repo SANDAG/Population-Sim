@@ -14,9 +14,9 @@ popsim/controls_<run>/<year>/... (GQ runs).
 
 This layout lets Databricks Autoloader / Spark Declarative Pipelines point at
 popsim/<file>/ and ingest all runs for a given table across years.
-A completion marker is written last, to popsim/_export_status/<year>/, once
-every other file for the run has been attempted to kick off a pipeline
-update only after a run's export has fully finished."""
+A completion marker is written last, to popsim/_export_status/<year>/, only
+once every other file for the run has been uploaded successfully, so a
+pipeline update kicks off only after a run's export has fully finished."""
 
 import datetime
 import getpass
@@ -237,11 +237,11 @@ def find_seed_paths(synthesis_runs, popsim_dir=None):
     return seed_paths
 
 
-def write_completion_marker(folder_name, ts_str, container, succeeded, failed):
-    """Written last, after every other file has been attempted for a Databricks 
-    file arrival trigger. Overwrittenon retries so it always reflects the most 
-    recent attempt for this run."""
-    marker = {"succeeded": len(succeeded), "failed": len(failed), "failed_files": failed}
+def write_completion_marker(folder_name, ts_str, container, succeeded):
+    """Written last, only after every other file uploaded successfully, for a
+    Databricks file arrival trigger. Overwritten on retries so it always
+    reflects the most recent successful attempt for this run."""
+    marker = {"succeeded": len(succeeded), "files": succeeded}
     marker_blob = build_blob_path(
         "popsim", "_export_status", folder_name, "_SUCCESS_" + ts_str + ".json"
     )
@@ -249,7 +249,7 @@ def write_completion_marker(folder_name, ts_str, container, succeeded, failed):
         container.upload_blob(
             name=marker_blob, data=json.dumps(marker).encode("utf-8"), overwrite=True
         )
-        print(f"Export completion marker written ({len(succeeded)} succeeded, {len(failed)} failed)")
+        print(f"Export completion marker written ({len(succeeded)} files)")
         return True
     except Exception as e:
         print(f"Failed to upload completion marker: {e}", file=sys.stderr)
@@ -342,7 +342,7 @@ def write_to_datalake(output_path, env, metadata=None, controls_paths=None, seed
         print("Completion marker not written because the export is incomplete", file=sys.stderr)
         return False
 
-    return write_completion_marker(folder_name, ts_str, container, succeeded, failed)
+    return write_completion_marker(folder_name, ts_str, container, succeeded)
 
 
 if __name__ == "__main__":

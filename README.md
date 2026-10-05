@@ -20,7 +20,7 @@ The `secrets.yml` should mirror the following structure.
 sql:
   server: "<SQLInstanceName>" # SQL instance containing seed and control data
   schema: "<[SQLSchemaName]>" # E&F team Series 15 UDM schema to use for control data
-  output_database: "<SQLoutputDatabaseName>" # Optional PopulationSim output SQL database
+  output_database: "<SQLoutputDatabaseName>" # Optional; only used by the Streamlit report app (report/report.py), not by the PopulationSim run
 ```
 3. **Update the `config.yml` configuration file** in the project root directory
 
