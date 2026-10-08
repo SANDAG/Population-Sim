@@ -55,7 +55,7 @@ def silver_control_totals():
 
     summary = mgra.unionByName(puma).unionByName(region).unionByName(gq)
 
-    controls = spark.read.table("silver_controls").select(
+    controls = spark.read.table("silver_control_definitions").select(
         "run_id", "synthesis_run", "target", "control_id"
     )
 

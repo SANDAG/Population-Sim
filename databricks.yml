@@ -5,6 +5,8 @@
 # and fill in the host; the VS Code Databricks extension requires it.
 bundle:
   name: populationsim
+  databricks_cli_version: ">= 1.19.0"
+
 
 include:
   - databricks/resources/*.yml

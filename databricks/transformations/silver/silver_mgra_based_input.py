@@ -1,9 +1,19 @@
 from pyspark import pipelines as dp
 from pyspark.sql import functions as F
 
+from utilities.column_comments import (
+    MGRA_BASED_INPUT,
+    MGRA_BASED_INPUT_TYPES,
+    schema_ddl,
+)
+
 
 @dp.table(
-    comment="Cleaned MGRA-based ABM input with run_id attached",
+    comment=(
+        "E&F mgrabase for the run year, exported with each PopSim run as the ABM "
+        "team's MGRA-based input; bronze_mgra_based_input with run_id attached"
+    ),
+    schema=schema_ddl(MGRA_BASED_INPUT_TYPES, MGRA_BASED_INPUT),
     table_properties={"delta.feature.timestampNtz": "supported"},
 )
 # Data quality: drop rows with no run_id, i.e. from a partial export whose
@@ -13,12 +23,11 @@ def silver_mgra_based_input():
     lookup = spark.read.table("run_id_lookup")
     return (
         spark.readStream.table("bronze_mgra_based_input")
-        .drop("_rescued_data")
         .withColumn("year", F.col("year").cast("int"))
         .join(lookup, ["run_timestamp", "year"], "left")
-        .transform(lambda df: df.select(
-            "run_id",
-            *[c for c in df.columns if c not in ("run_id", "run_timestamp")],
-            "run_timestamp",
-        ))
+        # Explicit column list and casts so the table matches its declared schema
+        .select(*[
+            c if c == "run_timestamp" else F.col(c).cast(t).alias(c)
+            for c, t in MGRA_BASED_INPUT_TYPES
+        ])
     )

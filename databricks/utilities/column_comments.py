@@ -27,7 +27,7 @@ def schema_ddl(types: list, comments: dict) -> str:
 
 # Columns added by the exporter / silver layer to every table
 _RUN_COLUMNS = {
-    "run_id": "Pipeline run identifier, assigned once per (run_timestamp, year) in run_id_lookup",
+    "run_id": "Pipeline run identifier, one per (run_timestamp, year) from run_id_lookup, numbered in ingestion order",
     "year": "Model year of the PopSim run (output folder name)",
     "run_timestamp": "Timestamp of the PopSim export this row came from",
 }
@@ -164,6 +164,94 @@ SYNTHETIC_PERSONS = {
 }
 
 
+# PopulationSim's summarize step (populationsim/steps/summarize.py meta_summary)
+# writes one row per household control. Each weight column is that control's
+# region-wide total at one synthesis stage: sum over seed households of
+# (household's incidence for the control x its weight at that stage). The
+# region_* columns use the PUMA (seed geography) weights summed over the region.
+_WEIGHTED_TOTAL = "Region-wide total for this control using "
+FINAL_SUMMARY_REGION = {
+    **_RUN_COLUMNS,
+    "control_name": "Control target name from populationsim/configs/controls.csv (e.g. Total_HH, Age_5to9)",
+    "control_value": "Region-wide control total the synthesis was trying to match",
+    "region_preliminary_balanced_weight": _WEIGHTED_TOTAL + "PUMA weights from initial_seed_balancing, before meta control factoring",
+    "region_balanced_weight": _WEIGHTED_TOTAL + "PUMA weights after final_seed_balancing (fractional)",
+    "region_integer_weight": _WEIGHTED_TOTAL + "PUMA weights after integerize_final_seed_weights (whole households)",
+    "mgra_balanced_weight": _WEIGHTED_TOTAL + "MGRA weights from sub_balancing.geography=mgra, before integerizing (fractional)",
+    "mgra_integer_weight": _WEIGHTED_TOTAL + "final integerized MGRA weights, i.e. the synthetic population; the Result in silver_control_totals",
+}
+
+
+# E&F mgrabase columns exported by sql/mgrabase.sql. Descriptions come from the
+# SANDAG ABM wiki (Input Files: mgra_based_input), the ABM technical
+# documentation, and the CVM19 employment sector list.
+# Income bands i1-i10 are in the dollar year of the E&F forecast series, and that
+# dollar year changes from series to series (older ABM docs list 2007 dollars),
+# so the ranges are left out here. Confirm them for the series in use, and don't
+# compare bands across series without converting.
+_INCOME_BAND = (
+    "Households in income band {} of 10 (1 = lowest); band ranges are in the E&F "
+    "series' dollar year, which differs between series, so confirm before use"
+)
+_EMP = "Employment: "
+MGRA_BASED_INPUT = {
+    **_RUN_COLUMNS,
+    "mgra": "MGRA (Master Geographic Reference Area) number",
+    "taz": "TAZ (Traffic Analysis Zone) number",
+    "LUZ": "Land Use Zone (LUZ) ID",
+    "pop": "Total population",
+    "hhp": "Total household population (excludes group quarters population)",
+    "hs": "Housing structures",
+    "hs_sf": "Single-family structures",
+    "hs_mf": "Multi-family structures",
+    "hs_mh": "Mobile homes",
+    "hh": "Total number of households",
+    "hh_sf": "Number of households - single family",
+    "hh_mf": "Number of households - multi-family",
+    "hh_mh": "Number of households - mobile homes",
+    "hhs": "Household size",
+    "gq_civ": "Group quarters, civilian",
+    "gq_mil": "Group quarters, military",
+    **{f"i{n}": _INCOME_BAND.format(n) for n in range(1, 11)},
+    "emp_gov": _EMP + "Government",
+    "emp_mil": _EMP + "Military",
+    "emp_ag_min": _EMP + "Agriculture, forestry, fishing and hunting, and mining",
+    "emp_bus_svcs": _EMP + "Business services & waste management",
+    "emp_fin_res_mgm": _EMP + "FIRE (finance, insurance, real estate) & management of enterprises",
+    "emp_educ": _EMP + "Education (private & public)",
+    "emp_hlth": _EMP + "Healthcare (private & public)",
+    "emp_ret": _EMP + "Retail",
+    "emp_trn_wrh": _EMP + "Transportation & warehousing",
+    "emp_con": _EMP + "Construction",
+    "emp_utl": _EMP + "Utilities",
+    "emp_mnf": _EMP + "Manufacturing",
+    "emp_whl": _EMP + "Wholesale",
+    "emp_ent": _EMP + "Entertainment",
+    "emp_accm": _EMP + "Accommodation",
+    "emp_food": _EMP + "Food services",
+    "emp_oth": _EMP + "Other services",
+    "emp_non_ws_wfh": _EMP + "Non-wage/salary, working from home",
+    "emp_non_ws_oth": _EMP + "Non-wage/salary, not working from home",
+    "emp_total": "Total employment (emp_tot in the E&F mgrabase table)",
+    "pseudomsa": "Pseudo MSA classification (regional sub-areas)",
+    "zip": "ZIP code",
+    "enrollgradekto8": "Grade school K-8 enrollment",
+    "enrollgrade9to12": "Grade school 9-12 enrollment",
+    "majorcollegeenroll_total": "Major college enrollment",
+    "othercollegeenroll_total": "Other college enrollment",
+    "hotelroomtotal": "Total number of hotel rooms",
+    "parkactive": "Acres of active park",
+    "openspaceparkpreserve": "Acres of open park or preserve",
+    "beachactive": "Acres of active beach",
+    "district27": "District 27 designation",
+    "milestocoast": "Distance (miles) to the nearest coast",
+    "acre": "Total acres in the MGRA",
+    "landacre": "Acres of land in the MGRA",
+    "effective_acres": "Effective acres in the MGRA",
+    "truckregiontype": "Truck region type",
+}
+
+
 # --- Declared column types, in table column order ---
 # Seed PUMS columns that are integers with nulls arrive from the parquet as
 # DOUBLE; the silver seed tables cast them to INT, so they are INT here.
@@ -254,4 +342,32 @@ SYNTHETIC_PERSON_TYPES = _RUN_ID + [
     ("naics_2digit", "STRING"),
     ("soc_occupation_code", "STRING"),
     ("soc_2digit", "INT"),
+] + _RUN_TIMESTAMP
+
+# Weighted totals are fractional at some stages, so all are DOUBLE; the silver
+# table casts to these types since pandas may write whole-number columns as BIGINT.
+FINAL_SUMMARY_REGION_WEIGHTS = [
+    "region_preliminary_balanced_weight",
+    "region_balanced_weight",
+    "region_integer_weight",
+    "mgra_balanced_weight",
+    "mgra_integer_weight",
+]
+FINAL_SUMMARY_REGION_TYPES = _RUN_ID + [
+    ("control_name", "STRING"),
+    ("control_value", "DOUBLE"),
+] + [(c, "DOUBLE") for c in FINAL_SUMMARY_REGION_WEIGHTS] + _RUN_TIMESTAMP
+
+# Types follow the E&F mgrabase table (int/smallint -> INT, float -> DOUBLE), in
+# sql/mgrabase.sql column order. The CSV/parquet round trip can change them (e.g.
+# int to BIGINT), so the silver table casts to these.
+_MGRA_DOUBLE = {
+    "hhs", "parkactive", "openspaceparkpreserve", "beachactive",
+    "milestocoast", "acre", "landacre", "effective_acres",
+}
+MGRA_BASED_INPUT_COLUMNS = [
+    c for c in MGRA_BASED_INPUT if c not in ("run_id", "year", "run_timestamp")
+]
+MGRA_BASED_INPUT_TYPES = _RUN_ID + [
+    (c, "DOUBLE" if c in _MGRA_DOUBLE else "INT") for c in MGRA_BASED_INPUT_COLUMNS
 ] + _RUN_TIMESTAMP
