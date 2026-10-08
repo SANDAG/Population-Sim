@@ -1,28 +1,21 @@
 from pyspark import pipelines as dp
 from pyspark.sql import functions as F
+from pyspark.sql.window import Window
 
 
-# Streaming table so each update only reads new bronze rows; run_id is assigned once
-# on insert and never renumbered. reset.allowed=false keeps a full refresh from
-# reassigning ids that silver tables already reference.
-@dp.table(
-    comment="One row per PopSim run: stable run_id assigned once at first ingestion",
-    schema="""
-        run_id BIGINT GENERATED ALWAYS AS IDENTITY,
-        year INT,
-        run_timestamp TIMESTAMP_NTZ
-    """,
-    table_properties={
-        "delta.feature.timestampNtz": "supported",
-        "pipelines.reset.allowed": "false",
-    },
+# Streaming queries can't sort, so ids are numbered here rather than with an
+# identity column on the stream. Ordering by ingestion batch first keeps ids
+# stable: runs already numbered keep their ids, and a run arriving in a later
+# batch goes after them even if its run_timestamp is older. Within one batch
+# (e.g. the initial load on a fresh build) runs are numbered oldest-first.
+@dp.materialized_view(
+    comment="One row per PopSim run: run_id numbered by ingestion batch, then run_timestamp",
+    table_properties={"delta.feature.timestampNtz": "supported"},
 )
 def run_id_lookup():
+    order = Window.orderBy("ingested_at", "run_timestamp", "year")
     return (
-        spark.readStream.table("bronze_synthetic_persons")
-        .select(F.col("year").cast("int").alias("year"), "run_timestamp")
-        .dropDuplicates(["run_timestamp", "year"])
-        # Single writer task so identity values come out consecutive instead of
-        # jumping between per-task ranges after the dropDuplicates shuffle.
-        .coalesce(1)
+        spark.read.table("run_ingest_log")
+        .withColumn("run_id", F.row_number().over(order).cast("bigint"))
+        .select("run_id", "year", "run_timestamp")
     )
