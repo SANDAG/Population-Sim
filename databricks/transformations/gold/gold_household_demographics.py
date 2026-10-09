@@ -10,11 +10,11 @@ def gold_household_demographics():
         spark.read.table("silver_synthetic_households")
         .groupBy("run_id","mgra", "year")
         .agg(
-            F.count("household_id").alias("total_households"),
-            F.avg("num_persons").alias("avg_household_size"),
-            F.avg("hh_adj_income").alias("avg_household_income"),
+            F.count("hhid").alias("total_households"),
+            F.avg("persons").alias("avg_household_size"),
+            F.avg("hinc").alias("avg_household_income"),
             F.sum(F.when(F.col("gq_type") == 0, 1).otherwise(0)).alias("non_gq_households"),
             F.sum(F.when(F.col("gq_type") > 0, 1).otherwise(0)).alias("gq_households"),
-            F.avg("workers").alias("avg_workers_per_hh"),
+            F.avg("num_workers").alias("avg_workers_per_hh"),
         )
     )
