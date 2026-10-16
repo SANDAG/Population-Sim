@@ -82,7 +82,7 @@ If running PopulationSim as an _official run_ for use by SANDAG's QA and/or Acti
 This repository contains the option in `config.yml` (`load_to_database: True`) to export PopulationSim outputs to an Azure Data Lake as Parquet via `python/datalake_exporter.py`. A Databricks Lakeflow Declarative Pipeline (`databricks/`) then ingests and transforms those files into Delta tables across three layers:
 
 - **Bronze** (`databricks/transformations/bronze/`):  raw Auto Loader ingestion of every PopSim export: synthetic households/persons, run metadata, MGRA/PUMA/region final summaries (household + each GQ type), control definitions, seed households/persons, and the `mgra15_based_input` ABM file.
-- **Silver** (`databricks/transformations/silver/`): cleaned, typed tables with a stable `run_id` attached via `run_id_lookup`/`run_info`, plus `silver_control_definitions` and `silver_control_totals`, which reproduce a unified control-vs-result comparison across every geography and synthesis run.
+- **Silver** (`databricks/transformations/silver/`): cleaned, typed tables with a stable `run_id` attached via `run_id_lookup`/`run_info`, plus `silver_control_definitions` and `silver_control_totals` for fitting controls. Reporting-only definitions and archived regional targets feed `silver_reporting_controls`, `silver_reporting_control_targets`, and `silver_reporting_control_totals`; `silver_control_comparisons` unifies fitting-control and benchmark-only rows for visualization.
 - **Gold** (`databricks/transformations/gold/`): BI-ready aggregate marts such as `gold_household_demographics` and `gold_population_by_mgra`.
 
 A Databricks job (`databricks/resources/populationsim.job.yml`) with a file arrival trigger starts a pipeline update once `datalake_exporter.py` finishes writing a run's export, signaled by a `_export_status/<year>/_SUCCESS_*.json` completion marker. See `databricks.yml` and `databricks/resources/populationsim.pipeline.yml` for the bundle configuration.
@@ -107,3 +107,27 @@ Run the Streamlit app in the base project directory with the following command.
 ```bash
 uv run -- streamlit run report/report.py
 ```
+
+#### Reporting-only controls
+For the report's **Local Output** source, `lfp_black`, `lfp_hispanic`,
+`lfp_other`, and `lfp_white` are reporting benchmarks rather than fitting
+constraints. Their definitions live in `populationsim/configs/reporting_controls.csv`;
+they are not passed to PopulationSim through `controls.csv`.
+
+The report compares the saved `region_controls.csv` targets against counts from
+the final synthetic population, using only non-GQ persons with ESR 1, 2, or 3.
+These rows appear as **Benchmark Only** in the regional table and plots. Saved
+PopulationSim summary rows remain **Fitting Control** and are not recomputed.
+Missing targets or population files produce unavailable values, not zero counts;
+percentage differences are unavailable when the target is zero.
+
+New runs archive active control definitions and reporting definitions alongside
+their outputs. Older local outputs without snapshots fall back to the current
+definitions. The database reporting path is unchanged.
+
+The `lfp_other` definition includes `RAC1P == 9` (`Two or More Races`) along with
+the other non-Hispanic race categories represented by that benchmark. Databricks
+ingests `reporting_controls.csv` and the saved
+`region_controls.csv` independently from the active fitting-control definitions;
+the resulting `silver_control_comparisons` table marks each row's status and
+leaves missing targets or model results null.

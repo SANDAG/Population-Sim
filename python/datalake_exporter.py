@@ -270,7 +270,16 @@ def write_to_datalake(output_path, env, metadata=None, controls_paths=None, seed
 
     folder_name = os.path.basename(os.path.normpath(output_path))
 
-    files = glob.glob(os.path.join(output_path, "*.csv"))
+    controls_paths = dict(controls_paths or {})
+    files = []
+    for filepath in glob.glob(os.path.join(output_path, "*.csv")):
+        name = os.path.splitext(os.path.basename(filepath))[0]
+        if name == "controls":
+            controls_paths["household"] = filepath
+        elif name.startswith("controls_"):
+            controls_paths[name[len("controls_"):]] = filepath
+        else:
+            files.append(filepath)
     if not files:
         print(f"No CSV files found in {output_path}", file=sys.stderr)
         return False
