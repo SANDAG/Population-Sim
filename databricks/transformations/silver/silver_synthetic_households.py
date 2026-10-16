@@ -16,7 +16,7 @@ def process_household(households: DataFrame, xref_taz_mgra: DataFrame) -> DataFr
         F.col("persons") >= 2,
         F.lit(13590) + F.lit(4720) * (F.col("persons") - 1),
     ).otherwise(F.lit(13590))
-    households = households.join(xref_taz_mgra, ["run_id", "mgra"], "inner")
+    households = households.join(xref_taz_mgra, ["run_id", "mgra"], "left")
     households = households.withColumns({
         "household_serial_no": F.lit(0),
         "hinc": F.coalesce(F.col("hinc"), F.lit(0)),
