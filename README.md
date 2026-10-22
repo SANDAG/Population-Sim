@@ -78,20 +78,10 @@ If running PopulationSim as an _official run_ for use by SANDAG's QA and/or Acti
 
 *Note: This is temporary until ABM team feels comfortable with use of production SQL database*
 
-### Databricks Lakehouse Pipeline
-This repository contains the option in `config.yml` (`load_to_database: True`) to export PopulationSim outputs to an Azure Data Lake as Parquet via `python/datalake_exporter.py`. A Databricks Lakeflow Declarative Pipeline (`databricks/`) then ingests and transforms those files into Delta tables across three layers:
+### Azure Data Lake Export
+This repository contains the option in `config.yml` (`load_to_database: True`) to export PopulationSim outputs to an Azure Data Lake as Parquet via `python/datalake_exporter.py`. Once a run's export is complete, the exporter writes a `_export_status/<year>/_SUCCESS_*.json` completion marker.
 
-- **Bronze** (`databricks/transformations/bronze/`):  raw Auto Loader ingestion of every PopSim export: synthetic households/persons, run metadata, MGRA/PUMA/region final summaries (household + each GQ type), control definitions, seed households/persons, and the `mgra15_based_input` ABM file.
-- **Silver** (`databricks/transformations/silver/`): cleaned, typed tables with a stable `run_id` attached via `run_id_lookup`/`run_info`, plus `silver_control_definitions` and `silver_control_totals` for fitting controls. Reporting-only definitions and archived regional targets feed `silver_reporting_controls`, `silver_reporting_control_targets`, and `silver_reporting_control_totals`; `silver_control_comparisons` unifies fitting-control and benchmark-only rows for visualization.
-- **Gold** (`databricks/transformations/gold/`): BI-ready aggregate marts such as `gold_household_demographics` and `gold_population_by_mgra`.
-
-A Databricks job (`databricks/resources/populationsim.job.yml`) with a file arrival trigger starts a pipeline update once `datalake_exporter.py` finishes writing a run's export, signaled by a `_export_status/<year>/_SUCCESS_*.json` completion marker. See `databricks.yml` and `databricks/resources/populationsim.pipeline.yml` for the bundle configuration.
-
-#### Pausing or enabling the file arrival trigger
-Whether the trigger fires is controlled by `trigger.pause_status` in `databricks/resources/populationsim.job.yml`:
-
-- `UNPAUSED`: each completed export starts a pipeline update automatically.
-- `PAUSED`: exports land in the volume but nothing runs until running the pipeline in the Databricks UI
+The Databricks pipeline that ingests and transforms these exports (bronze/silver/gold layers, file arrival trigger, and bundle configuration) is maintained in the `databricks-projects` repository under `src/python/jobs/transformation/population_sim`.
 
 
 ### Streamlit Report App
