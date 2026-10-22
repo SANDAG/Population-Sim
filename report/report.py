@@ -15,6 +15,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
 from python.db import get_engine
+from python.reporting import get_benchmark_comparisons, load_control_definitions
 
 @st.cache_data
 def build_scatter_plot(
@@ -27,6 +28,7 @@ def build_scatter_plot(
         y=y_var,
         hover_data=hover_data,
         title=title,
+        color="Status" if "Status" in df.columns else None,
     )
 
     fig.update_traces(marker=dict(size=12))
@@ -125,11 +127,12 @@ def get_control_data_from_local(run_folder: str) -> pd.DataFrame:
         used directly as the path segment under ./output/.
     """
     # Household controls — target names here are assumed unique to household
-    controls_df = pd.read_csv("./populationsim/configs/controls.csv")
-    controls_df["control_id"] = range(1, len(controls_df) + 1)
+    run_dir = Path("./output") / run_folder
+    controls_df = load_control_definitions(run_dir, Path("./populationsim/configs"))
     next_id = len(controls_df) + 1
 
     all_rows = []
+    reported_region_targets = set()
 
     # --- Household: mgra / PUMA ---
     household_summary_files = {
@@ -149,6 +152,7 @@ def get_control_data_from_local(run_folder: str) -> pd.DataFrame:
     region_path = f"./output/{run_folder}/final_summary_region_1.csv"
     if os.path.exists(region_path):
         df = pd.read_csv(region_path)
+        reported_region_targets = set(df["control_name"])
         df = df[["control_name", "control_value", "mgra_integer_weight"]]
         df.insert(0, "geography", "region")
         df.insert(1, "id", 1)
@@ -171,7 +175,10 @@ def get_control_data_from_local(run_folder: str) -> pd.DataFrame:
         if not os.path.exists(summary_path):
             continue
 
-        gq_controls = pd.read_csv(f"./populationsim/{config_dir}/controls.csv")
+        gq_definitions_path = run_dir / f"controls_{name}.csv"
+        if not gq_definitions_path.exists():
+            gq_definitions_path = Path("./populationsim") / config_dir / "controls.csv"
+        gq_controls = pd.read_csv(gq_definitions_path)
         control_field = gq_controls.iloc[0]["control_field"]  # e.g. GQ_Military
 
         melted = _melt_summary(pd.read_csv(summary_path))
@@ -180,22 +187,26 @@ def get_control_data_from_local(run_folder: str) -> pd.DataFrame:
         next_id += 1
         all_rows.append(melted[["control_id", "control_field", "geography", "id", "control_value", "result"]])
 
+    all_rows = [rows.assign(Status="Fitting Control") for rows in all_rows]
+    benchmarks = get_benchmark_comparisons(run_dir, controls_df, reported_region_targets)
+    if not benchmarks.empty:
+        all_rows.append(benchmarks)
+
     # Combine all control totals
     control_totals = pd.concat(all_rows, ignore_index=True)
     
     # Group and aggregate (replicating SQL GROUP BY and SUM)
     result = control_totals.groupby(
-        ["control_id", "control_field", "geography", "id"], dropna=False
+        ["control_id", "control_field", "geography", "id", "Status"], dropna=False
     ).agg(
-        control_value=("control_value", "sum"),
-        result=("result", "sum")
+        control_value=("control_value", lambda values: values.sum(min_count=1)),
+        result=("result", lambda values: values.sum(min_count=1))
     ).reset_index()
     
     # Calculate differences
     result["Diff"] = result["result"] - result["control_value"]
     result["Diff %"] = result.apply(
-        lambda row: 0 if row["result"] == row["control_value"]
-        else None if row["control_value"] == 0
+        lambda row: None if pd.isna(row["result"]) or pd.isna(row["control_value"]) or row["control_value"] == 0
         else round(100.0 * (row["result"] - row["control_value"]) / row["control_value"], 2),
         axis=1
     )
@@ -211,6 +222,8 @@ def get_control_data_from_local(run_folder: str) -> pd.DataFrame:
         Returns:
             str or None: The category name if matched, otherwise None.
         """
+        if not isinstance(control_field, str):
+            return "Uncategorized"
         if control_field == "Total_HH":
             return "Households"
         elif control_field.startswith("HHSize_"):
@@ -247,7 +260,7 @@ def get_control_data_from_local(run_folder: str) -> pd.DataFrame:
     # Select and order columns to match database output
     result = result[[
         "id", "Category", "Control Field", "geography", "geography_id",
-        "Control", "Result", "Diff", "Diff %"
+        "Control", "Result", "Diff", "Diff %", "Status"
     ]]
     
     # Sort like the SQL query
@@ -354,6 +367,7 @@ if selection and selection["selection"]["rows"]:
         controls_df = get_control_data(run_id=run_id, _sql_engine=engine)
         # Normalize geography to lowercase for consistency
         controls_df["geography"] = controls_df["geography"].str.lower()
+        controls_df["Status"] = "Fitting Control"
     else:
         run_id = local_run_df.iloc[idx]["run_id"]
         run_folder = local_run_df.iloc[idx]["folder"]
@@ -403,6 +417,7 @@ if selection and selection["selection"]["rows"]:
                     "Result",
                     "Diff",
                     "Diff %",
+                    "Status",
                 ]
             ],
             hide_index=True,

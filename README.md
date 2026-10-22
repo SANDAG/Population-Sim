@@ -97,3 +97,27 @@ Run the Streamlit app in the base project directory with the following command.
 ```bash
 uv run -- streamlit run report/report.py
 ```
+
+#### Reporting-only controls
+For the report's **Local Output** source, `lfp_black`, `lfp_hispanic`,
+`lfp_other`, and `lfp_white` are reporting benchmarks rather than fitting
+constraints. Their definitions live in `populationsim/configs/reporting_controls.csv`;
+they are not passed to PopulationSim through `controls.csv`.
+
+The report compares the saved `region_controls.csv` targets against counts from
+the final synthetic population, using only non-GQ persons with ESR 1, 2, or 3.
+These rows appear as **Benchmark Only** in the regional table and plots. Saved
+PopulationSim summary rows remain **Fitting Control** and are not recomputed.
+Missing targets or population files produce unavailable values, not zero counts;
+percentage differences are unavailable when the target is zero.
+
+New runs archive active control definitions and reporting definitions alongside
+their outputs. Older local outputs without snapshots fall back to the current
+definitions. The database reporting path is unchanged.
+
+The `lfp_other` definition includes `RAC1P == 9` (`Two or More Races`) along with
+the other non-Hispanic race categories represented by that benchmark. Databricks
+ingests `reporting_controls.csv` and the saved
+`region_controls.csv` independently from the active fitting-control definitions;
+the resulting `silver_control_comparisons` table marks each row's status and
+leaves missing targets or model results null.
