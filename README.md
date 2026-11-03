@@ -100,12 +100,16 @@ uv run -- streamlit run report/report.py
 
 #### Reporting-only controls
 For the report's **Local Output** source, `lfp_black`, `lfp_hispanic`,
-`lfp_other`, and `lfp_white` are reporting benchmarks rather than fitting
+`lfp_other`, `lfp_white`, and `job_1` through `job_14` are reporting benchmarks rather than fitting
 constraints. Their definitions live in `populationsim/configs/reporting_controls.csv`;
 they are not passed to PopulationSim through `controls.csv`.
+The `expression` column uses pandas expressions, consistent with `controls.csv`
+(for example, `persons.ESR.isin([1, 2, 3]) & (persons.gq_type == 0)`).
 
 The report compares the saved `region_controls.csv` targets against counts from
-the final synthetic population, using only non-GQ persons with ESR 1, 2, or 3.
+the final synthetic population, using only non-GQ persons. The LFP benchmarks
+use ESR 1, 2, or 3; job benchmarks retain their original NAICS industry groups
+and ESR 1 through 5, matching the seed data's `laborforce == 1` definition.
 These rows appear as **Benchmark Only** in the regional table and plots. Saved
 PopulationSim summary rows remain **Fitting Control** and are not recomputed.
 Missing targets or population files produce unavailable values, not zero counts;

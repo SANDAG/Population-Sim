@@ -191,6 +191,14 @@ def get_control_data_from_local(run_folder: str) -> pd.DataFrame:
     benchmarks = get_benchmark_comparisons(run_dir, controls_df, reported_region_targets)
     if not benchmarks.empty:
         all_rows.append(benchmarks)
+        regional_benchmarks = benchmarks.loc[
+            benchmarks["geography"].eq("mgra")
+            & ~benchmarks["control_field"].isin(reported_region_targets)
+        ].groupby(
+            ["control_id", "control_field", "Status"], as_index=False
+        )[["control_value", "result"]].sum(min_count=1)
+        if not regional_benchmarks.empty:
+            all_rows.append(regional_benchmarks.assign(geography="region", id=1))
 
     # Combine all control totals
     control_totals = pd.concat(all_rows, ignore_index=True)
@@ -232,6 +240,8 @@ def get_control_data_from_local(run_folder: str) -> pd.DataFrame:
             return "Household Income"
         elif control_field.startswith("HHWork_"):
             return "Household Workers"
+        elif control_field.startswith("HHChild_"):
+            return "Household Children"
         elif control_field in ["Male", "Female"]:
             return "Sex"
         elif control_field.startswith("Age_"):
@@ -508,6 +518,7 @@ if selection and selection["selection"]["rows"]:
                 "Result",
                 "Diff",
                 "Diff %",
+                "Status",
             ]
         ]
 

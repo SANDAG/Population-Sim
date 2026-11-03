@@ -1,6 +1,5 @@
 """Reporting benchmarks that do not participate in population fitting."""
 
-import json
 from pathlib import Path
 
 import pandas as pd
@@ -25,16 +24,23 @@ def load_control_definitions(run_dir: Path, configs_dir: Path) -> pd.DataFrame:
 def get_benchmark_comparisons(
     run_dir: Path, definitions: pd.DataFrame, reported_targets: set
 ) -> pd.DataFrame:
-    """Evaluate reporting-only filters against the configured synthetic population."""
+    """Evaluate reporting-only expressions against the configured synthetic population."""
     benchmarks = definitions.loc[
-        definitions["filters"].notna()
-        & ~definitions["target"].isin(reported_targets)
+        definitions["population"].notna()
+        & ~(
+            definitions["geography"].eq("region")
+            & definitions["target"].isin(reported_targets)
+        )
     ]
     if benchmarks.empty:
         return pd.DataFrame()
 
-    targets_path = run_dir / "region_controls.csv"
-    targets = pd.read_csv(targets_path) if targets_path.exists() else pd.DataFrame()
+    targets_by_geography = {}
+    for geography in benchmarks["geography"].unique():
+        targets_path = run_dir / f"{geography}_controls.csv"
+        targets_by_geography[geography] = (
+            pd.read_csv(targets_path) if targets_path.exists() else pd.DataFrame()
+        )
     households_path = run_dir / "synthetic_households.csv"
     persons_path = run_dir / "synthetic_persons.csv"
     populations = {}
@@ -42,7 +48,7 @@ def get_benchmark_comparisons(
         households = pd.read_csv(households_path)
         populations["households"] = households
         if persons_path.exists():
-            persons = pd.read_csv(persons_path).merge(
+            persons = pd.read_csv(persons_path, dtype={"NAICS2": str}).merge(
                 households[["household_id", "gq_type"]],
                 on="household_id",
                 how="left",
@@ -52,57 +58,41 @@ def get_benchmark_comparisons(
                 raise ValueError("Synthetic persons have missing household/GQ classifications")
             populations["persons"] = persons
 
-    def _matches(frame: pd.DataFrame, filters: list[dict]) -> pd.Series:
-        matches = pd.Series(True, index=frame.index)
-        for condition in filters:
-            column = condition["column"]
-            if column not in frame:
-                raise ValueError(f"Reporting filter references unavailable field {column!r}")
-            series = frame[column]
-            values = condition["values"]
-            if pd.api.types.is_numeric_dtype(series.dtype):
-                values = pd.to_numeric(pd.Series(values), errors="raise").tolist()
-            operator_name = condition["operator"]
-            if operator_name == "eq":
-                match = series == values[0]
-            elif operator_name == "ne":
-                match = series != values[0]
-            elif operator_name == "in":
-                match = series.isin(values)
-            elif operator_name == "gt":
-                match = series > values[0]
-            elif operator_name == "ge":
-                match = series >= values[0]
-            elif operator_name == "lt":
-                match = series < values[0]
-            elif operator_name == "le":
-                match = series <= values[0]
-            else:
-                raise ValueError(f"Unsupported reporting filter operator {operator_name!r}")
-            matches &= series.notna() & match
-        return matches
-
     rows = []
     for definition in benchmarks.itertuples(index=False):
-        control_value = float("nan")
+        geography = definition.geography
+        targets = targets_by_geography[geography]
+        control_values = pd.Series(dtype=float)
         if definition.control_field in targets:
-            values = targets.loc[targets["region"] == 1, definition.control_field]
-            if len(values) > 1:
-                raise ValueError("Expected at most one regional benchmark row")
-            if len(values) == 1:
-                control_value = values.iloc[0]
-        result = float("nan")
+            control_values = targets.set_index(geography)[definition.control_field]
+            if control_values.index.has_duplicates:
+                raise ValueError(f"Expected at most one benchmark row per {geography}")
+        results = pd.Series(dtype=float)
         population = populations.get(definition.population)
         if population is not None:
-            filters = json.loads(definition.filters)
-            result = int(_matches(population, filters).sum())
-        rows.append({
-            "control_id": definition.control_id,
-            "control_field": definition.control_field,
-            "geography": "region",
-            "id": 1,
-            "control_value": control_value,
-            "result": result,
-            "Status": "Benchmark Only",
-        })
+            matches = pd.eval(
+                definition.expression,
+                local_dict={definition.seed_table: population},
+                engine="python",
+            )
+            if geography == "region":
+                results = pd.Series({1: int(matches.sum())})
+            else:
+                results = matches.groupby(population[geography]).sum()
+        ids = (
+            pd.Index([1]) if geography == "region"
+            else control_values.index.union(results.index)
+        )
+        for geography_id in ids:
+            rows.append({
+                "control_id": definition.control_id,
+                "control_field": definition.control_field,
+                "geography": geography,
+                "id": geography_id,
+                "control_value": control_values.get(geography_id, float("nan")),
+                "result": results.get(
+                    geography_id, 0 if population is not None else float("nan")
+                ),
+                "Status": "Benchmark Only",
+            })
     return pd.DataFrame(rows)
