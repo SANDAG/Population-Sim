@@ -102,6 +102,14 @@ def organize_outputs(year: int, config: dict, popsim_dir: Path, data_dir: Path, 
         run_output_dir = popsim_dir / run["output"]
         suffix = "" if run["name"] == "household" else f"_{run['name']}"
 
+        for configs_dir in reversed(run["configs"]):
+            definitions_path = popsim_dir / configs_dir / "controls.csv"
+            if definitions_path.exists():
+                shutil.copy2(definitions_path, year_output_dir / f"controls{suffix}.csv")
+                break
+        else:
+            raise FileNotFoundError(f"No controls.csv found for {run['name']}")
+
         for filename in ancillary_files:
             src = run_output_dir / filename
             if not src.exists():
@@ -119,6 +127,12 @@ def organize_outputs(year: int, config: dict, popsim_dir: Path, data_dir: Path, 
     ]
     for filename in control_files:
         shutil.copy2(data_dir / filename, year_output_dir / filename)
+
+    reporting_controls = popsim_dir / "configs" / "reporting_controls.csv"
+    if reporting_controls.exists():
+        shutil.copy2(reporting_controls, year_output_dir / reporting_controls.name)
+    else:
+        logging.info("Skipping %s — file not found", reporting_controls.name)
 
     logging.info(f"PopSim outputs organized for {year}")
 

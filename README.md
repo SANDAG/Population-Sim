@@ -97,3 +97,28 @@ Run the Streamlit app in the base project directory with the following command.
 ```bash
 uv run -- streamlit run report/report.py
 ```
+
+#### Reporting-only controls
+For the report's **Local Output** source, reporting-only benchmarks are defined
+in `populationsim/configs/reporting_controls.csv`. These definitions are
+separate from the fitting constraints in `controls.csv` and are not passed to
+PopulationSim. The `expression` column uses pandas expressions, following the
+same convention as `controls.csv`.
+
+The report uses each run's reporting definitions to compare saved
+`region_controls.csv` targets with counts from the final synthetic population.
+These rows appear as **Benchmark Only** in the regional table and plots. Saved
+PopulationSim summary rows remain **Fitting Control** and are not recomputed.
+Missing targets or population data produce unavailable values, not zero counts.
+A percentage difference is unavailable when the target is zero, except when
+the result is also zero, in which case it is zero.
+
+New runs archive the active fitting and reporting definitions alongside their
+outputs, so benchmark definitions may vary between runs. Local reports use the
+archived definitions when available; older outputs without snapshots fall back
+to the current definitions. The database reporting path is unchanged.
+
+Databricks ingests `reporting_controls.csv` and the saved `region_controls.csv`
+independently from the active fitting-control definitions. The resulting
+`silver_control_comparisons` table marks each row's status and leaves missing
+targets or model results null.

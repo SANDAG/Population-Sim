@@ -1,0 +1,3 @@
+target,geography,seed_table,control_field,population,expression
+HHChild_0,mgra,households,HHChild_0,households,households.HUPAC == 4
+HHChild_1Plus,mgra,households,HHChild_1Plus,households,(households.HUPAC == 1) | (households.HUPAC == 2) | (households.HUPAC == 3)
