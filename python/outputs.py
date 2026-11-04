@@ -128,10 +128,11 @@ def organize_outputs(year: int, config: dict, popsim_dir: Path, data_dir: Path, 
     for filename in control_files:
         shutil.copy2(data_dir / filename, year_output_dir / filename)
 
-    shutil.copy2(
-        popsim_dir / "configs" / "reporting_controls.csv",
-        year_output_dir / "reporting_controls.csv",
-    )
+    reporting_controls = popsim_dir / "configs" / "reporting_controls.csv"
+    if reporting_controls.exists():
+        shutil.copy2(reporting_controls, year_output_dir / reporting_controls.name)
+    else:
+        logging.info("Skipping %s — file not found", reporting_controls.name)
 
     logging.info(f"PopSim outputs organized for {year}")
 

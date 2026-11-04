@@ -99,29 +99,26 @@ uv run -- streamlit run report/report.py
 ```
 
 #### Reporting-only controls
-For the report's **Local Output** source, `lfp_black`, `lfp_hispanic`,
-`lfp_other`, `lfp_white`, and `job_1` through `job_14` are reporting benchmarks rather than fitting
-constraints. Their definitions live in `populationsim/configs/reporting_controls.csv`;
-they are not passed to PopulationSim through `controls.csv`.
-The `expression` column uses pandas expressions, consistent with `controls.csv`
-(for example, `persons.ESR.isin([1, 2, 3]) & (persons.gq_type == 0)`).
+For the report's **Local Output** source, reporting-only benchmarks are defined
+in `populationsim/configs/reporting_controls.csv`. These definitions are
+separate from the fitting constraints in `controls.csv` and are not passed to
+PopulationSim. The `expression` column uses pandas expressions, following the
+same convention as `controls.csv`.
 
-The report compares the saved `region_controls.csv` targets against counts from
-the final synthetic population, using only non-GQ persons. The LFP benchmarks
-use ESR 1, 2, or 3; job benchmarks retain their original NAICS industry groups
-and ESR 1 through 5, matching the seed data's `laborforce == 1` definition.
+The report uses each run's reporting definitions to compare saved
+`region_controls.csv` targets with counts from the final synthetic population.
 These rows appear as **Benchmark Only** in the regional table and plots. Saved
 PopulationSim summary rows remain **Fitting Control** and are not recomputed.
-Missing targets or population files produce unavailable values, not zero counts;
-percentage differences are unavailable when the target is zero.
+Missing targets or population data produce unavailable values, not zero counts.
+A percentage difference is unavailable when the target is zero, except when
+the result is also zero, in which case it is zero.
 
-New runs archive active control definitions and reporting definitions alongside
-their outputs. Older local outputs without snapshots fall back to the current
-definitions. The database reporting path is unchanged.
+New runs archive the active fitting and reporting definitions alongside their
+outputs, so benchmark definitions may vary between runs. Local reports use the
+archived definitions when available; older outputs without snapshots fall back
+to the current definitions. The database reporting path is unchanged.
 
-The `lfp_other` definition includes `RAC1P == 9` (`Two or More Races`) along with
-the other non-Hispanic race categories represented by that benchmark. Databricks
-ingests `reporting_controls.csv` and the saved
-`region_controls.csv` independently from the active fitting-control definitions;
-the resulting `silver_control_comparisons` table marks each row's status and
-leaves missing targets or model results null.
+Databricks ingests `reporting_controls.csv` and the saved `region_controls.csv`
+independently from the active fitting-control definitions. The resulting
+`silver_control_comparisons` table marks each row's status and leaves missing
+targets or model results null.

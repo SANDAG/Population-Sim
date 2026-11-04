@@ -214,7 +214,9 @@ def get_control_data_from_local(run_folder: str) -> pd.DataFrame:
     # Calculate differences
     result["Diff"] = result["result"] - result["control_value"]
     result["Diff %"] = result.apply(
-        lambda row: None if pd.isna(row["result"]) or pd.isna(row["control_value"]) or row["control_value"] == 0
+        lambda row: None if pd.isna(row["result"]) or pd.isna(row["control_value"])
+        else 0 if row["control_value"] == 0 and row["result"] == 0
+        else None if row["control_value"] == 0
         else round(100.0 * (row["result"] - row["control_value"]) / row["control_value"], 2),
         axis=1
     )
