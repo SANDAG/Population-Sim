@@ -118,7 +118,8 @@ outputs, so benchmark definitions may vary between runs. Local reports use the
 archived definitions when available; older outputs without snapshots fall back
 to the current definitions. The database reporting path is unchanged.
 
-Databricks ingests `reporting_controls.csv` and the saved `region_controls.csv`
-independently from the active fitting-control definitions. The resulting
-`silver_control_comparisons` table marks each row's status and leaves missing
-targets or model results null.
+Each run also saves the report's benchmark rows to `output/<year>/benchmark_comparisons.csv`
+(one row per benchmark and geography, plus a region total for MGRA benchmarks),
+which the data lake export uploads with the other outputs. Databricks loads that
+file as-is rather than recalculating the benchmarks, so the Streamlit report and
+Power BI show the same numbers.

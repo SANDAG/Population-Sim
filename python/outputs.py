@@ -6,6 +6,8 @@ import re
 import shutil
 import sqlalchemy as sql
 
+from python.reporting import write_benchmark_comparisons
+
 
 def create_abm_outputs(
     year: int, sql_engine: sql.engine, query_file: str, schema: str, final_output_dir: Path
@@ -133,6 +135,7 @@ def organize_outputs(year: int, config: dict, popsim_dir: Path, data_dir: Path, 
         shutil.copy2(reporting_controls, year_output_dir / reporting_controls.name)
     else:
         logging.info("Skipping %s — file not found", reporting_controls.name)
+    write_benchmark_comparisons(year_output_dir, popsim_dir / "configs")
 
     logging.info(f"PopSim outputs organized for {year}")
 
