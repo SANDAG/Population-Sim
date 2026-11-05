@@ -86,6 +86,7 @@ def get_benchmark_comparisons(
         for geography_id in ids:
             rows.append({
                 "control_id": definition.control_id,
+                "target": definition.target,
                 "control_field": definition.control_field,
                 "geography": geography,
                 "id": geography_id,
@@ -95,4 +96,35 @@ def get_benchmark_comparisons(
                 ),
                 "Status": "Benchmark Only",
             })
-    return pd.DataFrame(rows)
+    comparisons = pd.DataFrame(rows)
+    if comparisons.empty:
+        return comparisons
+
+    # MGRA benchmarks without a reported region target also get a region total
+    regional = comparisons.loc[
+        comparisons["geography"].eq("mgra")
+        & ~comparisons["target"].isin(reported_targets)
+    ].groupby(
+        ["control_id", "target", "control_field", "Status"], as_index=False
+    )[["control_value", "result"]].sum(min_count=1)
+    if not regional.empty:
+        comparisons = pd.concat(
+            [comparisons, regional.assign(geography="region", id=1)], ignore_index=True
+        )
+    return comparisons
+
+
+def write_benchmark_comparisons(run_dir: Path, configs_dir: Path) -> None:
+    """Save the run's benchmark comparisons as benchmark_comparisons.csv for the data lake export."""
+    region_path = run_dir / "final_summary_region_1.csv"
+    reported_targets = (
+        set(pd.read_csv(region_path)["control_name"]) if region_path.exists() else set()
+    )
+    definitions = load_control_definitions(run_dir, configs_dir)
+    comparisons = get_benchmark_comparisons(run_dir, definitions, reported_targets)
+    if comparisons.empty:
+        return
+    # control_id is numbered per report, so it isn't exported; target identifies the benchmark
+    comparisons[
+        ["target", "control_field", "geography", "id", "control_value", "result"]
+    ].to_csv(run_dir / "benchmark_comparisons.csv", index=False)

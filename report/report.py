@@ -190,15 +190,7 @@ def get_control_data_from_local(run_folder: str) -> pd.DataFrame:
     all_rows = [rows.assign(Status="Fitting Control") for rows in all_rows]
     benchmarks = get_benchmark_comparisons(run_dir, controls_df, reported_region_targets)
     if not benchmarks.empty:
-        all_rows.append(benchmarks)
-        regional_benchmarks = benchmarks.loc[
-            benchmarks["geography"].eq("mgra")
-            & ~benchmarks["control_field"].isin(reported_region_targets)
-        ].groupby(
-            ["control_id", "control_field", "Status"], as_index=False
-        )[["control_value", "result"]].sum(min_count=1)
-        if not regional_benchmarks.empty:
-            all_rows.append(regional_benchmarks.assign(geography="region", id=1))
+        all_rows.append(benchmarks.drop(columns="target"))
 
     # Combine all control totals
     control_totals = pd.concat(all_rows, ignore_index=True)
