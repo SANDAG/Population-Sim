@@ -40,16 +40,13 @@ years:
 
 Python 3.9, 3.10, 3.11, and 3.12 are supported. Python 3.13+ is not yet supported by PopulationSim dependencies.
 
-### Do I need SQL Server access?
+### Which external services does a full run need?
 
-It depends:
-- **To generate controls:** Yes, you need read access to UDM staging database
-- **To load outputs:** Optional (only if using legacy database integration)
-- **To run synthesis:** No SQL Server required after controls are generated
+The current `main.py` workflow uses SQL Server queries to build seed data, controls, and the ABM MGRA file. Azure Data Lake access is also required when `sql.load_to_database` is enabled; set `datalake.env` and the corresponding SAS-token environment variable. Set that switch to `False` to keep outputs local and skip the export.
 
 ### Can I run PopulationSim offline?
 
-After seed data and controls are prepared, yes. But control generation requires database access to UDM staging.
+The current `main.py` workflow connects to SQL Server for input and ABM data. It can skip Azure access by setting `sql.load_to_database: False`, but it is not an offline workflow without changing how those SQL inputs are provided.
 
 ### Why use uv instead of pip?
 
@@ -198,6 +195,8 @@ streamlit run report.py
 
 Features:
 - Control vs. result comparisons
+- Local-output benchmarks marked **Benchmark Only**, separate from PopulationSim fitting controls
+- Run-specific archived benchmark definitions when available
 - Geographic distribution maps
 - Demographic breakdowns
 - Interactive filtering and drill-down
@@ -259,22 +258,13 @@ Version control your config files!
 
 ## Database Questions
 
-### Do I have to use the database?
+### Can I avoid using the report database?
 
-No, database integration is optional. You can:
-- Run PopulationSim without database
-- Work with CSV files directly
-- Skip ETL process
+Yes. The Streamlit report can read local output folders directly. The full `main.py` workflow still needs SQL Server for its seed, control, and ABM data queries. Azure Data Lake export is separate and can be skipped with `sql.load_to_database: False`.
 
-Database is useful for:
-- Historical versioning
-- Streamlit dashboard queries
-- Production audit trail
+### What does `load_to_database` do?
 
-### What database do we use?
-
-Legacy: Microsoft SQL Server (being phased out)  
-Future: Azure Data Lake (in development on feature/datalake-exporter branch)
+Despite its legacy name, `sql.load_to_database` controls the optional Azure Data Lake export performed by `main.py`; it does not load outputs into SQL Server. The Streamlit report's database source is separate. The export includes the saved `benchmark_comparisons.csv` so downstream consumers can use the same benchmark results as the local report.
 
 ### Can I use PostgreSQL or MySQL instead?
 

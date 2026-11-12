@@ -32,6 +32,8 @@ output/
     ├── mgra_controls_gq_col.csv               # College GQ controls by MGRA
     ├── mgra_controls_gq_oth.csv               # Other GQ controls by MGRA
     ├── region_controls.csv                    # Regional controls used
+    ├── reporting_controls.csv                 # Report-only benchmark definitions, when configured
+    ├── benchmark_comparisons.csv              # Benchmark results, when definitions are configured
     │
     ├── timing_log.csv                         # Household run timing
     ├── timing_log_gq_mil.csv                  # Military GQ run timing
@@ -48,6 +50,8 @@ output/
 | `final_summary_*.csv` | Validation control totals | Technical staff | CSV, control vs result |
 | `final_summary_*_gq_*.csv` | GQ validation by type | Technical staff | CSV, GQ control vs result |
 | `*_controls.csv` | Control definitions | QA validation | CSV, metadata |
+| `reporting_controls.csv` | Report-only benchmark definitions; not used for fitting | QA/reporting | CSV |
+| `benchmark_comparisons.csv` | Saved benchmark target/result comparisons | QA, Power BI/data lake consumers | CSV |
 | `timing_log*.csv` | Performance metrics | Technical staff | CSV, timing data |
 
 ## 1. Synthesis Output Files
@@ -241,6 +245,23 @@ PUMA,7302,43077,43077,0,9166,8923,-243,...
 **Use Case:** Detailed validation, identifying problematic MGRAs
 
 ## 4. Additional Files
+
+### Reporting benchmarks
+
+`reporting_controls.csv` defines reporting-only benchmarks. These rows are not passed to PopulationSim as fitting controls. During output organization, the run's definitions are archived and `benchmark_comparisons.csv` is generated when benchmark definitions are available.
+
+The comparisons file has one row per benchmark and geography, and includes a region total for MGRA benchmarks when a region target is not already reported. Its columns are:
+
+| Column | Description |
+|--------|-------------|
+| `target` | Benchmark name |
+| `control_field` | Field in the saved geography controls used as the target |
+| `geography` | `mgra` or `region` |
+| `id` | Geography identifier; region uses `1` |
+| `control_value` | Saved benchmark target |
+| `result` | Count calculated from the final synthetic population |
+
+The file is included in the Azure Data Lake export with the other year-level CSV outputs. See [Validation & QA](Validation-and-QA) for how benchmark-only rows differ from fitting controls.
 
 ## 5. File Sizes (2022 Example)
 

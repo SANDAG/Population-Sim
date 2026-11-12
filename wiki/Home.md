@@ -51,6 +51,7 @@ flowchart LR
 ✅ **Parallel processing** - 22 simultaneous PUMA processes  
 ✅ **Group quarters** - Military, college dorms, other institutional  
 ✅ **Quality assurance** - Interactive Streamlit validation dashboard  
+✅ **Reporting benchmarks** - Separate from fitting controls and saved with each run
 ✅ **ABM-ready outputs** - Direct integration with activity-based travel model  
 
 ## 🔧 Technology Stack
@@ -58,16 +59,13 @@ flowchart LR
 - **PopulationSim:** v0.10.0 (ActivitySim framework)
 - **Python:** 3.9 - 3.12 (3.13+ not yet supported)
 - **Package Manager:** uv (fast dependency resolution)
-- **Database:** Microsoft SQL Server (optional, legacy)
-- **Data Lake:** Azure/cloud storage (in development)
-- **Validation:** Streamlit dashboard
+- **SQL inputs:** Microsoft SQL Server
+- **Run export:** Optional Azure Data Lake export, controlled by `sql.load_to_database`
+- **Validation:** Streamlit report for local output or its database source
 
 ## 📝 Current Version
 
-**Version:** TBD  
-**Date:** June 2, 2026  
-**Seed Data:** ACS PUMS 5-year 2017-2021  
-**Branch:** new_populationsim  
+The active seed vintage, forecast years, and export environment are configured in `config.yml`.
 
 ## 🤝 Support
 
@@ -92,7 +90,8 @@ Population-Sim/
 ├── python/                   # Data preparation modules
 │   ├── build_controls.py    # Control generation
 │   ├── build_seed_data.py   # Seed data preparation
-│   ├── etl.py               # Database ETL (legacy)
+│   ├── etl.py               # Legacy SQL Server output loading
+│   ├── datalake_exporter.py # Optional Azure Data Lake export
 │   └── outputs.py           # ABM output creation
 ├── report/                   # Validation dashboard
 └── sql/                      # SQL queries for data extraction

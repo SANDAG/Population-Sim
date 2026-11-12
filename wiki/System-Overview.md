@@ -61,8 +61,8 @@ flowchart TD
     
     subgraph "Outputs"
         E1[CSV Files]
-        E2[Database<br/>Optional]
-        E3[Validation<br/>Dashboard]
+        E2[Azure Data Lake<br/>Optional Parquet export]
+        E3[Streamlit Report<br/>Local or database source]
         D3 --> E1
         D3 --> E2
         D3 --> E3

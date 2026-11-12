@@ -70,7 +70,7 @@ This will:
 2. Generate controls from UDM database
 3. Run population synthesis for all configured years
 4. Create ABM output files
-5. Optionally load to database
+5. Optionally export generated outputs to Azure Data Lake (requires `datalake.env` and the matching SAS-token environment variable)
 
 ## What Happens During a Run?
 
@@ -87,8 +87,8 @@ flowchart TD
     H --> I[Generate group quarters]
     I --> J[Combine outputs]
     J --> K[Create ABM files]
-    K --> L{Load to database?}
-    L -->|Yes| M[Run ETL process]
+    K --> L{sql.load_to_database?}
+    L -->|Yes| M[Export CSV outputs to Azure Data Lake]
     L -->|No| N[Complete!]
     M --> N
     
@@ -99,30 +99,28 @@ flowchart TD
 
 ## Expected Output Files
 
-After a successful run, you'll find:
+After a successful run, the files are organized by year:
 
 ```
 output/
 └── 2022/
-    ├── final_households.csv        # All households
-    ├── final_persons.csv           # All persons
-    ├── abm/
-    │   ├── households.csv          # ABM format
-    │   ├── persons.csv             # ABM format
-    │   └── mgra_based_input_2022.csv
-    └── summary/
-        ├── summary_region.csv      # Regional totals
-        ├── summary_puma.csv        # PUMA-level totals
-        └── summary_mgra.csv        # MGRA-level totals
+    ├── synthetic_households.csv
+    ├── synthetic_persons.csv
+    ├── mgra15_based_input_2022.csv
+    ├── final_summary_*.csv
+    ├── *_controls.csv
+    ├── reporting_controls.csv
+    └── benchmark_comparisons.csv
 ```
+
+`benchmark_comparisons.csv` contains report-only benchmark targets and results when benchmark definitions are configured. It is also included in the Azure export when enabled. See [Output Files](Output-Files) for its schema and availability.
 
 ## Validation Dashboard
 
 Launch the interactive validation dashboard:
 
 ```powershell
-cd report
-streamlit run report.py
+uv run -- streamlit run report/report.py
 ```
 
 This opens a web interface at `http://localhost:8501` showing:

@@ -14,8 +14,9 @@ Before running `main.py`, verify:
    - `populationsim/configs/controls.csv` exists
 3. ✓ Database connectivity tested
 4. ✓ Sufficient disk space (~10 GB per year)
-5. ✓ No conflicting processes using data directories
-6. ✓ Expected runtime: ~4-5 hours for all 7 years
+5. If Azure export is enabled (`sql.load_to_database: True`), set `datalake.env` and the matching Azure SAS-token environment variable
+6. No conflicting processes using data directories
+7. Expected runtime: ~4-5 hours for synthesis across all 7 years, excluding optional export time
 
 ## Basic Execution
 
@@ -70,8 +71,8 @@ flowchart TD
     H4 --> I
     
     I --> J[Create ABM Outputs<br/>mgrabase file]
-    J --> K{Database Loading?}
-    K -->|True| L[Run ETL]
+    J --> K{Azure Data Lake export?}
+    K -->|True| L[Export CSV outputs to Azure Data Lake]
     K -->|False| M[Next Year]
     L --> M
     M --> E
@@ -200,10 +201,11 @@ python run_populationsim.py -c ./configs_mp -c ./configs -c ./configs_common -d 
 - `populationsim/output_gq_col/` (for validation)
 - `populationsim/output_gq_oth/` (for validation)
 
-#### 3e. Optional Database ETL (~5-10 minutes, if enabled)
-- Load all outputs to production database
-- Track run metadata
-- Enable validation dashboard
+#### 3e. Optional Azure Data Lake export
+
+When `sql.load_to_database` is `True`, `main.py` exports the year directory's CSV files as Parquet to Azure Data Lake. The legacy configuration key name does not indicate a SQL output load. Set `datalake.env` to `dev` or `prod` and provide the matching SAS-token environment variable (`AZURE_STORAGE_SAS_TOKEN_DS_DEV_SHARED` or `AZURE_STORAGE_SAS_TOKEN_DS_PROD_SHARED`).
+
+The export includes `benchmark_comparisons.csv` when generated. A completion marker is written only after the export succeeds; downstream Databricks ingestion is maintained outside this repository.
 
 ## Runtime Expectations
 
@@ -218,13 +220,12 @@ python run_populationsim.py -c ./configs_mp -c ./configs -c ./configs_common -d 
 | PopulationSim Run 4 (household) | 40 min | 0:43:15 |
 | Output organization | 10 sec | 0:43:25 |
 | ABM output creation | 3 min | 0:46:25 |
-| Database ETL (optional) | 8 min | 0:54:25 |
+| Azure Data Lake export (optional) | Variable | After local output creation |
 
-**Total Per Year:** ~40-50 minutes (without ETL), ~50-55 minutes (with ETL)
+**Total Per Year:** ~40-50 minutes for synthesis and local output creation; Azure export time varies.
 
 ### Total for All Years
-- **7 years without ETL:** ~4 hours
-- **7 years with ETL:** ~5 hours
+- **7 years of synthesis and local output creation:** ~4-5 hours, excluding Azure export time
 
 ### Factors Affecting Runtime
 - Database query performance (network latency, server load)

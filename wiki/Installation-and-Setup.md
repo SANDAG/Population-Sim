@@ -185,6 +185,9 @@ sql:
   mgrabase: "sql/mgrabase.sql"
   load_to_database: False
 
+datalake:
+  env: dev
+
 economic_controls: "data/Economic Team Region Controls.csv"
 
 years:
@@ -196,6 +199,8 @@ years:
   - 2040
   - 2050
 ```
+
+`load_to_database: False` skips the optional Azure Data Lake export; it does not disable SQL Server input queries. To export, set it to `True`, choose `datalake.env` (`dev` or `prod`), and configure the corresponding SAS-token environment variable. See [Running PopulationSim](Running-PopulationSim).
 
 ## Environment Verification
 

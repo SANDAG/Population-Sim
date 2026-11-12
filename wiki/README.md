@@ -16,21 +16,15 @@ The wiki uses a hybrid approach with overview pages and detailed technical refer
 - **[Control-Variables.md](Control-Variables.md)** - Complete list of 56 control variables
 - **[Output-Files.md](Output-Files.md)** - File formats and specifications
 
-### Additional Pages Needed
+### More References
 
-You may want to create these additional pages based on the technical documentation:
-
-- **Installation-and-Setup.md** - Detailed installation instructions
-- **Running-PopulationSim.md** - Complete execution workflow
-- **Data-Preparation.md** - Seed data and control generation details
-- **Algorithm-Details.md** - IPF methodology deep dive
-- **Validation-and-QA.md** - Quality assurance procedures
-- **Troubleshooting.md** - Common issues and solutions
-- **Configuration-Reference.md** - Settings and parameters
-- **Geographic-Structure.md** - Region, PUMA, MGRA details
-- **ABM-Integration.md** - Using outputs in ABM
-- **Database-Integration.md** - SQL Server ETL (legacy)
-- **Data-Lake-Integration.md** - Modern data export (in development)
+- **[Installation-and-Setup.md](Installation-and-Setup.md)** - Environment and dependencies
+- **[Running-PopulationSim.md](Running-PopulationSim.md)** - Execution workflow
+- **[Data-Preparation.md](Data-Preparation.md)** - Seed data and control generation
+- **[Algorithm-Details.md](Algorithm-Details.md)** - IPF methodology
+- **[Validation-and-QA.md](Validation-and-QA.md)** - Validation workflows and benchmarks
+- **[Troubleshooting.md](Troubleshooting.md)** - Common issues and solutions
+- **[Configuration-Reference.md](Configuration-Reference.md)** - Settings and parameters
 
 ## Publishing to GitHub Wiki
 
@@ -168,16 +162,15 @@ Or use VS Code with "Markdown Preview Enhanced" extension.
 - Add new troubleshooting entries as issues arise
 
 ### Deprecation
-When documenting deprecated features (e.g., SQL Server database):
+When documenting legacy features (such as the report's database source):
 - Mark clearly with "⚠️ Legacy" or "⚠️ Deprecated"
-- Link to replacement (e.g., Data Lake Integration)
-- Maintain docs temporarily for users on old versions
+- Distinguish them from the current Azure Data Lake export used by the run workflow
 
 ## Content Sources
 
 Wiki content is derived from:
 - `documentation/SANDAG_PopulationSim_Documentation.md` - Comprehensive technical docs
-- `README.md` - Repository overview
+- Root `README.md` and `config.yml` - Current run and export behavior
 - Code comments and docstrings
 - Team knowledge and best practices
 

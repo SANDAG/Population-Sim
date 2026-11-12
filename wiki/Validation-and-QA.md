@@ -207,7 +207,7 @@ streamlit run report/report.py
 - **Run Metadata:** Shows run_id, year, date, version, comments
 
 **Main Panel (3 Tabs):**
-1. **Region Tab** - Regional employment controls (18 controls)
+1. **Region Tab** - Regional fitting controls and available reporting benchmarks
 2. **PUMA Tab** - PUMA-level validation (22 PUMAs × 42 controls)
 3. **MGRA Tab** - MGRA-level validation (~24,321 MGRAs × 42 controls)
 
@@ -226,8 +226,10 @@ streamlit run report/report.py
 
 **How It Works:**
 1. Scans `output/` directory for year folders
-2. Loads summary CSV files
-3. Displays validation metrics
+2. Loads summary CSV files and run-specific reporting definitions when present
+3. Displays fitting controls and benchmark-only comparisons separately
+
+The saved `benchmark_comparisons.csv` contains benchmark targets and final results for downstream use. Benchmark definitions are not PopulationSim fitting constraints. Older output folders without archived definitions may use the current reporting definitions in the repository.
 
 **Selecting a Local Run:**
 - Choose "Local Output" from sidebar data source toggle
@@ -242,8 +244,8 @@ streamlit run report/report.py
 - Accessing historical runs
 
 **Prerequisites:**
-- ETL completed (`load_to_database: True` in config.yml)
-- Database credentials in secrets.yml
+- Database reporting credentials in `secrets.yml`
+- Access to the configured output database
 
 **Selecting a Database Run:**
 - Choose "Database" from sidebar data source toggle

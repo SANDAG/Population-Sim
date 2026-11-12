@@ -32,7 +32,10 @@ sql:
   mgra_controls: "sql/mgra_controls.sql"
   region_controls: "sql/region_controls.sql"
   mgrabase: "sql/mgrabase.sql"
-  load_to_database: False
+  load_to_database: True
+
+datalake:
+  env: dev
 
 economic_controls: "data/Economic Team Region Controls.csv"
 
@@ -81,9 +84,13 @@ years:
 - `mgra_controls` - Path to MGRA control generation query
 - `region_controls` - Path to regional control query
 - `mgrabase` - Path to ABM land use file query
-- `load_to_database` - Boolean: Enable ETL to production database
-  - `False` - Write CSV files only (default, faster)
-  - `True` - Load to database (enables validation dashboard)
+- `load_to_database` - Boolean: Despite its legacy name, controls the optional Azure Data Lake export in `main.py`
+  - `False` - Keep generated outputs as local CSV files
+  - `True` - Export the run's CSV outputs as Parquet to Azure Data Lake
+
+**Data Lake export:**
+- `datalake.env` - Azure environment: `dev` or `prod`; required when `sql.load_to_database` is `True`
+- The exporter requires the matching SAS-token environment variable. See [Running PopulationSim](Running-PopulationSim).
 
 **Data Sources:**
 - `economic_controls` - Path to Economics Team forecast CSV
@@ -150,10 +157,13 @@ synthesis_runs:
     num_processes: 1  # Single process
 ```
 
-**Database Loading:**
+**Optional Azure Data Lake Export:**
 ```yaml
 sql:
-  load_to_database: True
+  load_to_database: True  # Legacy key name; enables the data lake export
+
+datalake:
+  env: dev
 ```
 
 **Alternative Seed Data:**
@@ -192,8 +202,8 @@ sql:
   - Must use square brackets
   - Example: `[udm_staging].[sr15]`
   
-- `output_database` - Database for PopulationSim outputs
-  - Only used if `load_to_database: True`
+- `output_database` - Database used by the Streamlit report's database source
+  - Not used by `main.py` to export run outputs
   - Example: `PopulationSim_Production`
 
 ### Example
@@ -425,7 +435,7 @@ assert all(col in controls.columns for col in required_cols)
 print("✓ All configuration files validated!")
 print(f"✓ Years: {config['years']}")
 print(f"✓ SQL Server: {secrets['sql']['server']}")
-print(f"✓ Database loading: {config['sql']['load_to_database']}")
+print(f"✓ Azure Data Lake export enabled: {config['sql']['load_to_database']}")
 print(f"✓ Controls: {len(controls)}")
 ```
 
