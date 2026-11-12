@@ -1,7 +1,7 @@
 # SANDAG Population Synthesizer Documentation
 
-**Version:** tbd
-**Date:** June 2, 2026  
+**Version:** v15.0.0
+**Date:** November 12, 2026
 **Seed Data:** ACS PUMS 5-year 2017-2021  
 
 ---
@@ -13,7 +13,7 @@
 3. [Data Preparation](#3-data-preparation)
 4. [Application & Execution](#4-application--execution)
 5. [Validation & Quality Assurance](#5-validation--quality-assurance)
-6. [Database Integration (Optional)](#6-database-integration-optional)
+6. [Azure Data Lake Export (Optional)](#6-azure-data-lake-export-optional)
 7. [Appendices](#7-appendices)
 
 ---
@@ -38,7 +38,7 @@ PopulationSim is essential for urban planning and transportation modeling, enabl
 - Step-by-step execution procedures
 - Output specifications and file formats
 - Validation procedures and quality metrics
-- Optional database integration for production environments
+- Optional Azure Data Lake export for downstream data-lake consumers
 
 ### 1.2 System Architecture Overview
 
@@ -80,11 +80,11 @@ flowchart TD
    - Multiprocessing architecture (22 parallel PUMA processes)
    - Separate group quarters sampling module
 
-3. **Output Processing Layer** (`python/outputs.py`, `python/etl.py`):
+3. **Output Processing Layer** (`python/outputs.py`, `python/datalake_exporter.py`):
    - File combination and household ID renumbering
    - Data cleaning and NULL value handling
    - ABM-specific file formatting
-   - Optional database ETL with metadata tracking
+    - Optional Azure Data Lake export of run outputs as Parquet
 
 4. **Validation Layer** (`report/` directory):
    - Streamlit interactive dashboard
@@ -100,7 +100,7 @@ flowchart TD
 - **Consistent aggregation:** Controls sum correctly across all geographic levels
 
 **Demographic Richness:**
-- **54 control variables** covering household and person characteristics
+- **54 fitting control variables** covering household and person characteristics, plus 2 current reporting-only benchmark definitions
 - **36 MGRA-level controls:** Age, sex, race/ethnicity, household size, income, workers
 - **14 regional employment controls** by NAICS industry sector
 - **4 regional labor force participation controls** by race/ethnicity
@@ -118,7 +118,8 @@ flowchart TD
 
 **Quality Assurance:**
 - **Built-in validation:** Summary files compare controls vs. results
-- **Interactive reporting:** Streamlit app for visual validation
+- **Interactive reporting:** Streamlit app for local outputs or the report database source
+- **Reporting benchmarks:** Run-specific benchmark definitions and saved target/result comparisons, separate from fitting controls
 - **Backstopping:** Ensures critical controls are exactly met
 - **Configurable importance weights:** Prioritizes key demographic totals
 
@@ -147,8 +148,9 @@ orca>=1.8                    # Pipeline orchestration
 - **SQL Server** with access to:
   - ACS PUMS data views (household and person tables)
   - UDM staged forecast tables (pop_ase_mgra, hh_characteristics_mgra, mgrabase)
-  - Optional production database for output storage
+  - Optional output database for the Streamlit report's database source
 - **ODBC Driver 18 for SQL Server**
+- **Azure Data Lake access:** Required only when `sql.load_to_database` is `True`; requires `datalake.env` and the matching SAS-token environment variable
 
 **Development Tools (Optional):**
 - **Version Control:** Git for repository management
@@ -370,7 +372,7 @@ sequenceDiagram
 
 ### 2.3 Control Specifications
 
-Controls define the target marginal distributions that the synthetic population must match. SANDAG uses **54 control variables** specified in `populationsim/configs/controls.csv`.
+Controls define the target marginal distributions that the synthetic population must match. SANDAG uses **54 fitting control variables** specified in `populationsim/configs/controls.csv`. The current `populationsim/configs/reporting_controls.csv` contains 2 additional reporting-only benchmarks; these do not participate in fitting.
 
 #### 2.3.1 Control File Structure
 
@@ -491,7 +493,7 @@ lfp_white,region,persons,1225000,(persons.race == 'White alone') & ((persons.ESR
 
 #### 2.3.4 Group Quarters Controls (3 additional controls)
 
-Not in controls.csv but loaded from settings.yaml during ETL:
+Not defined in `controls.csv`; these group-quarters constraints are populated from PopulationSim settings for the separate GQ runs:
 ```yaml
 gq_mil_pop    # Military group quarters population
 gq_college_pop  # College dormitory population
@@ -3546,7 +3548,10 @@ sql:
   mgra_controls: "sql/mgra_controls.sql"
   region_controls: "sql/region_controls.sql"
   mgrabase: "sql/mgrabase.sql"
-  load_to_database: False
+  load_to_database: True
+
+datalake:
+  env: dev
 
 economic_controls: "data/Economic Team Region Controls.csv"
 
@@ -3595,9 +3600,13 @@ years:
 - `mgra_controls`: Path to MGRA control generation query
 - `region_controls`: Path to regional control query (military GQ)
 - `mgrabase`: Path to ABM land use file query
-- `load_to_database`: Boolean flag for database ETL
-  - `False`: Write CSV files only (default, faster)
-  - `True`: Load to production database (for validation dashboard)
+- `load_to_database`: Boolean flag for optional Azure Data Lake export (legacy key name)
+  - `False`: Keep generated CSV files locally and skip export
+  - `True`: Export generated CSV files as Parquet to Azure Data Lake
+
+**Data Lake Export:**
+- `datalake.env`: Azure environment, `dev` or `prod`; required when `sql.load_to_database` is `True`
+- The matching SAS token must be available as `AZURE_STORAGE_SAS_TOKEN_DS_DEV_SHARED` or `AZURE_STORAGE_SAS_TOKEN_DS_PROD_SHARED`
 
 **Data Sources:**
 - `economic_controls`: Path to Economics Team forecast CSV
@@ -3633,10 +3642,13 @@ years:
   - 2026  # Test with just one year
 ```
 
-**Example 2: Database Loading Enabled**
+**Example 2: Azure Data Lake Export Enabled**
 ```yaml
 sql:
-  load_to_database: True  # Enable ETL to production database
+  load_to_database: True  # Legacy key name; enables Azure Data Lake export
+
+datalake:
+  env: dev
 ```
 
 **Example 3: Run Households Only (Skip GQ)**
@@ -3727,8 +3739,8 @@ sql:
   - Examples:
     - `[sr15_staging].[e_f].[series_15]` (incorrect - too many parts)
     - `[e_f].[series_15]` (correct format)
-- `output_database`: Database for PopulationSim outputs (optional)
-  - Only used if `config.yml: load_to_database: True`
+- `output_database`: Database used by the Streamlit report's database source (optional)
+  - Not used by `main.py` to export run outputs
   - Example: `PopulationSim_Outputs`
 
 **Creating secrets.yml:**
@@ -3774,19 +3786,11 @@ echo "secrets.yml" >> .gitignore
 The application builds connection strings from secrets.yml:
 
 ```python
-# From main.py
-dbname = secrets["sql"]["output_database"] if config["sql"]["load_to_database"] else "master"
-engine = sql.create_engine(
-    "mssql+pyodbc://@" + secrets["sql"]["server"] + "/" + dbname + 
-    "?trusted_connection=yes&driver=ODBC Driver 17 for SQL Server",
-    fast_executemany=True
-)
+# From main.py: input queries use fully qualified names, so connect to master.
+engine = get_engine(database="master")
 ```
 
-**Resulting Connection String:**
-```
-mssql+pyodbc://@SANDAG-SQL01/PopulationSim_Production?trusted_connection=yes&driver=ODBC Driver 17 for SQL Server
-```
+The `output_database` setting is separate and is used by the Streamlit report's database source.
 
 #### 4.2.3 PopulationSim Settings (settings.yaml)
 
@@ -3941,7 +3945,7 @@ assert all(col in controls.columns for col in required_cols), \
 print("✓ All configuration files validated successfully!")
 print(f"✓ Years to process: {config['years']}")
 print(f"✓ SQL Server: {secrets['sql']['server']}")
-print(f"✓ Database loading: {config['sql']['load_to_database']}")
+print(f"✓ Azure Data Lake export enabled: {config['sql']['load_to_database']}")
 print(f"✓ Controls defined: {len(controls)}")
 ```
 
@@ -4036,8 +4040,8 @@ flowchart TD
     H4 --> I
     
     I --> J[Create ABM Outputs<br/>mgrabase file]
-    J --> K{Database<br/>Loading?}
-    K -->|True| L[Run ETL<br/>run_etl]
+    J --> K{Azure Data Lake<br/>export enabled?}
+    K -->|True| L[Export CSV outputs as Parquet]
     K -->|False| M[Next Year]
     L --> M
     M --> E
@@ -4060,9 +4064,8 @@ flowchart TD
 # Load configurations
 config, secrets = load_configs()
 
-# Create database connection
-dbname = secrets["sql"]["output_database"] if config["sql"]["load_to_database"] else "master"
-engine = get_engine(database=dbname)
+# Input queries use fully qualified names, so connect to master.
+engine = get_engine(database="master")
 ```
 
 **Timing:** ~1 second  
@@ -4252,22 +4255,11 @@ create_abm_outputs(
 - `synthetic_persons.csv` (combined all runs)
 - `mgra15_based_input_{year}.csv`
 
-**3e. Optional ETL (run_etl() function)**
-```python
-if config["sql"]["load_to_database"]:
-    run_etl(
-        year=year,
-        engine=engine,
-        output_database=secrets["sql"]["output_database"],
-        version=config["version"],
-        staging_schema=secrets["sql"]["schema"],
-        seed_data=config["seed_data"],
-        comments=config["comments"]
-    )
-```
+**3e. Optional Azure Data Lake Export**
 
-**Timing:** ~1-2 minutes  
-**Output:** All files loaded to production database tables with metadata
+When `sql.load_to_database` is `True`, `main.py` exports CSV files from `output/{year}/` as Parquet to Azure Data Lake. The legacy configuration key name does not indicate a SQL output load. Configure `datalake.env` as `dev` or `prod` and set the matching SAS-token environment variable (`AZURE_STORAGE_SAS_TOKEN_DS_DEV_SHARED` or `AZURE_STORAGE_SAS_TOKEN_DS_PROD_SHARED`). The run checks Azure connectivity before processing years and fails the run if an export fails.
+
+The export includes `benchmark_comparisons.csv` when generated. A completion marker is written only after all run files have uploaded successfully. Databricks ingestion is maintained outside this repository.
 
 **Step 4: Completion**
 ```python
@@ -4284,13 +4276,12 @@ logging.info("All years processed successfully.")
 | PopulationSim execution | 48 min | 0:48:15 |
 | Output organization | 5 sec | 0:48:20 |
 | ABM output creation | 3 min | 0:51:20 |
-| Database ETL (optional) | 8 min | 0:59:20 |
+| Azure Data Lake export (optional) | Variable | After local output creation |
 
-**Total Per Year:** ~45-50 minutes (without ETL), ~55-60 minutes (with ETL)
+**Total Per Year:** ~45-50 minutes for synthesis and local output creation; Azure export time varies.
 
 **Total for All Years:**
-- **7 years without ETL:** ~5.5 hours
-- **7 years with ETL:** ~6.5-7 hours
+- **7 years of synthesis and local output creation:** ~5.5 hours, excluding Azure export time
 
 **Factors Affecting Runtime:**
 - Database query performance (network latency, server load)
@@ -4436,6 +4427,8 @@ output/
 │   ├── mgra_controls_gq_col.csv               # Control totals: College GQ by MGRA
 │   ├── mgra_controls_gq_oth.csv               # Control totals: Other GQ by MGRA
 │   ├── region_controls.csv                    # Control totals: Regional controls used
+│   ├── reporting_controls.csv                 # Report-only benchmark definitions, when configured
+│   ├── benchmark_comparisons.csv              # Benchmark targets/results, when configured
 │   ├── timing_log.csv                         # Performance: Household run timing
 │   ├── timing_log_gq_mil.csv                  # Performance: Military GQ run timing
 │   ├── timing_log_gq_col.csv                  # Performance: College GQ run timing
@@ -4643,6 +4636,23 @@ id,geography,Total_GQ_control,Total_GQ_result,Total_GQ_diff
 - 5 columns: id, geography, control, result and diff
 
 **Usage:** Verify GQ sampling produced exact control totals
+
+#### 4.4.4.1 Reporting Benchmark Files
+
+`reporting_controls.csv` contains report-only benchmark definitions. These are separate from the fitting controls and are not passed to PopulationSim. When definitions are available, output organization archives them with the run and writes `benchmark_comparisons.csv` from the saved geography targets and final synthetic population.
+
+The comparisons file contains one row per benchmark and geography, with an additional region total for MGRA benchmarks when a region target is not already reported.
+
+| Column | Description |
+|--------|-------------|
+| `target` | Benchmark name |
+| `control_field` | Target field in the geography control file |
+| `geography` | `mgra` or `region` |
+| `id` | MGRA identifier or `1` for the region total |
+| `control_value` | Saved benchmark target; unavailable targets remain null |
+| `result` | Count from the final synthetic population |
+
+`benchmark_comparisons.csv` is included in the Azure Data Lake export with the other year-level CSV files. See Section 5.2.3 for how the local report presents benchmark-only comparisons.
 
 #### 4.4.5 Performance Metrics
 
@@ -5017,7 +5027,7 @@ SANDAG provides an interactive Streamlit dashboard for visual validation. The ap
 
 **Prerequisites:**
 - Completed PopulationSim run (with output files in `output/{year}/`)
-- OR database-loaded runs (with ETL completed)
+- Or access to the configured report database and its loaded run data
 
 **Launch Command:**
 
@@ -5081,7 +5091,10 @@ streamlit run report/report.py
    - `final_summary_mgra_gq_mil.csv`, `final_summary_mgra_gq_col.csv`, `final_summary_mgra_gq_oth.csv`
    - `final_summary_mgra_PUMA.csv`
    - `final_summary_region_1.csv`
-4. **Replicates database query logic** to build control data
+4. **Loads run-specific fitting and reporting definitions** when archived; older output folders fall back to current definitions
+5. **Displays reporting benchmarks separately** as `Benchmark Only`; they do not participate in fitting
+
+The saved `benchmark_comparisons.csv` contains benchmark target/result rows for downstream consumers. For MGRA benchmarks without an existing regional target, the file also includes their region total.
 
 **Selecting Local Run:**
 
@@ -5104,41 +5117,7 @@ Sidebar:
 [Click any row to load]
 ```
 
-#### 5.2.4 Using Database Mode
-
-**When to Use:**
-- Production validation of loaded runs
-- Comparing multiple runs
-- Accessing historical runs
-
-**Prerequisites:**
-- ETL completed (`load_to_database: True` in config.yml)
-- Database credentials in secrets.yml
-- Run marked as `loaded = 1` in database
-
-**Selecting Database Run:**
-
-```
-Sidebar:
-┌─────────────────────────────┐
-│ Choose data source:         │
-│ ● Database                  │
-│ ○ Local Output              │
-└─────────────────────────────┘
-
-📊 Database Runs
-Select a PopulationSim run to view validation results.
-┌────────┬────────────────┬──────┬────────────┬──────┬─────────┐
-│ run_id │ staging_schema │ year │ date       │ user │ version │
-├────────┼────────────────┼──────┼────────────┼──────┼─────────┤
-│ 145    │ sr15           │ 2022 │ 2026-05-15 │ jdoe │ 15.01   │
-│ 146    │ sr15           │ 2026 │ 2026-05-15 │ jdoe │ 15.01   │
-│ 147    │ sr15           │ 2029 │ 2026-05-15 │ jdoe │ 15.01   │
-└────────┴────────────────┴──────┴────────────┴──────┴─────────┘
-[Click any row to load]
-```
-
-#### 5.2.5 Region Tab
+#### 5.2.4 Region Tab
 
 **Purpose:** Validate regional employment and labor force controls (18 controls)
 
@@ -5167,7 +5146,7 @@ Select a PopulationSim run to view validation results.
 - **Diff %:** Should be < 0.1% for all controls
 - **Outliers:** Controls with larger deviations may indicate data issues
 
-#### 5.2.6 PUMA Tab
+#### 5.2.5 PUMA Tab
 
 **Purpose:** Validate controls at PUMA level (22 PUMAs)
 
@@ -5177,7 +5156,6 @@ Select a PopulationSim run to view validation results.
   - Household Size
   - Household Income
   - Household Workers
-  - Household Children
   - Sex
   - Age
   - Race/Ethnicity
@@ -5210,7 +5188,7 @@ Select a PopulationSim run to view validation results.
 - **Max |Diff|:** Worst-case absolute deviation (identify problematic PUMAs)
 - **Max |Diff %|:** Worst-case relative deviation (identify small-control issues)
 
-#### 5.2.7 MGRA Tab
+#### 5.2.6 MGRA Tab
 
 **Purpose:** Drill down to MGRA-level accuracy (24,321 MGRAs)
 
@@ -5244,11 +5222,11 @@ Summary Statistics:
 - **Max |Diff|:** ≤ 10 households, ≤ 20 persons
 - **Max |Diff %|:** Can be high (>50%) for small MGRAs with low control values
 
-#### 5.2.8 Troubleshooting App Issues
+#### 5.2.7 Troubleshooting App Issues
 
 | Issue | Symptom | Resolution |
 |-------|---------|------------|
-| No runs appear | Empty sidebar table | Check `secrets.yml` credentials, verify ETL completed, check `output/` folder exists |
+| No runs appear | Empty sidebar table | For database mode, check `secrets.yml`, output-database access, and that the run is marked loaded; for local mode, check the `output/` folder |
 | App crashes on startup | Import error or connection timeout | Verify all dependencies installed, check database connectivity |
 | Plots don't display | Blank chart area | Wait for data loading, check browser console for errors |
 | "No module named streamlit" | Import error | Activate virtual environment, run `uv pip install streamlit` |
@@ -5731,32 +5709,49 @@ print(f"\nOrphan persons (household_id not in household file): {len(orphan_perso
 
 ---
 
-## 6. Data Lake Integration (tbd)
+## 6. Azure Data Lake Export (Optional)
 
-Data lake integration is optional but recommended for production environments. Exporting synthesis results to a data lake enables:
-- Version control and historical tracking
-- Streamlit dashboard access to multiple runs
-- Cloud-based data storage and access
-- Centralized data management for ABM team
+The current `main.py` workflow can export each completed year's outputs to Azure Data Lake as Parquet. The configuration key `sql.load_to_database` retains a legacy name: when `False`, outputs remain local; when `True`, the workflow exports to the Azure environment selected by `datalake.env`. This switch does not load outputs into SQL Server. SQL Server remains the source for seed data, control data, and the ABM MGRA input; the Streamlit report's database source is separate.
 
-### 6.1 Data Lake Architecture
+### 6.1 Prerequisites and Workflow
 
-[Content to be added...]
+Configure the environment and credentials as follows:
 
-### 6.2 Export Process
+```yaml
+sql:
+  load_to_database: True
 
-[Content to be added...]
+datalake:
+  env: dev  # dev or prod
+```
 
-### 6.3 Metadata and Versioning
+Set the matching SAS-token environment variable:
+- `AZURE_STORAGE_SAS_TOKEN_DS_DEV_SHARED` for `datalake.env: dev`
+- `AZURE_STORAGE_SAS_TOKEN_DS_PROD_SHARED` for `datalake.env: prod`
 
-[Content to be added...]
+When export is enabled, `main.py` verifies Azure connectivity before starting the run. After each year's outputs are organized, the exporter uploads them; a failed connection or incomplete upload fails that year's run.
+
+### 6.2 Exported Data and Layout
+
+Year-level CSV files in `output/{year}/` are converted to Parquet and stored under `popsim/<file>/<year>/`. Each file is versioned with a timestamp. The year is also added as a column, and exported records receive a `run_timestamp` to associate files from the same run. The year suffix in `mgra15_based_input_{year}.csv` is normalized to the common `mgra15_based_input` data-lake path.
+
+Additional inputs needed downstream are exported separately from the year output directory:
+- Fitting-control definitions are written under `popsim/controls/<year>/` for the household run and `popsim/controls_<run>/<year>/` for GQ runs.
+- Seed household and person files are written under their corresponding `popsim/seed_*` paths.
+- Run metadata, including the year, batch ID, user, and top-level `config.yml` values, is written under `popsim/run_metadata/<year>/`.
+
+After every output, control, seed, and metadata file uploads successfully, the exporter writes `popsim/_export_status/<year>/_SUCCESS_<timestamp>.json`. This marker lists the successful files and signals downstream ingestion that the export is complete. Databricks ingestion and transformations are maintained outside this repository.
+
+### 6.3 Reporting Benchmark Comparisons
+
+`reporting_controls.csv` defines benchmarks that are evaluated for reporting only; they are not fitting constraints. Output organization archives the active reporting definitions with the run and writes `benchmark_comparisons.csv` when benchmark definitions are available. The file contains `target`, `control_field`, `geography`, `id`, `control_value`, and `result`; MGRA benchmarks also receive a region total when a region target is not already reported. It is included in the Azure export as a Parquet data file, so downstream consumers can use the same benchmark comparisons as the local Streamlit report.
 
 ---
 ## 7. Appendices
 
 ### Appendix A: Complete Control Variable Definitions
 
-This appendix provides complete definitions for all 54 control variables used in SANDAG's PopulationSim implementation.
+This appendix provides complete definitions for all 54 fitting control variables used in SANDAG's PopulationSim implementation.
 
 #### A.1 Household Controls (MGRA-Level)
 
@@ -5883,7 +5878,9 @@ sql:
   mgra_controls: string            # Path to SQL query file
   region_controls: string          # Path to SQL query file
   mgrabase: string                 # Path to SQL query file
-  load_to_database: boolean        # Enable/disable ETL (true/false)
+  load_to_database: boolean        # Enable/disable optional Azure Data Lake export
+datalake:
+  env: string                      # Azure environment: dev or prod
 economic_controls: string          # Path to CSV file
 years: list[int]                   # List of forecast years
 ```
@@ -5897,7 +5894,7 @@ years: list[int]                   # List of forecast years
 sql:
   server: string                   # SQL Server hostname
   schema: string                   # Staging schema name
-  output_database: string          # Target database name
+  output_database: string          # Report database source; not used for main.py export
 ```
 
 **File: populationsim/configs/controls.csv**
@@ -6411,7 +6408,7 @@ FROM ase_controls
 
 **CVXPY:** Convex optimization library used for integerization step to select integer household weights.
 
-**ETL (Extract, Transform, Load):** Database process for loading synthesis results from CSV files into SQL Server.
+**ETL (Extract, Transform, Load):** Legacy SQL Server process for loading synthesis results from CSV files. The current `main.py` workflow does not use this process; its optional run export writes Parquet files to Azure Data Lake.
 
 **Expansion Factor:** The integer weight assigned to a seed household to replicate it in the synthetic population (range: 0 to 30 for SANDAG).
 
