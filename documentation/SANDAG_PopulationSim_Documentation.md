@@ -508,7 +508,7 @@ The importance values create a hierarchy:
 
 | Importance | Purpose | Example Controls |
 |------------|---------|------------------|
-| 1,225,000,000 | **Critical totals** - Must be exactly met | Labor force participation rates |
+| 1,225,000 | **Critical totals** - Must be exactly met | Labor force participation rates |
 | 1,000,000,000 | **Total households** - Absolute priority | Total_HH |
 | 1,000,000 | **Major demographics** - Very high priority | Male, Female |
 | 350,000 | **Employment** - High priority | job_1 through job_14 |
