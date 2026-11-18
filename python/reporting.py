@@ -22,7 +22,10 @@ def load_control_definitions(run_dir: Path, configs_dir: Path) -> pd.DataFrame:
 
 
 def get_benchmark_comparisons(
-    run_dir: Path, definitions: pd.DataFrame, reported_targets: set
+    run_dir: Path,
+    definitions: pd.DataFrame,
+    reported_targets: set,
+    geo_cross_walk: pd.DataFrame,
 ) -> pd.DataFrame:
     """Evaluate reporting-only expressions against the configured synthetic population."""
     benchmarks = definitions.loc[
@@ -56,6 +59,34 @@ def get_benchmark_comparisons(
             )
             if persons["gq_type"].isna().any():
                 raise ValueError("Synthetic persons have missing household/GQ classifications")
+            # Recreate seed SQL fields omitted from synthetic-person exports.
+            if (
+                "race" not in persons
+                and benchmarks["expression"].str.contains(r"\.race\b").any()
+            ):
+                race_codes = pd.to_numeric(persons["RAC1P"], errors="raise")
+                hispanic_codes = pd.to_numeric(persons["HISP"], errors="raise")
+                persons["race"] = race_codes.map({
+                    1: "White alone",
+                    2: "Black or African American alone",
+                    3: "Other",
+                    4: "Other",
+                    5: "Other",
+                    6: "Asian alone",
+                    7: "Other",
+                    8: "Other",
+                    9: "Two or More Races",
+                })
+                persons.loc[
+                    hispanic_codes.notna() & hispanic_codes.ne(1), "race"
+                ] = "Hispanic"
+            if (
+                "laborforce" not in persons
+                and benchmarks["expression"].str.contains(r"\.laborforce\b").any()
+            ):
+                persons["laborforce"] = pd.to_numeric(
+                    persons["ESR"], errors="raise"
+                ).isin([1, 2, 3, 4, 5]).astype(int)
             populations["persons"] = persons
 
     rows = []
@@ -111,6 +142,25 @@ def get_benchmark_comparisons(
         comparisons = pd.concat(
             [comparisons, regional.assign(geography="region", id=1)], ignore_index=True
         )
+
+    mgra_comparisons = comparisons.loc[comparisons["geography"].eq("mgra")]
+    if not mgra_comparisons.empty:
+        puma_cross_walk = geo_cross_walk[["mgra", "PUMA"]]
+        puma_comparisons = mgra_comparisons.merge(
+            puma_cross_walk,
+            left_on="id",
+            right_on="mgra",
+            how="left",
+            validate="many_to_one",
+        )
+        if puma_comparisons["PUMA"].isna().any():
+            raise ValueError("MGRA benchmark rows have missing PUMA crosswalk entries")
+        puma = puma_comparisons.groupby(
+            ["control_id", "target", "control_field", "Status", "PUMA"],
+            as_index=False,
+        )[["control_value", "result"]].sum(min_count=1)
+        puma = puma.rename(columns={"PUMA": "id"}).assign(geography="puma")
+        comparisons = pd.concat([comparisons, puma], ignore_index=True)
     return comparisons
 
 
@@ -121,7 +171,10 @@ def write_benchmark_comparisons(run_dir: Path, configs_dir: Path) -> None:
         set(pd.read_csv(region_path)["control_name"]) if region_path.exists() else set()
     )
     definitions = load_control_definitions(run_dir, configs_dir)
-    comparisons = get_benchmark_comparisons(run_dir, definitions, reported_targets)
+    geo_cross_walk = pd.read_csv(configs_dir.parent / "data" / "geo_cross_walk.csv")
+    comparisons = get_benchmark_comparisons(
+        run_dir, definitions, reported_targets, geo_cross_walk
+    )
     if comparisons.empty:
         return
     # control_id is numbered per report, so it isn't exported; target identifies the benchmark
