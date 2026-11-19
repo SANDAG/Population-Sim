@@ -59,7 +59,7 @@ def get_benchmark_comparisons(
             )
             if persons["gq_type"].isna().any():
                 raise ValueError("Synthetic persons have missing household/GQ classifications")
-            # Recreate seed SQL fields omitted from synthetic-person exports.
+            # Match seed_persons.sql for job_*; lfp_* expressions separately use ESR 1-3.
             if (
                 "race" not in persons
                 and benchmarks["expression"].str.contains(r"\.race\b").any()
@@ -159,7 +159,7 @@ def get_benchmark_comparisons(
             ["control_id", "target", "control_field", "Status", "PUMA"],
             as_index=False,
         )[["control_value", "result"]].sum(min_count=1)
-        puma = puma.rename(columns={"PUMA": "id"}).assign(geography="puma")
+        puma = puma.rename(columns={"PUMA": "id"}).assign(geography="PUMA")
         comparisons = pd.concat([comparisons, puma], ignore_index=True)
     return comparisons
 
