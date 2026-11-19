@@ -104,11 +104,21 @@ def get_lake_name(name):
     return re.sub(r"^mgra15_based_input_\d{4}$", "mgra15_based_input", name)
 
 
+# Setting explicit data types. 
+# Columns whose type pandas would otherwise guess per file.
+# values are whole numbers in some runs and decimals in others (e.g. lfp_* targets),
+# so without this some files are int64 and others float64, and Databricks Auto Loader moves the
+# mismatched files' values to _rescued_data. this change fixes that.
+_PARQUET_DTYPES = {
+    "benchmark_comparisons": {"control_value": "float64", "result": "float64"},
+}
+
+
 def export_csv_as_parquet(file, folder_name, ts_str, container, run_timestamp=None):
     name = os.path.splitext(os.path.basename(file))[0]
     lake_name = get_lake_name(name)
     try:
-        table = pd.read_csv(file, low_memory=False)
+        table = pd.read_csv(file, low_memory=False, dtype=_PARQUET_DTYPES.get(lake_name))
         # year and run_timestamp are added as columns (not just encoded in the blob path) so
         # Autoloader/Spark can partition and query across runs without parsing the file path.
         if folder_name.isdigit():

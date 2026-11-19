@@ -188,7 +188,10 @@ def get_control_data_from_local(run_folder: str) -> pd.DataFrame:
         all_rows.append(melted[["control_id", "control_field", "geography", "id", "control_value", "result"]])
 
     all_rows = [rows.assign(Status="Fitting Control") for rows in all_rows]
-    benchmarks = get_benchmark_comparisons(run_dir, controls_df, reported_region_targets)
+    geo_cross_walk = pd.read_csv(Path("./populationsim/data/geo_cross_walk.csv"))
+    benchmarks = get_benchmark_comparisons(
+        run_dir, controls_df, reported_region_targets, geo_cross_walk
+    )
     if not benchmarks.empty:
         all_rows.append(benchmarks.drop(columns="target"))
 
@@ -238,6 +241,8 @@ def get_control_data_from_local(run_folder: str) -> pd.DataFrame:
             return "Household Children"
         elif control_field in ["Male", "Female"]:
             return "Sex"
+        elif control_field == "Total_Pop":
+            return "Household Population"
         elif control_field.startswith("Age_"):
             return "Age"
         elif control_field in ["Asian", "Black", "Hispanic", "Other", "Two_or_more", "White"]:
