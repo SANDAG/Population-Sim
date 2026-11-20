@@ -123,5 +123,4 @@ Each run also saves the report's benchmark rows to `output/<year>/benchmark_comp
 (one row per benchmark and geography, plus a region total for MGRA benchmarks),
 which the data lake export uploads with the other outputs. Databricks loads that
 file as-is rather than recalculating the benchmarks, so the Streamlit report and
-Power BI show the same numbers for newly generated files. Existing comparison
-files must be regenerated and re-exported to apply the non-GQ filter.
+Power BI show the same numbers for newly generated files.
