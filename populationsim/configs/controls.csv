@@ -15,6 +15,7 @@ HHWork_0,mgra,households,100000,HHWork_0,households.workers == 0
 HHWork_1,mgra,households,100000,HHWork_1,households.workers == 1
 HHWork_2,mgra,households,100000,HHWork_2,households.workers == 2
 HHWork_3Plus,mgra,households,100000,HHWork_3Plus,households.workers >= 3
+Total_Pop,mgra,persons,1000000,Total_Pop,persons.AGEP >= 0
 Male,mgra,persons,1000000,Male,(persons.SEX == 1)
 Female,mgra,persons,1000000,Female,(persons.SEX == 2)
 Age_LT5,mgra,persons,100000,Age_LT5,(persons.AGEP >= 0) & (persons.AGEP <= 4)
