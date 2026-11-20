@@ -105,8 +105,9 @@ separate from the fitting constraints in `controls.csv` and are not passed to
 PopulationSim. The `expression` column uses pandas expressions, following the
 same convention as `controls.csv`.
 
-The report uses each run's reporting definitions to compare saved
-`region_controls.csv` targets with counts from the final synthetic population.
+The report uses each run's reporting definitions to compare saved geography
+control targets with counts from the final synthetic population, excluding
+group quarters (`gq_type != 0`) from both household and person benchmarks.
 These rows appear as **Benchmark Only** in the regional table and plots. Saved
 PopulationSim summary rows remain **Fitting Control** and are not recomputed.
 Missing targets or population data produce unavailable values, not zero counts.
@@ -122,4 +123,5 @@ Each run also saves the report's benchmark rows to `output/<year>/benchmark_comp
 (one row per benchmark and geography, plus a region total for MGRA benchmarks),
 which the data lake export uploads with the other outputs. Databricks loads that
 file as-is rather than recalculating the benchmarks, so the Streamlit report and
-Power BI show the same numbers.
+Power BI show the same numbers for newly generated files. Existing comparison
+files must be regenerated and re-exported to apply the non-GQ filter.

@@ -49,7 +49,9 @@ def get_benchmark_comparisons(
     populations = {}
     if households_path.exists():
         households = pd.read_csv(households_path)
-        populations["households"] = households
+        if households["gq_type"].isna().any():
+            raise ValueError("Synthetic households have missing GQ classifications")
+        populations["households"] = households.loc[households["gq_type"].eq(0)]
         if persons_path.exists():
             persons = pd.read_csv(persons_path, dtype={"NAICS2": str}).merge(
                 households[["household_id", "gq_type"]],
@@ -59,6 +61,7 @@ def get_benchmark_comparisons(
             )
             if persons["gq_type"].isna().any():
                 raise ValueError("Synthetic persons have missing household/GQ classifications")
+            persons = persons.loc[persons["gq_type"].eq(0)].copy()
             # Match seed_persons.sql for job_*; lfp_* expressions separately use ESR 1-3.
             if (
                 "race" not in persons
