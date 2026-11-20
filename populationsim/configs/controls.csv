@@ -15,6 +15,7 @@ HHWork_0,mgra,households,100000,HHWork_0,households.workers == 0
 HHWork_1,mgra,households,100000,HHWork_1,households.workers == 1
 HHWork_2,mgra,households,100000,HHWork_2,households.workers == 2
 HHWork_3Plus,mgra,households,100000,HHWork_3Plus,households.workers >= 3
+Total_Pop,mgra,persons,1000000,Total_Pop,persons.AGEP >= 0
 Male,mgra,persons,1000000,Male,(persons.SEX == 1)
 Female,mgra,persons,1000000,Female,(persons.SEX == 2)
 Age_LT5,mgra,persons,100000,Age_LT5,(persons.AGEP >= 0) & (persons.AGEP <= 4)
@@ -51,5 +52,5 @@ job_13,region,persons,350000,job_13,(persons.NAICS2 == '722') & (persons.laborfo
 job_14,region,persons,350000,job_14,(persons.NAICS2 == '81') & (persons.laborforce == 1)
 lfp_black,region,persons,1225000,lfp_black,(persons.race == 'Black or African American alone') & ((persons.ESR == 1) | (persons.ESR == 2) | (persons.ESR == 3))
 lfp_hispanic,region,persons,1225000,lfp_hispanic,(persons.race == 'Hispanic') & ((persons.ESR == 1) | (persons.ESR == 2) | (persons.ESR == 3))
-lfp_other,region,persons,1225000,lfp_other,((persons.race == 'Other') | (persons.race == 'Two or More') | (persons.race == 'Asian alone')) & ((persons.ESR == 1) | (persons.ESR == 2) | (persons.ESR == 3))
+lfp_other,region,persons,1225000,lfp_other,((persons.race == 'Other') | (persons.race == 'Two or More Races') | (persons.race == 'Asian alone')) & ((persons.ESR == 1) | (persons.ESR == 2) | (persons.ESR == 3))
 lfp_white,region,persons,1225000,lfp_white,(persons.race == 'White alone') & ((persons.ESR == 1) | (persons.ESR == 2) | (persons.ESR == 3))

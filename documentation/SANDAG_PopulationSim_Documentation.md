@@ -4641,6 +4641,8 @@ id,geography,Total_GQ_control,Total_GQ_result,Total_GQ_diff
 
 `reporting_controls.csv` contains report-only benchmark definitions. These are separate from the fitting controls and are not passed to PopulationSim. When definitions are available, output organization archives them with the run and writes `benchmark_comparisons.csv` from the saved geography targets and final synthetic population.
 
+Benchmark counts exclude group quarters: household records must have `gq_type = 0`, and person records must belong to those households. Saved target values and fitting-control summaries are unchanged.
+
 The comparisons file contains one row per benchmark and geography, with an additional region total for MGRA benchmarks when a region target is not already reported.
 
 | Column | Description |

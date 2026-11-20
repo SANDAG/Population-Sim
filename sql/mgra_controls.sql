@@ -4,6 +4,7 @@ with
     (
         SELECT
             [mgra],
+            SUM([hhp]) AS 'Total_Pop',
             SUM(CASE WHEN [sex_id] = 2 THEN [hhp] ELSE 0 END) AS 'Male',
             SUM(CASE WHEN [sex_id] = 1 THEN [hhp] ELSE 0 END) AS 'Female',
             SUM(CASE WHEN [age_group_id] = 1 THEN [hhp] ELSE 0 END) AS 'Age_LT5',
@@ -75,6 +76,7 @@ FROM
 )
 SELECT
     [ase_controls].[mgra],
+    [Total_Pop],
     [Male],
     [Female],
     [Age_LT5],
